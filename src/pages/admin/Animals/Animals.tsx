@@ -344,30 +344,56 @@ export default function Animais() {
                 onChange={handleChange}
                 placeholder="Preto"
               />
+              
               <div>
-              <label className="mb-1.5 block text-xs font-extrabold text-[#374151]">
-                Foto
-              </label>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFotoChange}
-                accept="image/*"
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-[#f9fafb] px-4 py-3 text-sm text-slate-500 hover:bg-slate-100"
-              >
-                <LuUpload className="h-5 w-5 text-slate-400" />
-                <span>
-                  {form.foto
-                    ? "Foto selecionada!"
-                    : "Upload de arquivo (PNG, JPG, JPEG)"}
-                </span>
-              </button>
-            </div>
+                <label className="mb-1.5 block text-xs font-extrabold text-[#374151]">
+                  Foto
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFotoChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="group flex h-[46px] w-full items-center gap-3 overflow-hidden rounded-lg border border-slate-200 bg-[#f9fafb] px-4 text-sm text-slate-500 transition hover:bg-slate-100 focus:border-[#1d70b8] focus:bg-white focus:outline-none"
+                  >
+                    {form.foto ? (
+                      <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-slate-200">
+                        <img
+                          src={form.foto}
+                          alt="Preview da foto do animal"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <LuUpload className="h-5 w-5 shrink-0 text-slate-400" />
+                    )}
+                    <span className="truncate">
+                      {form.foto
+                        ? "Foto selecionada! Clique para trocar."
+                        : "Upload de arquivo (PNG, JPG, JPEG)"}
+                    </span>
+                  </button>
+
+                  {form.foto && (
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, foto: "" }))}
+                      title="Remover foto"
+                      className="absolute left-[26px] top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition hover:bg-black/80 group-hover:opacity-100"
+                    >
+                      <LuX size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
             </div>
 
             
@@ -407,6 +433,7 @@ export default function Animais() {
             <table className="w-full border-collapse text-left text-sm">
               <thead className="border-b border-slate-100 bg-[#f9fafb] text-xs font-extrabold text-slate-500">
                 <tr>
+                  <th className="px-5 py-3.5">Imagem</th>
                   <th className="px-5 py-3.5">Nome</th>
                   <th className="px-5 py-3.5">Espécie</th>
                   <th className="px-5 py-3.5">Raça</th>
@@ -435,6 +462,21 @@ export default function Animais() {
                       key={animal.id}
                       className="transition hover:bg-slate-50/70"
                     >
+                      <td className="px-5 py-4">
+                        <div className="h-10 w-10 overflow-hidden rounded-md border border-slate-200 bg-[#f9fafb]">
+                          {animal.foto ? (
+                            <img
+                              src={animal.foto}
+                              alt={`Foto de ${animal.nome}`}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-slate-300">
+                              <LuUpload size={16} />
+                            </div>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-5 py-4 font-bold text-[#111827]">
                         {animal.nome}
                       </td>
