@@ -246,13 +246,15 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
             )}
 
             {/* Histórico médico */}
-            {d.historico?.length > 0 && (
-              <Bloco titulo="Histórico Médico">
-                <ul className="mt-3 flex flex-col gap-3">
-                  {d.historico.map((h) => {
-                    const Icone = iconesHistorico[h.tipo] || IconPill;
-                    return (
-                      <li key={h.titulo} className="flex items-start gap-3">
+            {(() => {
+              const historico = d.historico;
+              return historico?.length ? (
+                <Bloco titulo="Histórico Médico">
+                  <ul className="mt-3 flex flex-col gap-3">
+                    {historico.map((h) => {
+                      const Icone = iconesHistorico[h.tipo] || IconPill;
+                      return (
+                        <li key={h.titulo} className="flex items-start gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-marca">
                           <Icone className="h-4 w-4" />
                         </span>
@@ -260,12 +262,13 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
                           <p className="font-bold text-zinc-900">{h.titulo}</p>
                           <p className="text-xs leading-5 text-zinc-600 md:text-[13px]">{h.texto}</p>
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </Bloco>
-            )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Bloco>
+              ) : null;
+            })()}
 
             {/* Requisitos */}
             <Bloco titulo="Requisitos para Adoção">
