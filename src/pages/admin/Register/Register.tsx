@@ -276,8 +276,7 @@ export default function Cadastro(): JSX.Element {
               Conta criada com sucesso!
             </h2>
             <p className="mb-7 text-[13.5px] text-[#667b9b]">
-              Sua conta de administrador foi criada. Você já pode acessar o
-              painel administrativo usando suas novas credenciais.
+              Sua conta de administrador foi criada. Aguarde até o administrador permitir o acesso
             </p>
             <a
               href="/admin/login"

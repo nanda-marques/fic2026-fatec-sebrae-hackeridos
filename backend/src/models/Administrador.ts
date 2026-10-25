@@ -8,6 +8,8 @@ import type {
 import sequelize from "../config/database.js";
 import Cargo from "./Cargo.js";
 
+export type StatusAdministrador = "pendente" | "ativo" | "inativo";
+
 export class Administrador extends Model<
   InferAttributes<Administrador>,
   InferCreationAttributes<Administrador>
@@ -18,12 +20,17 @@ export class Administrador extends Model<
   declare senhaHash: string;
   declare cargo: number;
   declare ativo: CreationOptional<boolean>;
+  declare status: CreationOptional<StatusAdministrador>;
   declare criadoEm: CreationOptional<Date>;
 }
 
 Administrador.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     nomeCompleto: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -43,13 +50,18 @@ Administrador.init(
     cargo: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      field: "cargo",                       
+      field: "cargo",
       references: { model: Cargo, key: "id" },
     },
     ativo: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
+    },
+    status: {
+      type: DataTypes.ENUM("pendente", "ativo", "inativo"),
+      allowNull: false,
+      defaultValue: "ativo",
     },
     criadoEm: {
       type: DataTypes.DATE,
@@ -62,8 +74,8 @@ Administrador.init(
     sequelize,
     tableName: "administradores",
     timestamps: true,
-    createdAt: "criado_em",   
-    updatedAt: false,                     
+    createdAt: "criado_em",
+    updatedAt: false,
   }
 );
 
