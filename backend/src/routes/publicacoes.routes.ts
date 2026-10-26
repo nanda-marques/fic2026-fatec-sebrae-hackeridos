@@ -1,9 +1,11 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
+import { Op } from "sequelize";
 
 import { asyncHandler } from "../middlewares/error.middleware.js";
 import { autenticar } from "../middlewares/auth.middleware.js";
 import { exigirPermissaoConteudo } from "../middlewares/conteudo.middleware.js";
+import Administrador from "../models/Administrador.js";
 import Publicacao from "../models/Publicacao.js";
 import type {
   CategoriaConteudo,
@@ -24,6 +26,12 @@ const STATUS_VALIDOS: StatusPublicacao[] = [
   "publicado",
   "agendado",
   "arquivado",
+];
+const CATEGORIAS_DASHBOARD: CategoriaConteudo[] = [
+  "campanha",
+  "noticia",
+  "evento",
+  "publicacao",
 ];
 
 function validar(
@@ -167,6 +175,69 @@ router.get(
       order: [["criadoEm", "DESC"]],
     });
     res.json(conteudos);
+  })
+);
+
+// Resumo do dashboard sem expor os dados completos dos conteúdos.
+router.get(
+  "/dashboard/resumo",
+  autenticar,
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const administrador = req.usuario
+      ? await Administrador.findByPk(req.usuario.id)
+      : null;
+    if (!administrador || !administrador.ativo || administrador.status !== "ativo") {
+      res.status(403).json({ erro: "Apenas administradores ativos podem acessar o dashboard." });
+      return;
+    }
+
+    const hoje = new Date();
+    hoje.setUTCHours(0, 0, 0, 0);
+    const amanha = new Date(hoje);
+    amanha.setUTCDate(amanha.getUTCDate() + 1);
+    const em31Dias = new Date(hoje);
+    em31Dias.setUTCDate(em31Dias.getUTCDate() + 31);
+    const ha7Dias = new Date(hoje);
+    ha7Dias.setUTCDate(ha7Dias.getUTCDate() - 7);
+
+    const [
+      totalPublicacoes,
+      campanhasAtivas,
+      eventosProximos,
+      noticiasRecentes,
+      ...contagensPorCategoria
+    ] = await Promise.all([
+      Publicacao.count(),
+      Publicacao.count({ where: { categoria: "campanha", status: "publicado" } }),
+      Publicacao.count({
+        where: {
+          categoria: "evento",
+          dataEventoCampanha: { [Op.gte]: hoje, [Op.lt]: em31Dias },
+        },
+      }),
+      Publicacao.count({
+        where: {
+          categoria: "noticia",
+          criadoEm: { [Op.gte]: ha7Dias, [Op.lt]: amanha },
+        },
+      }),
+      ...CATEGORIAS_DASHBOARD.map((categoria) =>
+        Publicacao.count({ where: { categoria } })
+      ),
+    ]);
+
+    res.json({
+      totalPublicacoes,
+      campanhasAtivas,
+      eventosProximos,
+      noticiasRecentes,
+      publicacoesPorCategoria: Object.fromEntries(
+        CATEGORIAS_DASHBOARD.map((categoria, indice) => [
+          categoria,
+          contagensPorCategoria[indice],
+        ])
+      ),
+    });
   })
 );
 
