@@ -22,6 +22,7 @@ export interface PetDetalhes {
   cor?: string;
   temperamento?: string;
   sobre?: string;
+  vacinacaoEmDia?: boolean;
   historico?: Array<{ tipo: string; titulo: string; texto: string }>;
 }
 
@@ -142,13 +143,15 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
                   <IconPaw className="h-3.5 w-3.5" />
                   {pet.tipo}
                 </span>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold ${
-                    femea ? "bg-red-50 text-red-500" : "bg-sky-100 text-marca"
-                  }`}
-                >
-                  {femea ? "♀ Fêmea" : "♂ Macho"}
-                </span>
+                {pet.sexo && (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold ${
+                      femea ? "bg-red-50 text-red-500" : "bg-sky-100 text-marca"
+                    }`}
+                  >
+                    {femea ? "♀ Fêmea" : "♂ Macho"}
+                  </span>
+                )}
               </div>
             </div>
             <button
@@ -231,6 +234,11 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
                 {pet.raca && <Campo label="Raça">{pet.raca}</Campo>}
                 {d.peso && <Campo label="Peso">{d.peso}</Campo>}
                 {d.castrado && <Campo label="Castrado">{d.castrado}</Campo>}
+                {d.vacinacaoEmDia !== undefined && (
+                  <Campo label="Vacinação em dia">
+                    {d.vacinacaoEmDia ? "Sim" : "Não"}
+                  </Campo>
+                )}
                 {d.cor && <Campo label="Cor">{d.cor}</Campo>}
                 {temperamento && <Campo label="Temperamento">{temperamento}</Campo>}
               </div>

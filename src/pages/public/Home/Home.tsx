@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { JSX } from "react";
 
-import { pets } from "../../../data/pets";
 import AnimalCard from "../../../components/layout/AnimalCard";
 import type { Pet } from "../../../types/pet";
+import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
 
 import PageHero from "../../../components/layout/PageHero";
 import Newsletter from "../newsletter/newsletter";
@@ -58,7 +58,11 @@ const formasAjuda: FormaAjuda[] = [
 
 /** Página inicial pública com hero, pets, depoimentos e parceiros. */
 export default function Home(): JSX.Element {
-  const petsComImagem = pets.filter((pet: Pet) => Boolean(pet.imagem));
+  const {
+    animais: petsComImagem,
+    carregando: carregandoAnimais,
+    erro: erroAnimais,
+  } = useAnimaisDisponiveis();
   const [campanhaAtual, setCampanhaAtual] = useState<Publicacao | null>(null);
   const [erroCampanha, setErroCampanha] = useState("");
 
@@ -165,7 +169,7 @@ export default function Home(): JSX.Element {
       {/* =====================================================
           PETS
       ====================================================== */}
-      {petsComImagem.length > 0 && (
+      {(carregandoAnimais || erroAnimais || petsComImagem.length > 0) && (
         <section className="bg-[#f1f1f1] px-5 py-16 lg:px-14">
           <div className="mx-auto max-w-7xl">
             <div className="flex items-end justify-between gap-4">
@@ -184,16 +188,26 @@ export default function Home(): JSX.Element {
                 Procure por espécie ↓
               </Link>
             </div>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
-              {petsComImagem.slice(0, 3).map((pet: Pet) => (
-                <AnimalCard key={pet.id} animal={pet} variant="home" />
-              ))}
-            </div>
-            <div className="mt-8 text-center">
-              <Link to="/adocao" className="text-xs font-bold text-marca">
-                Ver todos os animais →
-              </Link>
-            </div>
+            {carregandoAnimais ? (
+              <p className="mt-8 text-sm text-zinc-500">Carregando animais...</p>
+            ) : erroAnimais ? (
+              <p role="alert" className="mt-8 text-sm text-red-700">
+                Não foi possível carregar os animais: {erroAnimais}
+              </p>
+            ) : (
+              <>
+                <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
+                  {petsComImagem.slice(0, 3).map((pet: Pet) => (
+                    <AnimalCard key={pet.id} animal={pet} variant="home" />
+                  ))}
+                </div>
+                <div className="mt-8 text-center">
+                  <Link to="/adocao" className="text-xs font-bold text-marca">
+                    Ver todos os animais →
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}

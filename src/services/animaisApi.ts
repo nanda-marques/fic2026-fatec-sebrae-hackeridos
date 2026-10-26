@@ -1,39 +1,50 @@
+import type { Pet } from "../types/pet";
+import { imagemDoAnimal } from "../data/animalImages";
+
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-// Tipos
-
-export type StatusCastracao =
-  | "Pendente"
-  | "Castrado"
-  | "Castrada"
-  | "Agendada";
-
 export interface Animal {
-  id: string;
+  id: number;
   nome: string;
-  especie?: string;
-  raca?: string;
-  idade?: string;
-  anos?: number;
-  porte?: string;
-  peso?: string;
-  castracao?: StatusCastracao | string;
-  statusCastracao?: StatusCastracao | string;
-  temperamento?: string;
-  cor?: string;
-  foto?: string;
-  data?: string;
-  criadoEm?: string;
-  atualizadoEm?: string;
+  especie: string;
+  status: string;
+  idade: number | null;
+  porte: string | null;
+  raca: string | null;
+  peso: number | string | null;
+  castracao: string | null;
+  vacinacaoEmDia: boolean;
+  imagem: string | null;
+  temperamento: string | null;
+  sobre: string | null;
+  dispararNewsletter: boolean;
+  criadoPor: number | null;
+  criadoEm: string;
 }
 
-export type NovoAnimal = Omit<Animal, "id" | "criadoEm" | "atualizadoEm">;
+type AnimalPublico = Omit<Animal, "dispararNewsletter" | "criadoPor">;
 
-// Request
+export type NovoAnimal = Pick<
+  Animal,
+  | "nome"
+  | "especie"
+  | "status"
+  | "idade"
+  | "porte"
+  | "raca"
+  | "peso"
+  | "castracao"
+  | "vacinacaoEmDia"
+  | "imagem"
+  | "temperamento"
+  | "sobre"
+  | "dispararNewsletter"
+>;
 
 interface ErroApi {
   erro?: string;
   message?: string;
+  mensagem?: string;
 }
 
 type OpcoesRequisicao = Omit<RequestInit, "headers"> & {
@@ -45,7 +56,6 @@ async function requisicao<T>(
   opcoes: OpcoesRequisicao = {}
 ): Promise<T> {
   const token = localStorage.getItem("token");
-
   const headers: Record<string, string> = {
     ...(opcoes.body && !(opcoes.body instanceof FormData)
       ? { "Content-Type": "application/json" }
@@ -59,7 +69,6 @@ async function requisicao<T>(
     headers,
   });
 
-  // 204 / 205 não têm corpo — não tentar .json()
   if (resposta.status === 204 || resposta.status === 205) {
     if (!resposta.ok) {
       throw new Error(`Erro ${resposta.status} em ${caminho}`);
@@ -69,12 +78,11 @@ async function requisicao<T>(
 
   const texto = await resposta.text();
   let dados: unknown = null;
-
   if (texto) {
     try {
       dados = JSON.parse(texto);
     } catch {
-      dados = texto; 
+      dados = texto;
     }
   }
 
@@ -83,21 +91,72 @@ async function requisicao<T>(
     const mensagem =
       typeof erro === "string"
         ? erro
-        : erro?.erro ?? erro?.message ?? `Erro ${resposta.status}`;
+        : erro?.erro ?? erro?.mensagem ?? erro?.message ?? `Erro ${resposta.status}`;
     throw new Error(mensagem);
   }
 
   return dados as T;
 }
 
-// API
+function paraPet(animal: AnimalPublico): Pet {
+  const especieNormalizada = animal.especie
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR");
+  const tipo =
+    especieNormalizada.includes("felin") ||
+    especieNormalizada.includes("gat")
+      ? "Gato"
+      : especieNormalizada.includes("canin") ||
+          especieNormalizada.includes("cao") ||
+          especieNormalizada.includes("cachorr")
+        ? "Cão"
+        : animal.especie;
+  const imagem = animal.imagem || imagemDoAnimal(animal.nome);
+  const idade =
+    animal.idade === null
+      ? undefined
+      : `${animal.idade} ${animal.idade === 1 ? "ano" : "anos"}`;
+
+  return {
+    id: animal.id,
+    nome: animal.nome,
+    tipo,
+    imagem,
+    idade,
+    anos: animal.idade ?? undefined,
+    porte: animal.porte ?? undefined,
+    raca: animal.raca ?? undefined,
+    tags: animal.temperamento
+      ? animal.temperamento
+          .split(/[,;|]/)
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+      : [],
+    descricao: animal.sobre ?? undefined,
+    disponivelAdocao: animal.status === "Disponível",
+    detalhes: {
+      fotos: [imagem],
+      idadeEstimada: idade,
+      peso: animal.peso == null ? undefined : `${animal.peso} kg`,
+      castrado: animal.castracao ?? undefined,
+      vacinacaoEmDia: animal.vacinacaoEmDia,
+      temperamento: animal.temperamento ?? undefined,
+      sobre: animal.sobre ?? undefined,
+    },
+  };
+}
 
 export const animaisApi = {
-  listar: (): Promise<Animal[]> =>
-    requisicao<Animal[]>("/api/animais"),
+  listar: (): Promise<Animal[]> => requisicao<Animal[]>("/api/animais"),
 
-  buscar: (id: string): Promise<Animal> => {
-    if (!id || id === "NaN" || id === "undefined") {
+  listarPublicos: async (): Promise<Pet[]> => {
+    const animais = await requisicao<AnimalPublico[]>("/api/animais/publicos");
+    return animais.map(paraPet);
+  },
+
+  buscar: (id: number): Promise<Animal> => {
+    if (!Number.isInteger(id) || id < 1) {
       return Promise.reject(new Error("ID do animal inválido."));
     }
     return requisicao<Animal>(`/api/animais/${id}`);
@@ -109,14 +168,27 @@ export const animaisApi = {
       body: JSON.stringify(dados),
     }),
 
-  atualizar: (id: string, dados: NovoAnimal): Promise<Animal> =>
-    requisicao<Animal>(`/api/animais/${id}`, {
+  enviarImagem: (arquivo: File): Promise<{ url: string }> => {
+    const form = new FormData();
+    form.append("imagem", arquivo);
+    return requisicao<{ url: string }>("/api/upload/animal", {
+      method: "POST",
+      body: form,
+    });
+  },
+
+  atualizar: (id: number, dados: NovoAnimal): Promise<Animal> => {
+    if (!Number.isInteger(id) || id < 1) {
+      return Promise.reject(new Error("ID do animal inválido."));
+    }
+    return requisicao<Animal>(`/api/animais/${id}`, {
       method: "PUT",
       body: JSON.stringify(dados),
-    }),
+    });
+  },
 
-  excluir: (id: string): Promise<void> => {
-    if (!id || id === "NaN" || id === "undefined") {
+  excluir: (id: number): Promise<void> => {
+    if (!Number.isInteger(id) || id < 1) {
       return Promise.reject(new Error("ID do animal inválido."));
     }
     return requisicao<void>(`/api/animais/${id}`, { method: "DELETE" });
