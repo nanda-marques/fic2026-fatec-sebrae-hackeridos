@@ -7,8 +7,44 @@ export interface PerfilAdmin {
   cargo: string | null;
   ativo: boolean;
   criadoEm: string;
-  fotoPath: string | null;         
+  fotoPath: string | null;
 }
+
+export interface CadastroPendente {
+  id: number;
+  nomeCompleto: string;
+  email: string;
+  cargoId: number;
+  cargo: string | null;
+  status: "pendente";
+  criadoEm: string;
+}
+
+export interface RespostaCadastroAdmin {
+  mensagem: string;
+  administrador: {
+    id: number;
+    nomeCompleto: string;
+    email?: string;
+    cargo: number;
+    status: "ativo" | "inativo";
+    ativo: boolean;
+  };
+}
+
+
+export interface SolicitacaoAnalisada {
+  id: number;
+  solicitanteId: number;
+  solicitanteNome: string;
+  solicitanteEmail: string;
+  cargoSolicitado: string;
+  decisao: "aprovado" | "rejeitado";
+  administradorId: number;
+  administradorNome: string;
+  decididoEm: string;
+}
+
 
 interface ErroApi {
   mensagem?: string;
@@ -20,6 +56,7 @@ async function requisicao<T>(
   opcoes: RequestInit = {}
 ): Promise<T> {
   const token = localStorage.getItem("token");
+
   if (!token) {
     throw new Error("Sessão expirada. Faça login novamente.");
   }
@@ -39,6 +76,7 @@ async function requisicao<T>(
 
   const texto = await resposta.text();
   let dados: unknown = null;
+
   if (texto) {
     try {
       dados = JSON.parse(texto);
@@ -49,18 +87,18 @@ async function requisicao<T>(
 
   if (!resposta.ok) {
     const erro = dados as ErroApi | string | null;
-    const msg =
+    const mensagem =
       typeof erro === "string"
         ? erro
         : erro?.mensagem ?? erro?.erro ?? `Erro ${resposta.status}`;
-    throw new Error(msg);
+
+    throw new Error(mensagem);
   }
 
   return dados as T;
 }
 
 export const adminApi = {
-
   meuPerfil: (): Promise<PerfilAdmin> =>
     requisicao<PerfilAdmin>("/api/admin/me"),
 
@@ -82,12 +120,12 @@ export const adminApi = {
       body: JSON.stringify(dados),
     }),
 
-  // POST /api/upload/perfil → multipart, autenticado
   atualizarFotoPerfil: (
     file: File
   ): Promise<{ mensagem: string; path: string }> => {
     const form = new FormData();
     form.append("foto", file);
+
     return requisicao<{ mensagem: string; path: string }>(
       "/api/upload/perfil",
       {
@@ -97,15 +135,34 @@ export const adminApi = {
     );
   },
 
-  // GET /api/upload/foto-privada?path=...&bucket=container-perfis
   urlFotoPerfil: (
     path: string | null | undefined
   ): Promise<string | null> => {
     if (!path) return Promise.resolve(null);
+
     return requisicao<{ url: string }>(
       `/api/upload/foto-privada?path=${encodeURIComponent(
         path
       )}&bucket=container-perfis`
-    ).then((r) => r.url);
+    ).then((resposta) => resposta.url);
   },
+
+  listarPendentes: (): Promise<CadastroPendente[]> =>
+    requisicao<CadastroPendente[]>("/api/admin/pendentes"),
+
+
+  listarHistoricoSolicitacoes: (): Promise<SolicitacaoAnalisada[]> =>
+    requisicao<SolicitacaoAnalisada[]>(
+      "/api/admin/historico-solicitacoes"
+    ),
+
+  aprovarCadastro: (id: number): Promise<RespostaCadastroAdmin> =>
+    requisicao<RespostaCadastroAdmin>(`/api/admin/${id}/aprovar`, {
+      method: "PATCH",
+    }),
+
+  rejeitarCadastro: (id: number): Promise<RespostaCadastroAdmin> =>
+    requisicao<RespostaCadastroAdmin>(`/api/admin/${id}/rejeitar`, {
+      method: "PATCH",
+    }),
 };
