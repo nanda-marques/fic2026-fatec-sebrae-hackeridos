@@ -3,6 +3,7 @@ import Administrador from "./Administrador.js";
 import ImagemPerfil from "./ImagemPerfil.js"; 
 import HistoricoSolicitacaoAdmin from "./HistoricoSolicitacaoAdmin.js";
 import Publicacao from "./Publicacao.js";
+import Animal from "./Animal.js";
 
 // Associações
 Cargo.hasMany(Administrador, {
@@ -21,4 +22,5 @@ export {
   ImagemPerfil,
   HistoricoSolicitacaoAdmin,
   Publicacao,
+  Animal,
 };

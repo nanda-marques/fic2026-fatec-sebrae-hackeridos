@@ -111,4 +111,32 @@ export const uploadController = {
     const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
     res.status(201).json({ url: data.publicUrl });
   },
+
+  async uploadImagemAnimal(req: Request, res: Response): Promise<void> {
+    const usuario = req.usuario;
+    const file = req.file;
+    if (!usuario) throw new HttpError(401, "Não autenticado.");
+    if (!file) throw new HttpError(400, "Nenhuma imagem enviada.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
+      throw new HttpError(400, "Use uma imagem JPG, PNG ou WebP.");
+    }
+
+    const bucket =
+      process.env.SUPABASE_BUCKET_ANIMALS ??
+      process.env.SUPABASE_BUCKET_animals ??
+      "container-animais";
+    const fileName = `animais/${usuario.id}/${Date.now()}_${sanitize(
+      file.originalname
+    )}`;
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+    if (error) throw new HttpError(502, `Supabase: ${error.message}`);
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
+    res.status(201).json({ url: data.publicUrl });
+  },
 };

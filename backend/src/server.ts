@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import "./models/index.js";
+import { adicionarCamposComplementares } from "./models/Animal.js";
 import sequelize from "./config/database.js";
 
 import authRoutes from "./routes/auth.routes.js";
@@ -20,13 +21,6 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-process.on("unhandledRejection", (reason) => {
-  console.error("❌ Unhandled Rejection:", reason);
-});
-process.on("uncaughtException", (err) => {
-  console.error("❌ Uncaught Exception:", err);
-});
-
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);                     
 app.use("/api/upload", uploadRoutes);
@@ -37,6 +31,7 @@ app.use(tratarErros);
 
 sequelize
   .authenticate()
+  .then(() => adicionarCamposComplementares())
   .then(() => sequelize.sync())
   .then(() => app.listen(PORT, () => console.log(`Servidor na porta ${PORT}`)))
   .catch((err) => {
