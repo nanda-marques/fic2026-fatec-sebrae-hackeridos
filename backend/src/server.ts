@@ -20,6 +20,13 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+process.on("unhandledRejection", (reason) => {
+  console.error("❌ Unhandled Rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);                     
 app.use("/api/upload", uploadRoutes);

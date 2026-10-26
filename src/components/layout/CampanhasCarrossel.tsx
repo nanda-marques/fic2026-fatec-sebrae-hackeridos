@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { IconChevronLeft, IconChevronRight } from "./Icons";
-import type { Publicacao } from "../../data/publicacoes";
+import type { Publicacao } from "../../services/publicacoesApi";
+import { formatarDataCurta, nomeCategoria, resumoConteudo } from "../../data/publicacoes";
 
 interface CampanhasCarrosselProps {
   campanhas: Publicacao[];
@@ -28,20 +29,12 @@ export default function CampanhasCarrossel({
     <div aria-roledescription="carousel" className="grid">
       {campanhas.map((c, i) => {
         const ativo = i === posicao;
-        const urgente = Boolean(c.urgente);
-
-        // Urgente: contorno amarelo e fundo amarelo claro.
-        // Em destaque: contorno preto e fundo branco.
         const cores = home
-          ? urgente
-            ? "border border-destaque bg-[#fffdf3]"
-            : "border border-zinc-900 bg-white"
-          : urgente
-            ? "border-2 border-destaque bg-amber-50"
-            : "border-2 border-zinc-900 bg-white";
+          ? "border border-destaque bg-[#fffdf3]"
+          : "border-2 border-zinc-900 bg-white";
 
         const formato = home
-          ? "overflow-hidden rounded-2xl md:grid-cols-[280px_1fr]"
+          ? "overflow-hidden rounded-2xl"
           : "gap-5 rounded-3xl p-4 md:grid-cols-[minmax(0,350px)_1fr] md:items-center md:gap-8 md:p-8";
 
         return (
@@ -52,28 +45,35 @@ export default function CampanhasCarrossel({
               ativo ? "" : "invisible"
             }`}
           >
-            <img
-              src={c.imagem}
-              alt={c.titulo}
-              className={
-                home
-                  ? "h-52 w-full object-cover md:h-full md:min-h-[240px]"
-                  : "h-52 w-full rounded-2xl object-cover md:h-[283px]"
-              }
-            />
-
+            {c.imagem && (
+              <img
+                src={c.imagem}
+                alt={c.titulo}
+                className={
+                  home
+                    ? "h-52 w-full object-cover md:h-full md:min-h-[240px]"
+                    : "h-52 w-full rounded-2xl object-cover md:h-[283px]"
+                }
+              />
+            )}
             <div
               className={`flex flex-col ${
-                home ? "p-6 md:p-8" : "md:min-h-[283px]"
+                home ? "p-6 md:p-8" : "md:min-h-[240px]"
               }`}
             >
               <div className="flex flex-1 flex-col justify-center">
                 <span
                   className={`w-fit rounded-full px-3 py-1 text-[10px] font-bold uppercase ${
-                    urgente ? "bg-destaque/30 text-amber-700" : "bg-sky-100 text-marca"
+                    c.urgente
+                      ? "bg-destaque/30 text-amber-700"
+                      : "bg-sky-100 text-marca"
                   }`}
                 >
-                  {urgente ? "Campanha urgente" : "Em destaque"}
+                  {c.urgente
+                    ? "Campanha urgente"
+                    : c.destaque
+                      ? "Em destaque"
+                      : nomeCategoria[c.categoria]}
                 </span>
 
                 <h2 className="mt-3 text-2xl font-extrabold leading-tight text-zinc-800 md:text-[26px]">
@@ -82,15 +82,26 @@ export default function CampanhasCarrossel({
                   </Link>
                 </h2>
 
+                {c.dataEventoCampanha && (
+                  <p className="mt-2 text-xs text-zinc-500">
+                    {formatarDataCurta(c.dataEventoCampanha)}
+                    {c.localEventoCampanha ? ` · ${c.localEventoCampanha}` : ""}
+                  </p>
+                )}
+                {c.autor && (
+                  <p className="mt-1 text-xs text-zinc-500">Por {c.autor}</p>
+                )}
                 <p className="mt-3 line-clamp-4 text-sm leading-6 text-zinc-600 md:line-clamp-none">
-                  {c.resumo}
+                  {c.resumo || resumoConteudo(c)}
                 </p>
 
                 <Link
-                  to="/como-ajudar"
+                  to={c.urlArrecadacao || `/campanhas-e-noticias/${c.id}`}
+                  target={c.urlArrecadacao ? "_blank" : undefined}
+                  rel={c.urlArrecadacao ? "noreferrer" : undefined}
                   className="mt-5 block rounded-lg bg-marca px-6 py-3 text-center text-sm font-bold text-white transition hover:opacity-90 md:w-fit"
                 >
-                  Contribuir Agora
+                  {c.urlArrecadacao ? "Contribuir Agora" : "Saiba mais"}
                 </Link>
               </div>
 

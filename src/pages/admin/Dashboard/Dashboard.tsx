@@ -7,49 +7,44 @@ import { LuFileText, LuMegaphone, LuCalendar, LuHeart } from "react-icons/lu";
 
 import AdminHeader from "../../../components/layout/adminHeader";
 import { publicacoesApi } from "../../../services/publicacoesApi";
-
-interface Publicacao {
-  id: number | string;
-  titulo?: string;
-  categoria?: string;
-  status?: string;
-  dataPublicacao?: string;
-  data?: string;
-  createdAt?: string;
-}
-
-type StatusPublicacao = "Publicado" | "Agendado" | "Rascunho";
+import type {
+  Publicacao,
+  CategoriaConteudo,
+  StatusPublicacao,
+} from "../../../services/publicacoesApi";
 
 const cardClass =
   "bg-white border border-[#e2e2e2] rounded-[12px] shadow-[0_2px_3px_rgb(0_0_0/22%)]";
 
-const statusClass: Record<StatusPublicacao, string> = {
-  Publicado: "text-[#10b981] bg-[#e3f8ef]",
-  Agendado: "text-[#3b82f6] bg-[#e5eefd]",
-  Rascunho: "text-[#667b9b] bg-[#ebeef2]",
-};
-
 const CATEGORIAS = [
-  { nome: "Campanhas", cor: "#2174b7" },
-  { nome: "Animais", cor: "#ff7a18" },
-  { nome: "Notícias", cor: "#4285f4" },
-  { nome: "Eventos", cor: "#00a878" },
-  { nome: "Projetos", cor: "#8657e8" },
+  { valor: "campanha", nome: "Campanhas", cor: "#2174b7" },
+  { valor: "noticia", nome: "Notícias", cor: "#4285f4" },
+  { valor: "evento", nome: "Eventos", cor: "#00a878" },
+  { valor: "publicacao", nome: "Publicações", cor: "#8657e8" },
 ];
+const NOME_CATEGORIA: Record<CategoriaConteudo, string> = {
+  campanha: "Campanhas",
+  noticia: "Notícias",
+  evento: "Eventos",
+  publicacao: "Publicações",
+};
+const NOME_STATUS: Record<StatusPublicacao, string> = {
+  publicado: "Publicado",
+  agendado: "Agendado",
+  rascunho: "Rascunho",
+  arquivado: "Arquivado",
+};
+const CLASSE_STATUS: Record<StatusPublicacao, string> = {
+  publicado: "bg-[#e3f8ef] text-[#10b981]",
+  agendado: "bg-[#e5eefd] text-[#3b82f6]",
+  rascunho: "bg-[#ebeef2] text-[#667b9b]",
+  arquivado: "bg-[#ebeef2] text-[#667b9b]",
+};
 
 /* ------------------------- Helpers ------------------------- */
 
-function normalizar(texto = ""): string {
-  return texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function extrairDataISO(p: Publicacao): string {
-  const bruta = p.dataPublicacao || p.data || p.createdAt;
+function extrairDataISO(bruta: string | null): string {
   if (!bruta) return "";
-  // retorna apenas YYYY-MM-DD quando possível
   if (/^\d{4}-\d{2}-\d{2}/.test(bruta)) return bruta.slice(0, 10);
   const d = new Date(bruta);
   if (Number.isNaN(d.getTime())) return "";
@@ -58,7 +53,7 @@ function extrairDataISO(p: Publicacao): string {
 
 function formatarData(iso?: string | null): string {
   if (!iso) return "—";
-  const d = new Date(`${iso}T12:00:00`);
+  const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
@@ -79,13 +74,6 @@ function somarDias(iso: string, dias: number): string {
   const d = new Date(`${iso}T12:00:00`);
   d.setDate(d.getDate() + dias);
   return d.toISOString().slice(0, 10);
-}
-
-function normalizarStatus(status?: string): StatusPublicacao {
-  const s = normalizar(status);
-  if (s === "publicado") return "Publicado";
-  if (s === "agendado") return "Agendado";
-  return "Rascunho";
 }
 
 /* ------------------------- StatCard ------------------------- */
@@ -165,33 +153,25 @@ export default function Dashboard(): JSX.Element {
     const em30Dias = somarDias(hoje, 30);
     const ha7Dias = somarDias(hoje, -7);
 
-    const publicadas = publicacoes.filter(
-      (p) => normalizarStatus(p.status) === "Publicado"
-    );
-
     const eventosProximos = publicacoes.filter((p) => {
-      const categoria = normalizar(p.categoria);
-      const status = normalizarStatus(p.status);
-      const data = extrairDataISO(p);
+      const data = extrairDataISO(p.dataEventoCampanha);
       return (
-        categoria.includes("evento") &&
-        status !== "Rascunho" &&
+        p.categoria === "evento" &&
         !!data &&
         data >= hoje &&
         data <= em30Dias
       );
     });
 
-    const noticiasRecentes = publicadas.filter((p) => {
-      const categoria = normalizar(p.categoria);
-      const data = extrairDataISO(p);
-      return categoria.includes("noticia") && !!data && data >= ha7Dias && data <= hoje;
+    const noticiasRecentes = publicacoes.filter((p) => {
+      const data = extrairDataISO(p.criadoEm);
+      return p.categoria === "noticia" && !!data && data >= ha7Dias && data <= hoje;
     });
 
     return {
       totalPublicacoes: publicacoes.length,
-      campanhasAtivas: publicadas.filter((p) =>
-        normalizar(p.categoria).includes("campanha")
+      campanhasAtivas: publicacoes.filter(
+        (p) => p.categoria === "campanha" && p.status === "publicado"
       ).length,
       eventosProximos: eventosProximos.length,
       noticiasRecentes: noticiasRecentes.length,
@@ -200,16 +180,14 @@ export default function Dashboard(): JSX.Element {
 
   const publicacoesRecentes = useMemo(() => {
     return [...publicacoes]
-      .sort((a, b) => extrairDataISO(b).localeCompare(extrairDataISO(a)))
+      .sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm))
       .slice(0, 5);
   }, [publicacoes]);
 
   const categorias = useMemo(() => {
     return CATEGORIAS.map((c) => ({
       ...c,
-      posts: publicacoes.filter((p) =>
-        normalizar(p.categoria).includes(normalizar(c.nome).replace(/s$/, ""))
-      ).length,
+      posts: publicacoes.filter((p) => p.categoria === c.valor).length,
     }));
   }, [publicacoes]);
 
@@ -394,9 +372,7 @@ export default function Dashboard(): JSX.Element {
                       </td>
                     </tr>
                   ) : (
-                    publicacoesRecentes.map((publicacao) => {
-                      const status = normalizarStatus(publicacao.status);
-                      return (
+                    publicacoesRecentes.map((publicacao) => (
                         <tr
                           key={publicacao.id}
                           className="border-t border-[#e8edf3]"
@@ -405,16 +381,19 @@ export default function Dashboard(): JSX.Element {
                             {publicacao.titulo || "Sem título"}
                           </td>
                           <td className="py-[16px] px-[16px] text-[#3d4b63]">
-                            {publicacao.categoria || "—"}
+                            {NOME_CATEGORIA[publicacao.categoria] || "—"}
                           </td>
                           <td className="py-[16px] px-[16px] text-[#667b9b] whitespace-nowrap">
-                            {formatarData(extrairDataISO(publicacao))}
+                            {formatarData(
+                              extrairDataISO(
+                                publicacao.dataEventoCampanha ??
+                                  publicacao.criadoEm
+                              )
+                            )}
                           </td>
                           <td className="py-[16px] px-[16px]">
-                            <span
-                              className={`inline-block px-[8px] py-[3px] text-[11.5px] font-bold rounded-[4px] ${statusClass[status]}`}
-                            >
-                              {status}
+                            <span className={`inline-block rounded-[4px] px-2 py-1 text-[11px] font-bold ${CLASSE_STATUS[publicacao.status]}`}>
+                              {NOME_STATUS[publicacao.status]}
                             </span>
                           </td>
                           <td className="py-[16px] px-[16px]">
@@ -446,8 +425,7 @@ export default function Dashboard(): JSX.Element {
                             </div>
                           </td>
                         </tr>
-                      );
-                    })
+                    ))
                   )}
                 </tbody>
               </table>

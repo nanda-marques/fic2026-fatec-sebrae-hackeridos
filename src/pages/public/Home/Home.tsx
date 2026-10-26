@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { JSX } from "react";
 
@@ -7,6 +8,9 @@ import type { Pet } from "../../../types/pet";
 
 import PageHero from "../../../components/layout/PageHero";
 import Newsletter from "../newsletter/newsletter";
+import { publicacoesApi } from "../../../services/publicacoesApi";
+import type { Publicacao } from "../../../services/publicacoesApi";
+import { resumoConteudo } from "../../../data/publicacoes";
 
 /** Tipo de item de forma de ajuda. */
 interface FormaAjuda {
@@ -55,6 +59,38 @@ const formasAjuda: FormaAjuda[] = [
 /** Página inicial pública com hero, pets, depoimentos e parceiros. */
 export default function Home(): JSX.Element {
   const petsComImagem = pets.filter((pet: Pet) => Boolean(pet.imagem));
+  const [campanhaAtual, setCampanhaAtual] = useState<Publicacao | null>(null);
+  const [erroCampanha, setErroCampanha] = useState("");
+
+  useEffect(() => {
+    let ativo = true;
+    publicacoesApi
+      .listarPublicadas()
+      .then((conteudos) => {
+        if (ativo) {
+          setCampanhaAtual(
+            conteudos.find(
+              (conteudo) =>
+                conteudo.categoria === "campanha" &&
+                (conteudo.destaque || conteudo.urgente)
+            ) ??
+              null
+          );
+        }
+      })
+      .catch((erro: unknown) => {
+        if (ativo) {
+          setErroCampanha(
+            erro instanceof Error
+              ? erro.message
+              : "Não foi possível carregar a campanha."
+          );
+        }
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   return (
     <main>
@@ -89,36 +125,42 @@ export default function Home(): JSX.Element {
       {/* =====================================================
           CAMPANHA URGENTE
       ====================================================== */}
-      <section className="bg-white px-5 py-10 lg:px-14">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid overflow-hidden rounded-2xl border border-destaque bg-[#fffdf3] md:grid-cols-[280px_1fr]">
-            <img
-              src="src/assets/images/pets/rex.png"
-              alt="Rex"
-              className="h-full min-h-[190px] w-full object-cover"
-            />
-            <div className="flex flex-col justify-center p-6 md:p-8">
-              <span className="w-fit rounded-full bg-destaque/20 px-3 py-1 text-[10px] font-bold uppercase text-destaque-escura">
-                Campanha urgente
-              </span>
-              <h2 className="mt-3 text-2xl font-extrabold text-zinc-800">
-                Ajude o Rex! Ele precisa de uma cirurgia.
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-5 text-zinc-500">
-                O Rex foi resgatado com uma fratura complexa no quadril após sofrer
-                um atropelamento. Precisamos arrecadar o valor do procedimento
-                cirúrgico ortopédico e os custos pós-operatórios.
+      {(campanhaAtual || erroCampanha) && (
+        <section className="bg-white px-5 py-10 lg:px-14">
+          <div className="mx-auto max-w-6xl">
+            {campanhaAtual ? (
+              <div className="rounded-2xl border border-destaque bg-[#fffdf3] p-6 md:p-8">
+                {campanhaAtual.imagem && (
+                  <img
+                    src={campanhaAtual.imagem}
+                    alt={campanhaAtual.titulo}
+                    className="mb-5 max-h-[300px] w-full rounded-xl object-cover"
+                  />
+                )}
+                <span className="w-fit rounded-full bg-destaque/20 px-3 py-1 text-[10px] font-bold uppercase text-destaque-escura">
+                  Campanha
+                </span>
+                <h2 className="mt-3 text-2xl font-extrabold text-zinc-800">
+                  {campanhaAtual.titulo}
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-5 text-zinc-500">
+                  {resumoConteudo(campanhaAtual)}
+                </p>
+                <Link
+                  to={`/campanhas-e-noticias/${campanhaAtual.id}`}
+                  className="mt-5 inline-block rounded-lg bg-marca px-5 py-3 text-xs font-bold text-white"
+                >
+                  Saiba mais
+                </Link>
+              </div>
+            ) : (
+              <p role="alert" className="text-sm text-red-700">
+                {erroCampanha}
               </p>
-              <Link
-                to="/como-ajudar"
-                className="mt-5 w-fit rounded-lg bg-marca px-5 py-3 text-xs font-bold text-white"
-              >
-                Contribuir Agora
-              </Link>
-            </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* =====================================================
           PETS

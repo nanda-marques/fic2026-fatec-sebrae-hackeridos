@@ -3,6 +3,7 @@ import { upload } from "../middlewares/upload.middleware.js";
 import { autenticar } from "../middlewares/auth.middleware.js";   
 import { asyncHandler } from "../middlewares/error.middleware.js";
 import { uploadController } from "../controllers/upload.controller.js";
+import { exigirPermissaoConteudo } from "../middlewares/conteudo.middleware.js";
 
 const router = Router();
 
@@ -11,6 +12,14 @@ router.post(
   autenticar,                      
   upload.single("foto"),
   asyncHandler(uploadController.uploadPerfil)
+);
+
+router.post(
+  "/publicacao",
+  autenticar,
+  exigirPermissaoConteudo,
+  upload.single("imagem"),
+  asyncHandler(uploadController.uploadImagemPublicacao)
 );
 
 router.get("/foto-privada", asyncHandler(uploadController.signedUrl));

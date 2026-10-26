@@ -1,126 +1,153 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-// Tipos
+export type CategoriaConteudo =
+  | "noticia"
+  | "evento"
+  | "campanha"
+  | "publicacao";
 
 export type StatusPublicacao =
+  | "rascunho"
   | "publicado"
   | "agendado"
-  | "rascunho"
   | "arquivado";
 
 export interface Publicacao {
-  id: string;                    
+  id: number;
+  categoria: CategoriaConteudo;
+  status: StatusPublicacao;
   titulo: string;
-  categoria?: string;
-  status?: "publicado" | "agendado" | "rascunho" | "arquivado";
-  dataPublicacao?: string;
-  conteudo?: string;
-  descricao?: string;
-  imagem?: string;
-  resumo?: string;
-  autor?: string;
-  destaque?: boolean;
-  urgente?: boolean;
-  criadoEm?: string;             // ← backend manda "criadoEm", não "createdAt"
-  atualizadoEm?: string;
+  descricaoConteudo: string | null;
+  imagem: string | null;
+  autor: string | null;
+  resumo: string | null;
+  destaque: boolean;
+  urgente: boolean;
+  dataEventoCampanha: string | null;
+  localEventoCampanha: string | null;
+  urlArrecadacao: string | null;
+  urlVideo: string | null;
+  criadoPor: number | null;
+  criadoEm: string;
+  atualizadoEm: string;
 }
 
-export type PublicacaoPayload = Omit<
+export type PublicacaoPayload = Pick<
   Publicacao,
-  "id" | "criadoEm" | "atualizadoEm"
-> & {
-  id?: string;
-};
+  | "categoria"
+  | "titulo"
+  | "descricaoConteudo"
+  | "dataEventoCampanha"
+  | "localEventoCampanha"
+  | "urlArrecadacao"
+  | "urlVideo"
+  | "status"
+  | "imagem"
+  | "autor"
+  | "resumo"
+  | "destaque"
+  | "urgente"
+>;
 
 interface ErroApi {
   erro?: string;
+  mensagem?: string;
   message?: string;
 }
 
-type OpcoesRequisicao = Omit<RequestInit, "headers"> & {
-  headers?: Record<string, string>;
-};
-
-/* ------------------------------ Request ------------------------------ */
-
 async function requisicao<T>(
   caminho: string,
-  opcoes: OpcoesRequisicao = {}
+  opcoes: RequestInit = {},
+  exigirAutenticacao = false
 ): Promise<T> {
   const token = localStorage.getItem("token");
+  if (exigirAutenticacao && !token) {
+    throw new Error("Sessão expirada. Faça login novamente.");
+  }
 
-  // Content-Type só quando há body e ele não é FormData.
-  const headers: Record<string, string> = {
-    ...(opcoes.body && !(opcoes.body instanceof FormData)
-      ? { "Content-Type": "application/json" }
-      : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...opcoes.headers,
-  };
+  const headers = new Headers(opcoes.headers);
+  if (opcoes.body && !(opcoes.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const resposta = await fetch(`${API_URL}${caminho}`, {
     ...opcoes,
     headers,
   });
 
-  // 204 / 205 não têm corpo
-  if (resposta.status === 204 || resposta.status === 205) {
-    if (!resposta.ok) {
-      throw new Error(`Erro ${resposta.status} em ${caminho}`);
-    }
+  if (resposta.status === 204) {
+    if (!resposta.ok) throw new Error(`Erro ${resposta.status} em ${caminho}`);
     return undefined as T;
   }
 
   const texto = await resposta.text();
   let dados: unknown = null;
-
   if (texto) {
     try {
       dados = JSON.parse(texto);
     } catch {
-      dados = texto; // backend devolveu HTML/texto puro
+      dados = texto;
     }
   }
-
   if (!resposta.ok) {
     const erro = dados as ErroApi | string | null;
     const mensagem =
       typeof erro === "string"
         ? erro
-        : erro?.erro ?? erro?.message ?? `Erro ${resposta.status}`;
+        : erro?.erro ?? erro?.mensagem ?? erro?.message ?? `Erro ${resposta.status}`;
     throw new Error(mensagem);
   }
-
   return dados as T;
 }
 
-/* ------------------------------ API ------------------------------ */
-
 export const publicacoesApi = {
   listarAdmin: (): Promise<Publicacao[]> =>
-    requisicao<Publicacao[]>("/api/publicacoes/admin"),
+    requisicao<Publicacao[]>("/api/publicacoes/admin", {}, true),
 
   listarPublicadas: (): Promise<Publicacao[]> =>
     requisicao<Publicacao[]>("/api/publicacoes"),
 
   buscar: (id: number | string): Promise<Publicacao> => {
     if (id === undefined || id === null || id === "") {
-      return Promise.reject(new Error("ID da publicação não informado."));
+      return Promise.reject(new Error("ID do conteúdo não informado."));
     }
     return requisicao<Publicacao>(`/api/publicacoes/${id}`);
   },
 
-  salvar: (dados: PublicacaoPayload): Promise<Publicacao> =>
+  buscarAdmin: (id: number | string): Promise<Publicacao> => {
+    if (id === undefined || id === null || id === "") {
+      return Promise.reject(new Error("ID do conteúdo não informado."));
+    }
+    return requisicao<Publicacao>(`/api/publicacoes/admin/${id}`, {}, true);
+  },
+
+  salvar: (
+    dados: PublicacaoPayload,
+    id?: number | string
+  ): Promise<Publicacao> =>
     requisicao<Publicacao>(
-      dados.id != null
-        ? `/api/publicacoes/${dados.id}`
-        : "/api/publicacoes",
+      id != null ? `/api/publicacoes/${id}` : "/api/publicacoes",
       {
-        method: dados.id != null ? "PUT" : "POST",
+        method: id != null ? "PUT" : "POST",
         body: JSON.stringify(dados),
-      }
+      },
+      true
     ),
 
+  enviarImagem: (arquivo: File): Promise<{ url: string }> => {
+    const form = new FormData();
+    form.append("imagem", arquivo);
+    return requisicao(
+      "/api/upload/publicacao",
+      {
+        method: "POST",
+        body: form,
+      },
+      true
+    );
+  },
+
   excluir: (id: number | string): Promise<void> =>
-    requisicao<void>(`/api/publicacoes/${id}`, { method: "DELETE" }),
+    requisicao<void>(`/api/publicacoes/${id}`, { method: "DELETE" }, true),
 };
