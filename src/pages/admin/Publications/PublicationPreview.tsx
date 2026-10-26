@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { LuMonitor, LuSmartphone } from "react-icons/lu";
 
 import { publicacoesApi } from "../../../services/publicacoesApi";
-import { resumoConteudo } from "../../../data/publicacoes";
+import { textoConteudoCompleto } from "../../../data/publicacoes";
 import { extrairVideoInfo } from "../../../utils/videoProviders";
 import type {
   CategoriaConteudo,
@@ -60,6 +60,10 @@ export default function PublicationPreview(): JSX.Element {
       ativo = false;
     };
   }, [id]);
+
+  const conteudoCompleto = publicacao
+    ? textoConteudoCompleto(publicacao)
+    : "";
 
   if (erro) {
     return (
@@ -194,9 +198,9 @@ export default function PublicationPreview(): JSX.Element {
                 );
               })()
             )}
-            {publicacao.descricaoConteudo && (
+            {conteudoCompleto && (
               <p className="mt-6 whitespace-pre-line text-base leading-7 text-zinc-700">
-                {resumoConteudo(publicacao)}
+                {conteudoCompleto}
               </p>
             )}
             {publicacao.urlArrecadacao && (

@@ -362,7 +362,7 @@ export default function PublicationEditor(): JSX.Element {
                   onChange={(e) => alterar("localEventoCampanha", e.target.value)}
                   maxLength={255}
                   className={inputClass}
-                  placeholder="Endereço físico ou link"
+                  placeholder="Endereço/local do evento ou campanha"
                 />
               </div>
             </label>

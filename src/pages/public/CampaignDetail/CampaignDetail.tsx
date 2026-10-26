@@ -5,7 +5,7 @@ import { IconPaw } from "../../../components/layout/Icons";
 import {
   formatarDataExtenso,
   nomeCategoria,
-  resumoConteudo,
+  textoConteudoCompleto,
 } from "../../../data/publicacoes";
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type { Publicacao } from "../../../services/publicacoesApi";
@@ -48,6 +48,10 @@ export default function CampaignDetail() {
       ativo = false;
     };
   }, [id]);
+
+  const conteudoCompleto = publicacao
+    ? textoConteudoCompleto(publicacao)
+    : "";
 
   return (
     <>
@@ -115,6 +119,12 @@ export default function CampaignDetail() {
                 )}
               </header>
 
+              {conteudoCompleto && (
+                <p className="mb-6 whitespace-pre-line text-base leading-7 text-zinc-700">
+                  {conteudoCompleto}
+                </p>
+              )}
+
               {publicacao.urlVideo && (
                 (() => {
                   const video = extrairVideoInfo(publicacao.urlVideo);
@@ -138,12 +148,6 @@ export default function CampaignDetail() {
                     </div>
                   );
                 })()
-              )}
-
-              {publicacao.descricaoConteudo && (
-                <p className="whitespace-pre-line text-base leading-7 text-zinc-700">
-                  {resumoConteudo(publicacao)}
-                </p>
               )}
 
               <aside className="mt-8 flex flex-col gap-4 rounded-2xl bg-[#f8f9fb] px-5 py-6 md:flex-row md:items-center md:justify-between md:px-10">
