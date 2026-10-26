@@ -9,6 +9,7 @@ import {
 } from "../../../data/publicacoes";
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type { Publicacao } from "../../../services/publicacoesApi";
+import { extrairVideoInfo } from "../../../utils/videoProviders";
 
 export default function CampaignDetail() {
   const { id } = useParams<{ id: string }>();
@@ -115,12 +116,28 @@ export default function CampaignDetail() {
               </header>
 
               {publicacao.urlVideo && (
-                <iframe
-                  src={publicacao.urlVideo}
-                  title={`Vídeo: ${publicacao.titulo}`}
-                  className="mb-6 aspect-video w-full rounded-2xl border-0"
-                  allowFullScreen
-                />
+                (() => {
+                  const video = extrairVideoInfo(publicacao.urlVideo);
+                  return (
+                    <div className="mb-6 aspect-video overflow-hidden rounded-2xl">
+                      {video.type === "video" ? (
+                        <video
+                          src={video.src}
+                          controls
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <iframe
+                          src={video.src}
+                          title={`Vídeo: ${publicacao.titulo}`}
+                          className="h-full w-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      )}
+                    </div>
+                  );
+                })()
               )}
 
               {publicacao.descricaoConteudo && (
@@ -152,7 +169,6 @@ export default function CampaignDetail() {
           )}
         </article>
       </div>
-      <PublicFooter />
     </>
   );
 }

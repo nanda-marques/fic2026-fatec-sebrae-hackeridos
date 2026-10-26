@@ -16,6 +16,7 @@ import {
 
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import AdminHeader from "../../../components/layout/adminHeader";
+import { normalizarUrlVideo } from "../../../utils/videoProviders";
 
 import type {
   PublicacaoPayload,
@@ -98,7 +99,7 @@ export default function PublicationEditor(): JSX.Element {
           dataEventoCampanha: p.dataEventoCampanha,
           localEventoCampanha: p.localEventoCampanha ?? "",
           urlArrecadacao: p.urlArrecadacao ?? "",
-          urlVideo: p.urlVideo ?? "",
+          urlVideo: normalizarUrlVideo(p.urlVideo ?? ""),
         });
       })
       .catch((e: unknown) => {
@@ -167,6 +168,7 @@ export default function PublicationEditor(): JSX.Element {
         ...form,
         status,
         dataEventoCampanha,
+        urlVideo: normalizarUrlVideo(form.urlVideo ?? ""),
       }, id);
 
       if (irPreview) {
@@ -520,10 +522,13 @@ export default function PublicationEditor(): JSX.Element {
                   value={form.urlVideo ?? ""}
                   onChange={(e) => alterar("urlVideo", e.target.value)}
                   maxLength={500}
-                  placeholder="https://..."
+                  placeholder="Link do YouTube, Vimeo ou arquivo .mp4"
                   className={inputClass}
                 />
               </div>
+              <small className="mt-1 block text-[11px] font-normal text-[#667b9b]">
+                YouTube, Vimeo e arquivos MP4 são suportados.
+              </small>
             </label>
             {/* Integrar futuramente o disparo de newsletter para conteúdos publicados. */}
           </aside>

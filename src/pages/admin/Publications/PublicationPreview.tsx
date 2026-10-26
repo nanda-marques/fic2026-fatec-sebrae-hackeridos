@@ -5,6 +5,7 @@ import { LuMonitor, LuSmartphone } from "react-icons/lu";
 
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import { resumoConteudo } from "../../../data/publicacoes";
+import { extrairVideoInfo } from "../../../utils/videoProviders";
 import type {
   CategoriaConteudo,
   Publicacao,
@@ -170,12 +171,28 @@ export default function PublicationPreview(): JSX.Element {
               </p>
             )}
             {publicacao.urlVideo && (
-              <iframe
-                src={publicacao.urlVideo}
-                title={`Vídeo: ${publicacao.titulo}`}
-                className="mt-6 aspect-video w-full rounded-xl border-0"
-                allowFullScreen
-              />
+              (() => {
+                const video = extrairVideoInfo(publicacao.urlVideo);
+                return (
+                  <div className="mt-6 aspect-video overflow-hidden rounded-xl">
+                    {video.type === "video" ? (
+                      <video
+                        src={video.src}
+                        controls
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <iframe
+                        src={video.src}
+                        title={`Vídeo: ${publicacao.titulo}`}
+                        className="h-full w-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    )}
+                  </div>
+                );
+              })()
             )}
             {publicacao.descricaoConteudo && (
               <p className="mt-6 whitespace-pre-line text-base leading-7 text-zinc-700">
