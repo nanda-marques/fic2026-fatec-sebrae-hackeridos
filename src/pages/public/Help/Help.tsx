@@ -11,7 +11,7 @@ import {
   IconUsers,
 } from "../../../components/layout/Icons";
 
-const LINK_INSTAGRAM = "https://www.instagram.com/";
+const LINK_INSTAGRAM = "https://www.instagram.com/focinhoamigoindaiatuba/";
 
 const formas = [
   { titulo: "Adote um Focinho", texto: "Ofereça um lar de verdade e mude o destino de um peludinho.", botao: "Adotar Agora", to: "/adocao", Icone: IconHome },
@@ -126,9 +126,8 @@ export default function Help() {
 
             <div className="flex flex-col items-center text-center">
               <div className="rounded-2xl border-2 border-marca p-3">
-                {/* TODO: trocar pelo QR Code oficial do PIX da ONG */}
                 <img
-                  src="/images/como-ajudar/qrcode-pix.png"
+                  src="src/assets/images/Qrcode.png"
                   alt="QR Code para doação via PIX"
                   className="h-40 w-40 object-contain md:h-44 md:w-44"
                 />

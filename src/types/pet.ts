@@ -11,8 +11,10 @@ export interface ItemHistorico {
 }
 
 export interface DetalhesPet {
-  fotos: string[];
+  /** Galeria do pop-up. Se não houver, o pop-up usa só a foto principal do animal. */
+  fotos?: string[];
   idadeEstimada?: string;
+  porte?: "Pequeno" | "Médio" | "Grande";
   peso?: string;
   castrado?: string;
   cor?: string;
@@ -25,8 +27,8 @@ export interface DetalhesPet {
 export interface Pet {
   id: number;
   nome: string;
-  tipo: string;
-  imagem: string;            
+  tipo: "Cão" | "Gato";
+  imagem: string;
   raca?: string;
   idade?: string;
   anos?: number;
@@ -35,5 +37,7 @@ export interface Pet {
   tags?: string[];
   descricao?: string;
   disponivelAdocao?: boolean;
+  /** Aparece em "Peludinhos que mais precisam" na página de Apadrinhamento */
+  prioridadeApadrinhamento?: boolean;
   detalhes?: DetalhesPet;
 }

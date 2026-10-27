@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IconChevronLeft, IconChevronRight } from "./Icons";
 import type { Publicacao } from "../../services/publicacoesApi";
@@ -8,25 +8,53 @@ interface CampanhasCarrosselProps {
   campanhas: Publicacao[];
   /** "home": card com imagem colada na borda. "eventos": card maior com imagem arredondada. */
   variant?: "home" | "eventos";
+  /** Tempo, em milissegundos, entre uma campanha e a próxima. Padrão: 6 segundos. */
+  intervalo?: number;
 }
 
 export default function CampanhasCarrossel({
   campanhas,
   variant = "eventos",
+  intervalo = 6000,
 }: CampanhasCarrosselProps) {
   const [indice, setIndice] = useState(0);
+  const [pausado, setPausado] = useState(false);
   const total = campanhas.length;
+
+  // Troca automática. Como `indice` está nas dependências, o contador
+  // recomeça sempre que a campanha muda (inclusive por clique do usuário).
+  useEffect(() => {
+    if (total <= 1 || pausado) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const timer = window.setInterval(() => {
+      setIndice((i) => (Math.min(i, total - 1) + 1) % total);
+    }, intervalo);
+
+    return () => window.clearInterval(timer);
+  }, [total, pausado, intervalo, indice]);
 
   if (total === 0) return null;
 
   const posicao = Math.min(indice, total - 1);
   const home = variant === "home";
   const mover = (delta: number) => setIndice((posicao + delta + total) % total);
+  const girando = total > 1 && !pausado;
 
   return (
     // Todos os cards ficam empilhados na mesma célula da grade. Assim a altura
     // do carrossel é a do maior card, e todos têm exatamente o mesmo tamanho.
-    <div aria-roledescription="carousel" className="grid">
+    <div
+      aria-roledescription="carousel"
+      aria-live={girando ? "off" : "polite"}
+      className="grid"
+      // Pausa quando o mouse está em cima ou o foco chega pelo teclado.
+      // Em telas de toque, o toque não pausa a troca.
+      onPointerEnter={(e) => e.pointerType === "mouse" && setPausado(true)}
+      onPointerLeave={() => setPausado(false)}
+      onFocus={(e) => e.target.matches(":focus-visible") && setPausado(true)}
+      onBlur={() => setPausado(false)}
+    >
       {campanhas.map((c, i) => {
         const ativo = i === posicao;
         const cores = home
@@ -41,8 +69,8 @@ export default function CampanhasCarrossel({
           <article
             key={c.id}
             aria-hidden={!ativo}
-            className={`col-start-1 row-start-1 grid ${formato} ${cores} ${
-              ativo ? "" : "invisible"
+            className={`col-start-1 row-start-1 grid transition-[opacity,visibility] duration-500 motion-reduce:transition-none ${formato} ${cores} ${
+              ativo ? "visible opacity-100" : "invisible opacity-0"
             }`}
           >
             {c.imagem && (

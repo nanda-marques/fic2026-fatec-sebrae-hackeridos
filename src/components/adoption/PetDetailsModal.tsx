@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   IconCheckCircle,
   IconChevronLeft,
@@ -6,6 +7,7 @@ import {
   IconChip,
   IconClose,
   IconHeart,
+  IconHome,
   IconPaw,
   IconPill,
   IconScissors,
@@ -292,16 +294,24 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
           </div>
         </div>
 
-        {/* Botão fixo no rodapé do pop-up */}
-        <div className="border-t border-zinc-100 bg-white p-4 md:px-6 md:pb-5 md:pt-3">
+                {/* Botões fixos no rodapé do pop-up: lado a lado no desktop, empilhados no celular */}
+        <div className="flex flex-col gap-3 border-t border-zinc-100 bg-white p-4 md:flex-row md:px-6 md:pb-5 md:pt-3">
           <button
             type="button"
             onClick={onAdopt}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3.5 text-base font-bold text-white transition-colors hover:bg-orange-600"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3.5 text-base font-bold text-white transition-colors hover:bg-orange-600 md:flex-1"
           >
-            <IconHeart className="h-5 w-5" />
+            <IconHome className="h-5 w-5" />
             Quero Adotar
           </button>
+
+          <Link
+            to="/apadrinhamento#planos"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-marca px-5 py-3.5 text-base font-bold text-white transition-colors hover:bg-marca-escura md:flex-1"
+          >
+            <IconHeart className="h-5 w-5" />
+            Quero apadrinhar
+          </Link>
         </div>
       </div>
     </div>

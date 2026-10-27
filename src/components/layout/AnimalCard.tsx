@@ -1,7 +1,5 @@
-import { useState } from "react";
 import type { JSX } from "react";
 import { Link } from "react-router-dom";
-
 import type { Pet } from "../../types/pet";
 
 interface AnimalCardProps {
@@ -10,14 +8,12 @@ interface AnimalCardProps {
   onConhecer?: (animal: Pet) => void;
 }
 
-
 export default function AnimalCard({
   animal,
   variant = "home",
   onConhecer,
 }: AnimalCardProps): JSX.Element {
   const isHome = variant === "home";
-  const [favorito, setFavorito] = useState(false);
 
   return (
     <article

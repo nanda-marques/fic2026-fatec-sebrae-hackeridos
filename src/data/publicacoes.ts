@@ -28,11 +28,22 @@ export function textoConteudoCompleto(publicacao: Publicacao): string {
   const documento = new DOMParser().parseFromString(comQuebras, "text/html");
   documento.querySelectorAll("script, style").forEach((elemento) => elemento.remove());
 
-  return (documento.body.textContent ?? "")
-    .replace(/\u00a0/g, " ")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+const maisRecentePrimeiro = (a: Publicacao, b: Publicacao) =>
+  b.data.localeCompare(a.data);
+
+/** Todas as campanhas urgentes, da mais recente para a mais antiga (usadas na Home). */
+export const campanhasUrgentes: Publicacao[] = publicacoes
+  .filter((p) => p.urgente)
+  .sort(maisRecentePrimeiro);
+
+/** Carrossel de Eventos: primeiro as urgentes, depois as em destaque. */
+export const campanhasEmDestaque: Publicacao[] = [
+  ...campanhasUrgentes,
+  ...publicacoes.filter((p) => !p.urgente && p.destaque).sort(maisRecentePrimeiro),
+];
+
+export function buscarPublicacao(id: string | undefined): Publicacao | undefined {
+  return publicacoes.find((p) => String(p.id) === id);
 }
 
 function dataValida(valor: string): Date | null {
