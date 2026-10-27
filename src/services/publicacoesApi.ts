@@ -32,6 +32,14 @@ export interface Publicacao {
   atualizadoEm: string;
 }
 
+export interface ResumoDashboard {
+  totalPublicacoes: number;
+  campanhasAtivas: number;
+  eventosProximos: number;
+  noticiasRecentes: number;
+  publicacoesPorCategoria: Record<CategoriaConteudo, number>;
+}
+
 export type PublicacaoPayload = Pick<
   Publicacao,
   | "categoria"
@@ -102,6 +110,9 @@ async function requisicao<T>(
 }
 
 export const publicacoesApi = {
+  resumoDashboard: (): Promise<ResumoDashboard> =>
+    requisicao<ResumoDashboard>("/api/publicacoes/dashboard/resumo", {}, true),
+
   listarAdmin: (): Promise<Publicacao[]> =>
     requisicao<Publicacao[]>("/api/publicacoes/admin", {}, true),
 

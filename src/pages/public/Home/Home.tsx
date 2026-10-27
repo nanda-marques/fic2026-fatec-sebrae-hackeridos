@@ -101,10 +101,7 @@ export default function Home(): JSX.Element {
 
   return (
     <main>
-      <NewsletterModal
-        abrirSolicitado={newsletterSolicitada}
-        aoFecharSolicitado={() => setNewsletterSolicitada(false)}
-      />
+      <NewsletterModal />
 
       <PageHero
         grande
