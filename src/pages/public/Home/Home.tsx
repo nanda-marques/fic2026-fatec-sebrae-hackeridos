@@ -13,13 +13,11 @@ import {
 import { pets } from "../../../data/pets";
 import AnimalCard from "../../../components/layout/AnimalCard";
 import type { Pet } from "../../../types/pet";
-import { campanhasUrgentes } from "../../../data/publicacoes";
 import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
 import PageHero from "../../../components/layout/PageHero";
 import NewsletterModal from "../../../components/newsletter/NewsletterModal";
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type { Publicacao } from "../../../services/publicacoesApi";
-import { resumoConteudo } from "../../../data/publicacoes";
 import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
 
 /** Tipo de item de forma de ajuda. */
@@ -98,7 +96,7 @@ export default function Home(): JSX.Element {
     carregando: carregandoAnimais,
     erro: erroAnimais,
   } = useAnimaisDisponiveis();
-  const [campanhaAtual, setCampanhaAtual] = useState<Publicacao | null>(null);
+  const [campanhasVisiveis, setCampanhasVisiveis] = useState<Publicacao[]>([]);
   const [erroCampanha, setErroCampanha] = useState("");
   const [newsletterSolicitada, setNewsletterSolicitada] = useState(false);
 
@@ -108,13 +106,19 @@ export default function Home(): JSX.Element {
       .listarPublicadas()
       .then((conteudos) => {
         if (ativo) {
-          setCampanhaAtual(
-            conteudos.find(
-              (conteudo) =>
-                conteudo.categoria === "campanha" &&
-                (conteudo.destaque || conteudo.urgente)
-            ) ??
-              null
+          setCampanhasVisiveis(
+            conteudos
+              .filter(
+                (conteudo) =>
+                  conteudo.categoria === "campanha" &&
+                  (conteudo.destaque || conteudo.urgente)
+              )
+              .sort(
+                (a, b) =>
+                  Number(b.urgente) - Number(a.urgente) ||
+                  Number(b.destaque) - Number(a.destaque) ||
+                  b.criadoEm.localeCompare(a.criadoEm)
+              )
           );
         }
       })
@@ -166,12 +170,18 @@ export default function Home(): JSX.Element {
       </PageHero>
 
       {/* =====================================================
-          CAMPANHAS URGENTES
+          CAMPANHAS URGENTES E EM DESTAQUE
       ====================================================== */}
-      {campanhasUrgentes.length > 0 && (
+      {(campanhasVisiveis.length > 0 || erroCampanha) && (
         <section className="bg-white px-5 py-10 lg:px-14">
           <div className="mx-auto max-w-6xl">
-            <CampanhasCarrossel campanhas={campanhasUrgentes} variant="home" />
+            {erroCampanha ? (
+              <p role="alert" className="text-sm text-red-700">
+                Não foi possível carregar as campanhas: {erroCampanha}
+              </p>
+            ) : (
+              <CampanhasCarrossel campanhas={campanhasVisiveis} variant="eventos" />
+            )}
           </div>
         </section>
       )}

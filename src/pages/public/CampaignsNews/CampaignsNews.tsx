@@ -1,6 +1,5 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { Link } from "react-router-dom";
-import PublicFooter from "../../../components/layout/PublicFooter";
 import PageHero from "../../../components/layout/PageHero";
 import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
 import {
