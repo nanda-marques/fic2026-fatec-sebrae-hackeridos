@@ -15,36 +15,36 @@ export const nomeCategoria: Record<CategoriaConteudo, string> = {
 
 const publicacoes: Publicacao[] = [];
 
+const dataMaisRecente = (publicacao: Publicacao): string =>
+  publicacao.dataEventoCampanha ?? publicacao.criadoEm ?? "";
+
+const maisRecentePrimeiro = (a: Publicacao, b: Publicacao): number =>
+  dataMaisRecente(b).localeCompare(dataMaisRecente(a));
+
 export function resumoConteudo(publicacao: Publicacao): string {
-  const texto = publicacao.resumo ?? publicacao.descricaoConteudo ?? "";
-  return texto
+  return (publicacao.resumo || publicacao.descricaoConteudo || "")
     .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
 export function textoConteudoCompleto(publicacao: Publicacao): string {
   const html = publicacao.descricaoConteudo ?? "";
-  return html
+  const comQuebras = html
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/?(?:p|div|li|h[1-6]|blockquote|ul|ol)>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/<\/(?:p|div|li|h[1-6]|blockquote)>/gi, "\n");
+  const documento = new DOMParser().parseFromString(comQuebras, "text/html");
+  documento.querySelectorAll("script, style").forEach((elemento) => elemento.remove());
+
+  return (documento.body?.textContent ?? "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
-const maisRecentePrimeiro = (a: Publicacao, b: Publicacao) =>
-  b.dataEventoCampanha.localeCompare(a.dataEventoCampanha);
-
-/** Todas as campanhas urgentes, da mais recente para a mais antiga (usadas na Home). */
 export const campanhasUrgentes: Publicacao[] = publicacoes
   .filter((p) => p.urgente)
   .sort(maisRecentePrimeiro);
 
-/** Carrossel de Eventos: primeiro as urgentes, depois as em destaque. */
 export const campanhasEmDestaque: Publicacao[] = [
   ...campanhasUrgentes,
   ...publicacoes.filter((p) => !p.urgente && p.destaque).sort(maisRecentePrimeiro),
@@ -54,7 +54,8 @@ export function buscarPublicacao(id: string | undefined): Publicacao | undefined
   return publicacoes.find((p) => String(p.id) === id);
 }
 
-function dataValida(valor: string): Date | null {
+function dataValida(valor: string | null): Date | null {
+  if (!valor) return null;
   const data = new Date(valor);
   return Number.isNaN(data.getTime()) ? null : data;
 }

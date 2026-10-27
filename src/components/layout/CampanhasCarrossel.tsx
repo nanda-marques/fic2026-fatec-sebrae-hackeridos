@@ -58,8 +58,12 @@ export default function CampanhasCarrossel({
       {campanhas.map((c, i) => {
         const ativo = i === posicao;
         const cores = home
-          ? "border border-destaque bg-[#fffdf3]"
-          : "border-2 border-zinc-900 bg-white";
+          ? c.urgente
+            ? "border border-destaque bg-[#fffdf3]"
+            : "border border-zinc-900 bg-white"
+          : c.urgente
+            ? "border-2 border-destaque bg-white"
+            : "border-2 border-zinc-900 bg-white";
 
         const formato = home
           ? "overflow-hidden rounded-2xl"
