@@ -1,55 +1,59 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import type { IconType } from "react-icons";
-import { FiEye, FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
+import {
+  FiAlertCircle,
+  FiEye,
+  FiEdit,
+  FiPlus,
+  FiTrash2,
+  FiX,
+} from "react-icons/fi";
 import { LuFileText, LuMegaphone, LuCalendar, LuHeart } from "react-icons/lu";
 
 import AdminHeader from "../../../components/layout/adminHeader";
 import { publicacoesApi } from "../../../services/publicacoesApi";
-
-interface Publicacao {
-  id: number | string;
-  titulo?: string;
-  categoria?: string;
-  status?: string;
-  dataPublicacao?: string;
-  data?: string;
-  createdAt?: string;
-}
-
-type StatusPublicacao = "Publicado" | "Agendado" | "Rascunho";
+import type {
+  Publicacao,
+  CategoriaConteudo,
+  ResumoDashboard,
+  StatusPublicacao,
+} from "../../../services/publicacoesApi";
+import { authApi } from "../../../services/authApi";
 
 const cardClass =
   "bg-white border border-[#e2e2e2] rounded-[12px] shadow-[0_2px_3px_rgb(0_0_0/22%)]";
 
-const statusClass: Record<StatusPublicacao, string> = {
-  Publicado: "text-[#10b981] bg-[#e3f8ef]",
-  Agendado: "text-[#3b82f6] bg-[#e5eefd]",
-  Rascunho: "text-[#667b9b] bg-[#ebeef2]",
-};
-
-const CATEGORIAS = [
-  { nome: "Campanhas", cor: "#2174b7" },
-  { nome: "Animais", cor: "#ff7a18" },
-  { nome: "Notícias", cor: "#4285f4" },
-  { nome: "Eventos", cor: "#00a878" },
-  { nome: "Projetos", cor: "#8657e8" },
+const CATEGORIAS: { valor: CategoriaConteudo; nome: string; cor: string }[] = [
+  { valor: "campanha", nome: "Campanhas", cor: "#2174b7" },
+  { valor: "noticia", nome: "Notícias", cor: "#4285f4" },
+  { valor: "evento", nome: "Eventos", cor: "#00a878" },
+  { valor: "publicacao", nome: "Publicações", cor: "#8657e8" },
 ];
+const NOME_CATEGORIA: Record<CategoriaConteudo, string> = {
+  campanha: "Campanhas",
+  noticia: "Notícias",
+  evento: "Eventos",
+  publicacao: "Publicações",
+};
+const NOME_STATUS: Record<StatusPublicacao, string> = {
+  publicado: "Publicado",
+  agendado: "Agendado",
+  rascunho: "Rascunho",
+  arquivado: "Arquivado",
+};
+const CLASSE_STATUS: Record<StatusPublicacao, string> = {
+  publicado: "bg-[#e3f8ef] text-[#10b981]",
+  agendado: "bg-[#e5eefd] text-[#3b82f6]",
+  rascunho: "bg-[#ebeef2] text-[#667b9b]",
+  arquivado: "bg-[#ebeef2] text-[#667b9b]",
+};
 
 /* ------------------------- Helpers ------------------------- */
 
-function normalizar(texto = ""): string {
-  return texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function extrairDataISO(p: Publicacao): string {
-  const bruta = p.dataPublicacao || p.data || p.createdAt;
+function extrairDataISO(bruta: string | null): string {
   if (!bruta) return "";
-  // retorna apenas YYYY-MM-DD quando possível
   if (/^\d{4}-\d{2}-\d{2}/.test(bruta)) return bruta.slice(0, 10);
   const d = new Date(bruta);
   if (Number.isNaN(d.getTime())) return "";
@@ -58,7 +62,7 @@ function extrairDataISO(p: Publicacao): string {
 
 function formatarData(iso?: string | null): string {
   if (!iso) return "—";
-  const d = new Date(`${iso}T12:00:00`);
+  const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
@@ -67,25 +71,6 @@ function formatarData(iso?: string | null): string {
   })
     .format(d)
     .replace(".", "");
-}
-
-function hojeISO(): string {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  return hoje.toISOString().slice(0, 10);
-}
-
-function somarDias(iso: string, dias: number): string {
-  const d = new Date(`${iso}T12:00:00`);
-  d.setDate(d.getDate() + dias);
-  return d.toISOString().slice(0, 10);
-}
-
-function normalizarStatus(status?: string): StatusPublicacao {
-  const s = normalizar(status);
-  if (s === "publicado") return "Publicado";
-  if (s === "agendado") return "Agendado";
-  return "Rascunho";
 }
 
 /* ------------------------- StatCard ------------------------- */
@@ -136,15 +121,36 @@ export default function Dashboard(): JSX.Element {
   const navigate = useNavigate();
 
   const [publicacoes, setPublicacoes] = useState<Publicacao[]>([]);
+  const [resumo, setResumo] = useState<ResumoDashboard>({
+    totalPublicacoes: 0,
+    campanhasAtivas: 0,
+    eventosProximos: 0,
+    noticiasRecentes: 0,
+    publicacoesPorCategoria: {
+      campanha: 0,
+      noticia: 0,
+      evento: 0,
+      publicacao: 0,
+    },
+  });
   const [carregando, setCarregando] = useState<boolean>(true);
   const [erro, setErro] = useState<string>("");
+  const [avisoPermissao, setAvisoPermissao] = useState<
+    "conteudo" | "animais" | null
+  >(null);
+  const podeGerenciarConteudo = authApi.podeGerenciar("conteudo");
+  const podeGerenciarAnimais = authApi.podeGerenciar("animais");
 
   async function carregar(): Promise<void> {
     setCarregando(true);
     setErro("");
     try {
-      const dados = await publicacoesApi.listarAdmin();
-      setPublicacoes(Array.isArray(dados) ? dados : []);
+      const [dadosResumo, dadosPublicacoes] = await Promise.all([
+        publicacoesApi.resumoDashboard(),
+        podeGerenciarConteudo ? publicacoesApi.listarAdmin() : Promise.resolve([]),
+      ]);
+      setResumo(dadosResumo);
+      setPublicacoes(Array.isArray(dadosPublicacoes) ? dadosPublicacoes : []);
     } catch (e: unknown) {
       setErro(
         e instanceof Error
@@ -160,60 +166,31 @@ export default function Dashboard(): JSX.Element {
     carregar();
   }, []);
 
-  const resumo = useMemo(() => {
-    const hoje = hojeISO();
-    const em30Dias = somarDias(hoje, 30);
-    const ha7Dias = somarDias(hoje, -7);
-
-    const publicadas = publicacoes.filter(
-      (p) => normalizarStatus(p.status) === "Publicado"
-    );
-
-    const eventosProximos = publicacoes.filter((p) => {
-      const categoria = normalizar(p.categoria);
-      const status = normalizarStatus(p.status);
-      const data = extrairDataISO(p);
-      return (
-        categoria.includes("evento") &&
-        status !== "Rascunho" &&
-        !!data &&
-        data >= hoje &&
-        data <= em30Dias
-      );
-    });
-
-    const noticiasRecentes = publicadas.filter((p) => {
-      const categoria = normalizar(p.categoria);
-      const data = extrairDataISO(p);
-      return categoria.includes("noticia") && !!data && data >= ha7Dias && data <= hoje;
-    });
-
-    return {
-      totalPublicacoes: publicacoes.length,
-      campanhasAtivas: publicadas.filter((p) =>
-        normalizar(p.categoria).includes("campanha")
-      ).length,
-      eventosProximos: eventosProximos.length,
-      noticiasRecentes: noticiasRecentes.length,
-    };
-  }, [publicacoes]);
-
-  const publicacoesRecentes = useMemo(() => {
-    return [...publicacoes]
-      .sort((a, b) => extrairDataISO(b).localeCompare(extrairDataISO(a)))
-      .slice(0, 5);
-  }, [publicacoes]);
-
-  const categorias = useMemo(() => {
-    return CATEGORIAS.map((c) => ({
-      ...c,
-      posts: publicacoes.filter((p) =>
-        normalizar(p.categoria).includes(normalizar(c.nome).replace(/s$/, ""))
-      ).length,
-    }));
-  }, [publicacoes]);
+  const publicacoesRecentes = [...publicacoes]
+    .sort((a, b) => b.atualizadoEm.localeCompare(a.atualizadoEm))
+    .slice(0, 5);
+  const categorias = CATEGORIAS.map((categoria) => ({
+    ...categoria,
+    posts: resumo.publicacoesPorCategoria[categoria.valor],
+  }));
 
   const maiorQuantidade = Math.max(...categorias.map((c) => c.posts), 1);
+
+  function criarArtigo(): void {
+    if (!podeGerenciarConteudo) {
+      setAvisoPermissao("conteudo");
+      return;
+    }
+    navigate("/admin/publicacoes/nova");
+  }
+
+  function irParaAnimais(): void {
+    if (!podeGerenciarAnimais) {
+      setAvisoPermissao("animais");
+      return;
+    }
+    navigate("/admin/animais");
+  }
 
   async function excluirPublicacao(publicacao: Publicacao): Promise<void> {
     if (!window.confirm(`Excluir a publicação "${publicacao.titulo}"?`)) return;
@@ -238,6 +215,59 @@ export default function Dashboard(): JSX.Element {
   return (
     <div className="flex-1 min-w-0 min-h-screen flex flex-col font-['Inter',Arial,sans-serif] text-[#202b3e] bg-[#f0f0f0] box-border *:box-border">
       <AdminHeader titulo="Dashboard" />
+
+      {avisoPermissao && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+          onClick={(evento) => {
+            if (evento.target === evento.currentTarget) {
+              setAvisoPermissao(null);
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="aviso-permissao-titulo"
+            aria-describedby="aviso-permissao-descricao"
+            className="relative w-full max-w-[420px] rounded-[16px] bg-white p-7 text-center shadow-[0_8px_30px_rgb(0_0_0/30%)]"
+          >
+            <button
+              type="button"
+              onClick={() => setAvisoPermissao(null)}
+              aria-label="Fechar aviso"
+              className="absolute right-4 top-4 flex cursor-pointer border-0 bg-transparent p-1 text-[#667b9b] transition-colors hover:text-[#202b3e]"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+            <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#fff6db] text-[#d99b00]">
+              <FiAlertCircle aria-hidden="true" className="h-7 w-7" />
+            </span>
+            <h2
+              id="aviso-permissao-titulo"
+              className="m-0 mb-2 text-[20px] font-extrabold text-[#202b3e]"
+            >
+              Permissão necessária
+            </h2>
+            <p
+              id="aviso-permissao-descricao"
+              className="m-0 mb-6 text-[14px] leading-relaxed text-[#667b9b]"
+            >
+              {avisoPermissao === "conteudo"
+                ? "Você não possui permissão para criar artigos. Atualmente, seu cargo permite apenas gerenciar animais."
+                : "Você não possui permissão para gerenciar animais. Atualmente, seu cargo permite apenas gerenciar publicações."}
+            </p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setAvisoPermissao(null)}
+              className="h-10 cursor-pointer rounded-[8px] border-0 bg-[#2174b7] px-6 text-[14px] font-bold text-white transition-colors hover:bg-[#1767a8]"
+            >
+              Entendi
+            </button>
+          </section>
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col gap-[28px] p-[18px] sm:p-[24px] lg:p-[32px]">
         {erro && (
@@ -303,11 +333,11 @@ export default function Dashboard(): JSX.Element {
                 Nova Publicação
               </h3>
               <p className="m-0 mb-[12px] text-[#667b9b] text-[13.5px]">
-                Crie campanhas ou notícias para o portal público
+                Crie conteúdos para o portal público
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/admin/publicacoes/nova")}
+                onClick={criarArtigo}
                 className="h-[32px] px-[14px] inline-flex items-center gap-[6px] text-white font-inherit text-[13px] font-bold bg-[#2174b7] border-0 rounded-[6px] cursor-pointer transition-colors duration-150 hover:bg-[#1767a8]"
               >
                 <FiPlus className="w-[14px] h-[14px]" />
@@ -324,7 +354,7 @@ export default function Dashboard(): JSX.Element {
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/admin/animais")}
+                onClick={irParaAnimais}
                 className="h-[32px] px-[14px] text-white font-inherit text-[13px] font-bold bg-[#ffb800] border-0 rounded-[6px] cursor-pointer transition-colors duration-150 hover:bg-[#e6a600]"
               >
                 Ir para Animais
@@ -384,6 +414,15 @@ export default function Dashboard(): JSX.Element {
                         Carregando publicações...
                       </td>
                     </tr>
+                  ) : !podeGerenciarConteudo ? (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="py-[32px] px-[16px] text-center text-[#667b9b]"
+                      >
+                        Você não possui permissão para visualizar as publicações.
+                      </td>
+                    </tr>
                   ) : publicacoesRecentes.length === 0 ? (
                     <tr>
                       <td
@@ -394,9 +433,7 @@ export default function Dashboard(): JSX.Element {
                       </td>
                     </tr>
                   ) : (
-                    publicacoesRecentes.map((publicacao) => {
-                      const status = normalizarStatus(publicacao.status);
-                      return (
+                    publicacoesRecentes.map((publicacao) => (
                         <tr
                           key={publicacao.id}
                           className="border-t border-[#e8edf3]"
@@ -405,16 +442,19 @@ export default function Dashboard(): JSX.Element {
                             {publicacao.titulo || "Sem título"}
                           </td>
                           <td className="py-[16px] px-[16px] text-[#3d4b63]">
-                            {publicacao.categoria || "—"}
+                            {NOME_CATEGORIA[publicacao.categoria] || "—"}
                           </td>
                           <td className="py-[16px] px-[16px] text-[#667b9b] whitespace-nowrap">
-                            {formatarData(extrairDataISO(publicacao))}
+                            {formatarData(
+                              extrairDataISO(
+                                publicacao.dataEventoCampanha ??
+                                  publicacao.criadoEm
+                              )
+                            )}
                           </td>
                           <td className="py-[16px] px-[16px]">
-                            <span
-                              className={`inline-block px-[8px] py-[3px] text-[11.5px] font-bold rounded-[4px] ${statusClass[status]}`}
-                            >
-                              {status}
+                            <span className={`inline-block rounded-[4px] px-2 py-1 text-[11px] font-bold ${CLASSE_STATUS[publicacao.status]}`}>
+                              {NOME_STATUS[publicacao.status]}
                             </span>
                           </td>
                           <td className="py-[16px] px-[16px]">
@@ -446,8 +486,7 @@ export default function Dashboard(): JSX.Element {
                             </div>
                           </td>
                         </tr>
-                      );
-                    })
+                    ))
                   )}
                 </tbody>
               </table>

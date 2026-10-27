@@ -35,7 +35,7 @@ export default function AnimalCard({
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-lg font-bold text-zinc-800">{animal.nome}</h3>
 
-          {!isHome && (
+          {!isHome && animal.sexo && (
             <span
               role="img"
               aria-label={animal.sexo === "F" ? "Fêmea" : "Macho"}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { ComponentType, JSX } from "react";
 import {
@@ -13,7 +14,10 @@ import type { Pet } from "../../../types/pet";
 import { campanhasUrgentes } from "../../../data/publicacoes";
 import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
 import PageHero from "../../../components/layout/PageHero";
-import Newsletter from "../newsletter/newsletter";
+import NewsletterModal from "../../../components/newsletter/NewsletterModal";
+import { publicacoesApi } from "../../../services/publicacoesApi";
+import type { Publicacao } from "../../../services/publicacoesApi";
+import { resumoConteudo } from "../../../data/publicacoes";
 
 /** Tipo de item de forma de ajuda. */
 interface FormaAjuda {
@@ -86,11 +90,51 @@ const formasAjuda: FormaAjuda[] = [
 
 /** Página inicial pública com hero, pets, depoimentos e parceiros. */
 export default function Home(): JSX.Element {
-  const petsComImagem = pets.filter((pet: Pet) => Boolean(pet.imagem));
+  const {
+    animais: petsComImagem,
+    carregando: carregandoAnimais,
+    erro: erroAnimais,
+  } = useAnimaisDisponiveis();
+  const [campanhaAtual, setCampanhaAtual] = useState<Publicacao | null>(null);
+  const [erroCampanha, setErroCampanha] = useState("");
+  const [newsletterSolicitada, setNewsletterSolicitada] = useState(false);
+
+  useEffect(() => {
+    let ativo = true;
+    publicacoesApi
+      .listarPublicadas()
+      .then((conteudos) => {
+        if (ativo) {
+          setCampanhaAtual(
+            conteudos.find(
+              (conteudo) =>
+                conteudo.categoria === "campanha" &&
+                (conteudo.destaque || conteudo.urgente)
+            ) ??
+              null
+          );
+        }
+      })
+      .catch((erro: unknown) => {
+        if (ativo) {
+          setErroCampanha(
+            erro instanceof Error
+              ? erro.message
+              : "Não foi possível carregar a campanha."
+          );
+        }
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   return (
     <main>
-      <Newsletter />
+      <NewsletterModal
+        abrirSolicitado={newsletterSolicitada}
+        aoFecharSolicitado={() => setNewsletterSolicitada(false)}
+      />
 
       <PageHero
         grande
@@ -132,7 +176,7 @@ export default function Home(): JSX.Element {
       {/* =====================================================
           PETS
       ====================================================== */}
-      {petsComImagem.length > 0 && (
+      {(carregandoAnimais || erroAnimais || petsComImagem.length > 0) && (
         <section className="bg-[#f1f1f1] px-5 py-16 lg:px-14">
           <div className="mx-auto max-w-7xl">
             <div className="flex items-end justify-between gap-4">
@@ -151,16 +195,26 @@ export default function Home(): JSX.Element {
                 Procure por espécie ↓
               </Link>
             </div>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
-              {petsComImagem.slice(0, 3).map((pet: Pet) => (
-                <AnimalCard key={pet.id} animal={pet} variant="home" />
-              ))}
-            </div>
-            <div className="mt-8 text-center">
-              <Link to="/adocao" className="text-xs font-bold text-marca">
-                Ver todos os animais →
-              </Link>
-            </div>
+            {carregandoAnimais ? (
+              <p className="mt-8 text-sm text-zinc-500">Carregando animais...</p>
+            ) : erroAnimais ? (
+              <p role="alert" className="mt-8 text-sm text-red-700">
+                Não foi possível carregar os animais: {erroAnimais}
+              </p>
+            ) : (
+              <>
+                <div className="mt-8 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
+                  {petsComImagem.slice(0, 3).map((pet: Pet) => (
+                    <AnimalCard key={pet.id} animal={pet} variant="home" />
+                  ))}
+                </div>
+                <div className="mt-8 text-center">
+                  <Link to="/adocao" className="text-xs font-bold text-marca">
+                    Ver todos os animais →
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}
@@ -310,6 +364,43 @@ export default function Home(): JSX.Element {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          NEWSLETTER
+      ====================================================== */}
+      <section className="bg-[#f1f1f1] px-5 py-12 lg:px-14">
+        <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-6 overflow-hidden rounded-3xl bg-marca px-6 py-10 text-center text-white shadow-sm sm:px-10 md:flex-row md:justify-between md:gap-8 md:px-12 md:py-12 md:text-left">
+          <FaPaw
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-5 -top-8 h-36 w-36 rotate-[-18deg] text-white/10"
+          />
+          <div className="relative flex max-w-2xl items-start gap-4">
+            <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-destaque sm:flex">
+              <FiMail aria-hidden="true" className="h-6 w-6" />
+            </span>
+            <div>
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.16em] text-destaque">
+                Fique por dentro
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight sm:text-3xl">
+                Novidades que aquecem o coração
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-white/85">
+                Receba notícias dos nossos focinhos
+                diretamente no seu e-mail.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNewsletterSolicitada(true)}
+            className="relative inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-destaque px-6 py-3 text-sm font-extrabold text-zinc-900 transition-colors hover:bg-destaque-escura sm:w-auto"
+          >
+            <FiMail aria-hidden="true" className="h-4 w-4" />
+            Quero receber novidades
+          </button>
         </div>
       </section>
 

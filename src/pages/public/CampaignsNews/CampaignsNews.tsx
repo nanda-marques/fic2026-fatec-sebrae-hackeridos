@@ -10,16 +10,24 @@ import {
   type IconProps,
 } from "../../../components/layout/Icons";
 import {
-  campanhasEmDestaque,
   formatarDataCurta,
-  publicacoes,
-  type Categoria,
-  type Publicacao,
+  nomeCategoria,
+  resumoConteudo,
 } from "../../../data/publicacoes";
+import { publicacoesApi } from "../../../services/publicacoesApi";
+import type {
+  CategoriaConteudo,
+  Publicacao,
+} from "../../../services/publicacoesApi";
 
 // Imagens ficam na pasta public: /images/eventos/<arquivo>
 
-type Filtro = "Todas" | "Campanhas" | "Eventos" | "Notícias";
+type Filtro =
+  | "Todas"
+  | "Notícias"
+  | "Eventos"
+  | "Campanhas"
+  | "Publicações";
 
 interface Rede {
   nome: string;
@@ -28,20 +36,19 @@ interface Rede {
   Icone: ComponentType<IconProps>;
 }
 
-const filtros: Filtro[] = ["Todas", "Campanhas", "Eventos", "Notícias"];
+const filtros: Filtro[] = [
+  "Todas",
+  "Notícias",
+  "Eventos",
+  "Campanhas",
+  "Publicações",
+];
 
-// Filtro da tela -> categoria das publicações ("Todas" não filtra)
-const categoriaDoFiltro: Record<Exclude<Filtro, "Todas">, Categoria> = {
-  Campanhas: "Campanha",
-  Eventos: "Eventos",
-  Notícias: "Notícias",
-};
-
-const estiloCategoria: Record<Categoria, string> = {
-  Campanha: "bg-destaque text-zinc-900",
-  Eventos: "bg-green-600 text-white",
-  Adoções: "bg-orange-500 text-white",
-  Notícias: "bg-marca text-white",
+const categoriaDoFiltro: Record<Exclude<Filtro, "Todas">, CategoriaConteudo> = {
+  "Notícias": "noticia",
+  Eventos: "evento",
+  Campanhas: "campanha",
+  "Publicações": "publicacao",
 };
 
 // TODO: trocar pelos perfis e números reais
@@ -50,9 +57,6 @@ const redes: Rede[] = [
   { nome: "Facebook", seguidores: "12K seguidores", href: "https://www.facebook.com/", Icone: IconFacebook },
   { nome: "TikTok", seguidores: "2K seguidores", href: "https://www.tiktok.com/", Icone: IconTikTok },
 ];
-
-// Quem está no carrossel não repete na lista "Mais Publicações"
-const idsNoCarrossel = new Set(campanhasEmDestaque.map((c) => c.id));
 
 // 6 por página no desktop, 3 no mobile (como nos prints)
 function useItensPorPagina(): number {
@@ -74,14 +78,53 @@ function useItensPorPagina(): number {
 export default function CampaignsNews() {
   const [filtro, setFiltro] = useState<Filtro>("Todas");
   const [pagina, setPagina] = useState<number>(1);
+  const [publicacoes, setPublicacoes] = useState<Publicacao[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
   const porPagina = useItensPorPagina();
+
+  useEffect(() => {
+    let ativo = true;
+    publicacoesApi
+      .listarPublicadas()
+      .then((dados) => {
+        if (ativo) setPublicacoes(dados);
+      })
+      .catch((e: unknown) => {
+        if (ativo) {
+          setErro(
+            e instanceof Error
+              ? e.message
+              : "Não foi possível carregar as publicações."
+          );
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const combinaComFiltro = (p: Publicacao) =>
     filtro === "Todas" || p.categoria === categoriaDoFiltro[filtro];
 
-  const campanhasVisiveis = campanhasEmDestaque.filter(combinaComFiltro);
+  const campanhasVisiveis = publicacoes.filter(
+    (p) =>
+      p.categoria === "campanha" &&
+      (p.destaque || p.urgente) &&
+      combinaComFiltro(p)
+  ).sort(
+    (a, b) =>
+      Number(b.urgente) - Number(a.urgente) ||
+      Number(b.destaque) - Number(a.destaque) ||
+      b.criadoEm.localeCompare(a.criadoEm)
+  );
   const outras = publicacoes.filter(
-    (p) => !idsNoCarrossel.has(p.id) && combinaComFiltro(p)
+    (p) =>
+      !(p.categoria === "campanha" && (p.destaque || p.urgente)) &&
+      combinaComFiltro(p)
   );
 
   const totalPaginas = Math.max(1, Math.ceil(outras.length / porPagina));
@@ -125,11 +168,16 @@ export default function CampaignsNews() {
 
           {semNada && (
             <p className="mt-10 text-center text-sm text-zinc-500">
-              Nenhuma publicação por enquanto.
+              {carregando
+                ? "Carregando publicações..."
+                : erro || "Nenhuma publicação por enquanto."}
             </p>
           )}
+          {erro && !semNada && (
+            <p role="alert" className="mt-4 text-sm text-red-700">{erro}</p>
+          )}
 
-          {/* Carrossel: campanhas urgentes primeiro, depois as em destaque */}
+          {/* Campanhas cadastradas no banco são exibidas no carrossel. */}
           {campanhasVisiveis.length > 0 && (
             <div className="mt-6">
               <CampanhasCarrossel campanhas={campanhasVisiveis} variant="eventos" />
@@ -144,14 +192,32 @@ export default function CampaignsNews() {
               <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {visiveis.map((p) => (
                   <article key={p.id} className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-                    <img src={p.imagem} alt="" className="h-48 w-full object-cover md:h-52" />
+                    {p.imagem && (
+                      <img
+                        src={p.imagem}
+                        alt=""
+                        className="h-48 w-full object-cover md:h-52"
+                      />
+                    )}
                     <div className="p-5">
-                      <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${estiloCategoria[p.categoria]}`}>
-                        {p.categoria}
+                      <span className="rounded bg-marca px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                        {nomeCategoria[p.categoria]}
                       </span>
                       <h3 className="mt-3 text-lg font-bold leading-snug text-zinc-800">{p.titulo}</h3>
-                      <p className="mt-1 text-xs text-zinc-400">{formatarDataCurta(p.data)}</p>
-                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-zinc-500">{p.resumo}</p>
+                      {p.autor && (
+                        <p className="mt-1 text-xs text-zinc-500">Por {p.autor}</p>
+                      )}
+                      <p className="mt-1 text-xs text-zinc-400">
+                        {formatarDataCurta(p.dataEventoCampanha)}
+                      </p>
+                      {p.localEventoCampanha && (
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {p.localEventoCampanha}
+                        </p>
+                      )}
+                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-zinc-500">
+                        {resumoConteudo(p)}
+                      </p>
                       <Link
                         to={`/campanhas-e-noticias/${p.id}`}
                         className="mt-3 inline-block text-sm font-bold text-marca hover:underline"

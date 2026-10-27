@@ -6,22 +6,17 @@ import {
   LuHeart,
   LuSettings,
   LuLogOut,
+  LuUsers,
 } from "react-icons/lu";
 
 import logo from "../../assets/logo_pequena.svg";
+import { authApi } from "../../services/authApi";
 
 interface LinkItem {
   to: string;
   label: string;
   icone: React.ComponentType<{ className?: string }>;
 }
-
-const links: LinkItem[] = [
-  { to: "/admin/dashboard", label: "Dashboard", icone: LuLayoutDashboard },
-  { to: "/admin/publicacoes", label: "Publicações", icone: LuFileText },
-  { to: "/admin/animais", label: "Animais", icone: LuHeart },
-  { to: "/admin/configuracoes", label: "Configurações", icone: LuSettings },
-];
 
 const itemClass =
   "flex w-full items-center gap-3.5 rounded-lg px-4 py-3 text-[15px] font-bold text-white transition-colors";
@@ -32,9 +27,62 @@ export default function AdminMenu(): React.JSX.Element {
   const navigate = useNavigate();
 
   function sair(): void {
-    localStorage.removeItem("token");
+    authApi.limparSessao();
     navigate("/admin/login");
   }
+
+  const permissoes = authApi.usuarioAtual()?.permissoes;
+
+  const linksVisiveis: LinkItem[] = [
+    ...(permissoes &&
+    Object.values(permissoes).some(Boolean)
+      ? [
+          {
+            to: "/admin/dashboard",
+            label: "Dashboard",
+            icone: LuLayoutDashboard,
+          },
+        ]
+      : []),
+
+    ...(authApi.podeGerenciar("conteudo")
+      ? [
+          {
+            to: "/admin/publicacoes",
+            label: "Publicações",
+            icone: LuFileText,
+          },
+        ]
+      : []),
+
+    ...(authApi.podeGerenciar("animais")
+      ? [
+          {
+            to: "/admin/animais",
+            label: "Animais",
+            icone: LuHeart,
+          },
+        ]
+      : []),
+
+    {
+      to: "/admin/configuracoes",
+      label: "Configurações",
+      icone: LuSettings,
+    },
+
+    ...(authApi.podeGerenciar("admins")
+      ? [
+          {
+            to: "/admin/administradores",
+            label: "Gerenciar administradores",
+            icone: LuUsers,
+          },
+        ]
+      : []),
+  ];
+
+  const primeiroLink = linksVisiveis[0]?.to ?? "/admin/configuracoes";
 
   return (
     <>
@@ -58,13 +106,13 @@ export default function AdminMenu(): React.JSX.Element {
 
       {/* Menu lateral */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex width: 260px; flex-col bg-[#2174b7] px-6 py-8 font-['Inter',Arial,sans-serif] transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col bg-[#2174b7] px-6 py-8 font-['Inter',Arial,sans-serif] transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
           aberto ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo */}
         <NavLink
-          to="/admin/dashboard"
+          to={primeiroLink}
           className="mb-10 flex items-center gap-2.5 text-white no-underline"
           onClick={() => setAberto(false)}
         >
@@ -89,7 +137,7 @@ export default function AdminMenu(): React.JSX.Element {
           aria-label="Menu administrativo"
           className="flex flex-col gap-1.5"
         >
-          {links.map(({ to, label, icone: Icone }) => (
+          {linksVisiveis.map(({ to, label, icone: Icone }) => (
             <NavLink
               key={to}
               to={to}

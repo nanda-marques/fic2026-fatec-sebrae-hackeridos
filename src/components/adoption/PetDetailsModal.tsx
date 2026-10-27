@@ -24,6 +24,7 @@ export interface PetDetalhes {
   cor?: string;
   temperamento?: string;
   sobre?: string;
+  vacinacaoEmDia?: boolean;
   historico?: Array<{ tipo: string; titulo: string; texto: string }>;
 }
 
@@ -144,13 +145,15 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
                   <IconPaw className="h-3.5 w-3.5" />
                   {pet.tipo}
                 </span>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold ${
-                    femea ? "bg-red-50 text-red-500" : "bg-sky-100 text-marca"
-                  }`}
-                >
-                  {femea ? "♀ Fêmea" : "♂ Macho"}
-                </span>
+                {pet.sexo && (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold ${
+                      femea ? "bg-red-50 text-red-500" : "bg-sky-100 text-marca"
+                    }`}
+                  >
+                    {femea ? "♀ Fêmea" : "♂ Macho"}
+                  </span>
+                )}
               </div>
             </div>
             <button
@@ -233,6 +236,11 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
                 {pet.raca && <Campo label="Raça">{pet.raca}</Campo>}
                 {d.peso && <Campo label="Peso">{d.peso}</Campo>}
                 {d.castrado && <Campo label="Castrado">{d.castrado}</Campo>}
+                {d.vacinacaoEmDia !== undefined && (
+                  <Campo label="Vacinação em dia">
+                    {d.vacinacaoEmDia ? "Sim" : "Não"}
+                  </Campo>
+                )}
                 {d.cor && <Campo label="Cor">{d.cor}</Campo>}
                 {temperamento && <Campo label="Temperamento">{temperamento}</Campo>}
               </div>
@@ -248,13 +256,15 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
             )}
 
             {/* Histórico médico */}
-            {d.historico?.length > 0 && (
-              <Bloco titulo="Histórico Médico">
-                <ul className="mt-3 flex flex-col gap-3">
-                  {d.historico.map((h) => {
-                    const Icone = iconesHistorico[h.tipo] || IconPill;
-                    return (
-                      <li key={h.titulo} className="flex items-start gap-3">
+            {(() => {
+              const historico = d.historico;
+              return historico?.length ? (
+                <Bloco titulo="Histórico Médico">
+                  <ul className="mt-3 flex flex-col gap-3">
+                    {historico.map((h) => {
+                      const Icone = iconesHistorico[h.tipo] || IconPill;
+                      return (
+                        <li key={h.titulo} className="flex items-start gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-marca">
                           <Icone className="h-4 w-4" />
                         </span>
@@ -262,12 +272,13 @@ export default function PetDetailsModal({ pet, onClose, onAdopt }: PetDetailsMod
                           <p className="font-bold text-zinc-900">{h.titulo}</p>
                           <p className="text-xs leading-5 text-zinc-600 md:text-[13px]">{h.texto}</p>
                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </Bloco>
-            )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Bloco>
+              ) : null;
+            })()}
 
             {/* Requisitos */}
             <Bloco titulo="Requisitos para Adoção">

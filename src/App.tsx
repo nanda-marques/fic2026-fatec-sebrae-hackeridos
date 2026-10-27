@@ -1,9 +1,17 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Outlet,
+  Navigate,
+} from "react-router-dom";
 import type { JSX } from "react";
 
 import PublicMenu from "./components/layout/PublicMenu";
 import PublicFooter from "./components/layout/PublicFooter";
 import AdminMenu from "./components/layout/AdminMenu";
+import { authApi } from "./services/authApi";
+import type { Permissoes } from "./services/authApi";
 
 import Home from "./pages/public/Home/Home";
 import About from "./pages/public/About/About";
@@ -24,8 +32,7 @@ import PublicationEditor from "./pages/admin/Publications/PublicationEditor";
 import PublicationPreview from "./pages/admin/Publications/PublicationPreview";
 import Settings from "./pages/admin/Settings/Settings";
 import RecuperarSenha from "./pages/admin/RecuperarSenha/Senha";
-
-
+import Administradores from "./pages/admin/Administradores/Administradores";
 
 function PublicLayout(): JSX.Element {
   return (
@@ -41,9 +48,36 @@ function PublicLayout(): JSX.Element {
 
 function ProtectedRoute(): JSX.Element {
   const token = localStorage.getItem("token");
+
   if (!token) {
     return <Navigate to="/admin/login" replace />;
   }
+
+  return <Outlet />;
+}
+
+function PermissionRoute({
+  permissao,
+}: {
+  permissao: keyof Permissoes;
+}): JSX.Element {
+  if (!authApi.podeGerenciar(permissao)) {
+    return <Navigate to="/admin/configuracoes" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function DashboardPermissionRoute(): JSX.Element {
+  const permissoes = authApi.usuarioAtual()?.permissoes;
+  const temPermissao = permissoes
+    ? Object.values(permissoes).some(Boolean)
+    : false;
+
+  if (!temPermissao) {
+    return <Navigate to="/admin/configuracoes" replace />;
+  }
+
   return <Outlet />;
 }
 
@@ -62,6 +96,7 @@ function App(): JSX.Element {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Páginas públicas */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/sobre-nos" element={<About />} />
@@ -71,22 +106,66 @@ function App(): JSX.Element {
           <Route path="/como-ajudar" element={<Help />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/campanhas-e-noticias" element={<CampaignsNews />} />
-          <Route path="/campanhas-e-noticias/:id" element={<CampaignDetail />} />
+          <Route
+            path="/campanhas-e-noticias/:id"
+            element={<CampaignDetail />}
+          />
         </Route>
 
+        {/* Acesso e recuperação de conta */}
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/cadastro" element={<Register />} />
-        <Route path="/admin/recuperar-senha" element={<RecuperarSenha />} />
+        <Route
+          path="/admin/recuperar-senha"
+          element={<RecuperarSenha />}
+        />
 
+        {/* Área administrativa autenticada */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AdminLayout />}>
-            <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/admin/animais" element={<Animals />} />
-            <Route path="/admin/publicacoes" element={<Publications />} />
-            <Route path="/admin/publicacoes/nova" element={<PublicationEditor />} />
-            <Route path="/admin/publicacoes/:id/editar" element={<PublicationEditor />} />
-            <Route path="/admin/publicacoes/:id/preview" element={<PublicationPreview />} />
-            <Route path="/admin/configuracoes" element={<Settings />} />
+            {/* Dashboard: usuários com ao menos uma permissão */}
+            <Route element={<DashboardPermissionRoute />}>
+              <Route path="/admin/dashboard" element={<Dashboard />} />
+            </Route>
+
+            {/* Gerenciamento de animais */}
+            <Route element={<PermissionRoute permissao="animais" />}>
+              <Route path="/admin/animais" element={<Animals />} />
+            </Route>
+
+            {/* Gerenciamento de publicações */}
+            <Route element={<PermissionRoute permissao="conteudo" />}>
+              <Route
+                path="/admin/publicacoes"
+                element={<Publications />}
+              />
+              <Route
+                path="/admin/publicacoes/nova"
+                element={<PublicationEditor />}
+              />
+              <Route
+                path="/admin/publicacoes/:id/editar"
+                element={<PublicationEditor />}
+              />
+              <Route
+                path="/admin/publicacoes/:id/preview"
+                element={<PublicationPreview />}
+              />
+            </Route>
+
+            {/* Configurações pessoais */}
+            <Route
+              path="/admin/configuracoes"
+              element={<Settings />}
+            />
+
+            {/* Gerenciamento e aprovação de administradores */}
+            <Route element={<PermissionRoute permissao="admins" />}>
+              <Route
+                path="/admin/administradores"
+                element={<Administradores />}
+              />
+            </Route>
           </Route>
         </Route>
       </Routes>

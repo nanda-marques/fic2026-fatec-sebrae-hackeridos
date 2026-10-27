@@ -4,6 +4,7 @@ import { LuUpload, LuPencil, LuTrash2, LuX } from "react-icons/lu";
 
 import { animaisApi } from "../../../services/animaisApi";
 import type { Animal, NovoAnimal } from "../../../services/animaisApi";
+import { imagemDoAnimal } from "../../../data/animalImages";
 
 import AdminHeader from "../../../components/layout/adminHeader";
 
@@ -13,33 +14,40 @@ interface Mensagem {
   texto: string;
 }
 
-type FormAnimal = NovoAnimal;
+type FormAnimal = Omit<NovoAnimal, "idade" | "peso"> & {
+  idade: string;
+  peso: string;
+};
 
 const FORM_INICIAL: FormAnimal = {
   nome: "",
   especie: "",
-  raca: "",
+  status: "Disponível",
   idade: "",
+  imagem: null,
   porte: "",
+  raca: "",
   peso: "",
-  castracao: "Pendente",
+  castracao: "",
+  vacinacaoEmDia: false,
   temperamento: "",
-  cor: "",
-  foto: "",
+  sobre: "",
+  dispararNewsletter: false,
 };
 
 export default function Animais() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imagemInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   const [animais, setAnimais] = useState<Animal[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [mensagem, setMensagem] = useState<Mensagem>({
     tipo: "",
     texto: "",
   });
-  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [editandoId, setEditandoId] = useState<number | null>(null);
   const [form, setForm] = useState<FormAnimal>(FORM_INICIAL);
 
   const carregarAnimais = useCallback(async () => {
@@ -70,20 +78,38 @@ export default function Animais() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
-  function handleFotoChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setMensagem({ tipo: "erro", texto: "A foto deve ter no máximo 5MB." });
+  async function handleImagemChange(e: ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type)) {
+      setMensagem({
+        tipo: "erro",
+        texto: "Selecione uma imagem JPG, PNG ou WebP.",
+      });
+      return;
+    }
+    if (arquivo.size > 5 * 1024 * 1024) {
+      setMensagem({ tipo: "erro", texto: "A imagem deve ter no máximo 5 MB." });
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, foto: String(reader.result ?? "") }));
-    };
-    reader.readAsDataURL(file);
+    setEnviandoImagem(true);
+    setMensagem({ tipo: "", texto: "" });
+    try {
+      const { url } = await animaisApi.enviarImagem(arquivo);
+      setForm((prev) => ({ ...prev, imagem: url }));
+    } catch (erro: unknown) {
+      setMensagem({
+        tipo: "erro",
+        texto:
+          erro instanceof Error
+            ? erro.message
+            : "Não foi possível enviar a imagem.",
+      });
+    } finally {
+      setEnviandoImagem(false);
+    }
   }
 
   function iniciarEdicao(animal: Animal) {
@@ -91,14 +117,17 @@ export default function Animais() {
     setForm({
       nome: animal.nome ?? "",
       especie: animal.especie ?? "",
-      raca: animal.raca ?? "",
-      idade: animal.idade ?? "",
+      status: animal.status ?? "Disponível",
+      idade: animal.idade == null ? "" : String(animal.idade),
+      imagem: animal.imagem,
       porte: animal.porte ?? "",
-      peso: animal.peso ?? "",
-      castracao: animal.statusCastracao ?? animal.castracao ?? "Pendente",
+      raca: animal.raca ?? "",
+      peso: animal.peso == null ? "" : String(animal.peso),
+      castracao: animal.castracao ?? "",
+      vacinacaoEmDia: animal.vacinacaoEmDia ?? false,
       temperamento: animal.temperamento ?? "",
-      cor: animal.cor ?? "",
-      foto: animal.foto ?? "",
+      sobre: animal.sobre ?? "",
+      dispararNewsletter: animal.dispararNewsletter ?? false,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -122,14 +151,19 @@ export default function Animais() {
     setMensagem({ tipo: "", texto: "" });
 
     try {
+      const dados: NovoAnimal = {
+        ...form,
+        idade: form.idade.trim() ? Number(form.idade) : null,
+        peso: form.peso.trim() ? Number(form.peso.replace(",", ".")) : null,
+      };
       if (editandoId !== null) {
-        await animaisApi.atualizar(editandoId, form);
+        await animaisApi.atualizar(editandoId, dados);
         setMensagem({
           tipo: "sucesso",
           texto: "Animal atualizado com sucesso!",
         });
       } else {
-        await animaisApi.criar(form);
+        await animaisApi.criar(dados);
         setMensagem({
           tipo: "sucesso",
           texto: "Animal cadastrado com sucesso!",
@@ -201,13 +235,13 @@ export default function Animais() {
     }
   }
 
-  function getCastracaoBadgeClass(status?: string) {
-    const val = (status ?? "").toLowerCase();
-    if (val.includes("castrad"))
+  function getStatusBadgeClass(status: string) {
+    const val = status.toLocaleLowerCase("pt-BR");
+    if (val === "disponível")
       return "bg-emerald-100 text-emerald-700 font-bold";
-    if (val.includes("agendad"))
-      return "bg-amber-100 text-amber-700 font-bold";
-    return "bg-slate-100 text-slate-600 font-bold";
+    if (val === "adotado")
+      return "bg-slate-100 text-slate-600 font-bold";
+    return "bg-amber-100 text-amber-700 font-bold";
   }
 
   return (
@@ -258,6 +292,7 @@ export default function Animais() {
             {editandoId !== null && (
               <button
                 type="button"
+                disabled={salvando || enviandoImagem}
                 onClick={cancelarEdicao}
                 className="inline-flex items-center gap-1 text-sm font-bold text-slate-500 hover:text-slate-700"
               >
@@ -267,6 +302,56 @@ export default function Animais() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="mb-1.5 block text-xs font-extrabold text-[#374151]">
+                Imagem
+              </label>
+              <input
+                ref={imagemInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImagemChange}
+                className="hidden"
+              />
+              <div className="flex flex-wrap items-center gap-3">
+                {form.imagem && (
+                  <img
+                    src={form.imagem}
+                    alt="Prévia da imagem do animal"
+                    className="h-16 w-16 rounded-lg border border-slate-200 object-cover"
+                  />
+                )}
+                <button
+                  type="button"
+                  disabled={salvando || enviandoImagem}
+                  onClick={() => imagemInputRef.current?.click()}
+                  className="inline-flex h-[46px] items-center gap-2 rounded-lg border border-slate-200 bg-[#f9fafb] px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50"
+                >
+                  <LuUpload size={18} />
+                  {enviandoImagem
+                    ? "Enviando imagem..."
+                    : form.imagem
+                      ? "Substituir imagem"
+                      : "Selecionar imagem"}
+                </button>
+                {form.imagem && (
+                  <button
+                    type="button"
+                    disabled={salvando || enviandoImagem}
+                    onClick={() =>
+                      setForm((prev) => ({ ...prev, imagem: null }))
+                    }
+                    className="text-sm font-semibold text-red-600 hover:text-red-700 disabled:opacity-50"
+                  >
+                    Remover imagem
+                  </button>
+                )}
+                <span className="text-xs text-slate-500">
+                  JPG, PNG ou WebP; até 5 MB.
+                </span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <Campo
                 label="Nome do animal"
@@ -282,23 +367,71 @@ export default function Animais() {
                 onChange={handleChange}
                 options={[
                   { value: "", label: "Selecione…" },
-                  { value: "Cão", label: "Cão" },
-                  { value: "Gato", label: "Gato" },
+                  { value: "Canino", label: "Canino" },
+                  { value: "Felino", label: "Felino" },
                 ]}
+              />
+              <Select
+                label="Castração"
+                name="castracao"
+                value={form.castracao ?? ""}
+                onChange={handleChange}
+                options={[
+                  { value: "", label: "Não informado" },
+                  { value: "Castrado", label: "Castrado(a)" },
+                  { value: "Pendente", label: "Pendente" },
+                  { value: "Agendada", label: "Agendada" },
+                ]}
+              />
+              <label className="flex items-center gap-2 self-center text-sm font-semibold text-[#374151]">
+                <input
+                  type="checkbox"
+                  checked={form.vacinacaoEmDia}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      vacinacaoEmDia: e.target.checked,
+                    }))
+                  }
+                />
+                Vacinação em dia
+              </label>
+              <Select
+                label="Status"
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                options={[
+                  { value: "Disponível", label: "Disponível" },
+                  { value: "Adotado", label: "Adotado" },
+                  { value: "Em tratamento", label: "Em tratamento" },
+                ]}
+              />
+              <Campo
+                label="Idade"
+                name="idade"
+                type="number"
+                min="0"
+                value={form.idade}
+                onChange={handleChange}
+                placeholder="Ex.: 2"
               />
               <Campo
                 label="Raça"
                 name="raca"
                 value={form.raca ?? ""}
                 onChange={handleChange}
-                placeholder="Ex.: Golden Retriever, SRD…"
+                placeholder="Ex.: SRD"
               />
               <Campo
-                label="Idade"
-                name="idade"
-                value={form.idade ?? ""}
+                label="Peso (kg)"
+                name="peso"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.peso}
                 onChange={handleChange}
-                placeholder="Ex.: 2 anos"
+                placeholder="Ex.: 4,5"
               />
               <Select
                 label="Porte"
@@ -313,72 +446,51 @@ export default function Animais() {
                 ]}
               />
               <Campo
-                label="Peso"
-                name="peso"
-                value={form.peso ?? ""}
-                onChange={handleChange}
-                placeholder="Ex.: 4kg"
-              />
-              <Select
-                label="Castração"
-                name="castracao"
-                value={form.castracao ?? "Pendente"}
-                onChange={handleChange}
-                options={[
-                  { value: "Pendente", label: "Pendente" },
-                  { value: "Castrado", label: "Castrado" },
-                  { value: "Agendada", label: "Agendada" },
-                ]}
-              />
-              <Campo
                 label="Temperamento"
                 name="temperamento"
                 value={form.temperamento ?? ""}
                 onChange={handleChange}
                 placeholder="Ex.: Dócil"
               />
-              <Campo
-                label="Cor"
-                name="cor"
-                value={form.cor ?? ""}
-                onChange={handleChange}
-                placeholder="Preto"
-              />
-              <div>
-              <label className="mb-1.5 block text-xs font-extrabold text-[#374151]">
-                Foto
+              <label className="flex items-center gap-2 self-center text-sm font-semibold text-[#374151]">
+                <input
+                  type="checkbox"
+                  checked={form.dispararNewsletter}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      dispararNewsletter: e.target.checked,
+                    }))
+                  }
+                />
+                Incluir na newsletter
               </label>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFotoChange}
-                accept="image/*"
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-[#f9fafb] px-4 py-3 text-sm text-slate-500 hover:bg-slate-100"
-              >
-                <LuUpload className="h-5 w-5 text-slate-400" />
-                <span>
-                  {form.foto
-                    ? "Foto selecionada!"
-                    : "Upload de arquivo (PNG, JPG, JPEG)"}
-                </span>
-              </button>
-            </div>
             </div>
 
-            
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-extrabold text-[#374151]">
+                Sobre
+              </span>
+              <textarea
+                name="sobre"
+                value={form.sobre ?? ""}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, sobre: e.target.value }))
+                }
+                rows={4}
+                className="w-full rounded-lg border border-slate-200 bg-[#f9fafb] px-4 py-2.5 text-sm outline-none transition focus:border-[#1d70b8] focus:bg-white"
+              />
+            </label>
 
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="submit"
-                disabled={salvando}
+                disabled={salvando || enviandoImagem}
                 className="rounded-lg bg-[#1d70b8] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#155a96] disabled:opacity-50"
               >
-                {salvando
+                {enviandoImagem
+                  ? "Enviando imagem..."
+                  : salvando
                   ? "Salvando..."
                   : editandoId !== null
                   ? "Salvar Alterações"
@@ -388,6 +500,7 @@ export default function Animais() {
               {editandoId !== null && (
                 <button
                   type="button"
+                  disabled={salvando || enviandoImagem}
                   onClick={cancelarEdicao}
                   className="rounded-lg bg-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-300"
                 >
@@ -407,10 +520,16 @@ export default function Animais() {
             <table className="w-full border-collapse text-left text-sm">
               <thead className="border-b border-slate-100 bg-[#f9fafb] text-xs font-extrabold text-slate-500">
                 <tr>
+                  <th className="px-5 py-3.5">Imagem</th>
                   <th className="px-5 py-3.5">Nome</th>
                   <th className="px-5 py-3.5">Espécie</th>
                   <th className="px-5 py-3.5">Raça</th>
-                  <th className="px-5 py-3.5">Status Castração</th>
+                  <th className="px-5 py-3.5">Idade</th>
+                  <th className="px-5 py-3.5">Peso</th>
+                  <th className="px-5 py-3.5">Castração</th>
+                  <th className="px-5 py-3.5">Vacinação</th>
+                  <th className="px-5 py-3.5">Porte</th>
+                  <th className="px-5 py-3.5">Status</th>
                   <th className="px-5 py-3.5">Data</th>
                   <th className="px-5 py-3.5 text-center">Ações</th>
                 </tr>
@@ -419,22 +538,31 @@ export default function Animais() {
               <tbody className="divide-y divide-slate-100">
                 {carregando ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-500">
+                    <td colSpan={12} className="p-8 text-center text-slate-500">
                       Carregando animais...
                     </td>
                   </tr>
                 ) : animais.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-8 text-center text-slate-500">
-                      Nenhum animal cadastrado.
-                    </td>
-                  </tr>
+                <tr>
+                  <td colSpan={12} className="p-8 text-center text-slate-500">
+                    Nenhum animal cadastrado.
+                  </td>
+                </tr>
                 ) : (
                   animais.map((animal) => (
                     <tr
                       key={animal.id}
                       className="transition hover:bg-slate-50/70"
                     >
+                      <td className="px-5 py-4">
+                        <div className="h-10 w-10 overflow-hidden rounded-md border border-slate-200 bg-[#f9fafb]">
+                          <img
+                            src={animal.imagem || imagemDoAnimal(animal.nome)}
+                            alt={`Foto de ${animal.nome}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      </td>
                       <td className="px-5 py-4 font-bold text-[#111827]">
                         {animal.nome}
                       </td>
@@ -442,21 +570,36 @@ export default function Animais() {
                         {animal.especie || "—"}
                       </td>
                       <td className="px-5 py-4 text-slate-600">
-                        {animal.raca || "Vira-lata"}
+                        {animal.raca || "—"}
+                      </td>
+                      <td className="px-5 py-4">
+                        {animal.idade == null
+                          ? "—"
+                          : `${animal.idade} ${animal.idade === 1 ? "ano" : "anos"}`}
+                      </td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {animal.peso == null ? "—" : `${animal.peso} kg`}
+                      </td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {animal.castracao || "—"}
+                      </td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {animal.vacinacaoEmDia ? "Em dia" : "Pendente"}
+                      </td>
+                      <td className="px-5 py-4 text-slate-600">
+                        {animal.porte || "—"}
                       </td>
                       <td className="px-5 py-4">
                         <span
-                          className={`inline-block rounded-md px-3 py-1 text-xs ${getCastracaoBadgeClass(
-                            animal.statusCastracao || animal.castracao
-                          )}`}
+                          className={`inline-block rounded-md px-3 py-1 text-xs ${getStatusBadgeClass(animal.status)}`}
                         >
-                          {animal.statusCastracao ||
-                            animal.castracao ||
-                            "Pendente"}
+                          {animal.status}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-slate-500">
-                        {animal.data || "—"}
+                        {animal.criadoEm
+                          ? new Date(animal.criadoEm).toLocaleDateString("pt-BR")
+                          : "—"}
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-center gap-2">
@@ -497,16 +640,30 @@ interface CampoProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
+  type?: "text" | "number";
+  min?: string;
+  step?: string;
 }
 
-function Campo({ label, name, value, onChange, placeholder }: CampoProps) {
+function Campo({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  min,
+  step,
+}: CampoProps) {
   return (
     <div>
       <label className="mb-1.5 block text-xs font-extrabold text-[#374151]">
         {label}
       </label>
       <input
-        type="text"
+        type={type}
+        min={min}
+        step={step}
         name={name}
         value={value}
         onChange={onChange}

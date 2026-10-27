@@ -1,5 +1,9 @@
 import Cargo from "./Cargo.js";
 import Administrador from "./Administrador.js";
+import ImagemPerfil from "./ImagemPerfil.js"; 
+import HistoricoSolicitacaoAdmin from "./HistoricoSolicitacaoAdmin.js";
+import Publicacao from "./Publicacao.js";
+import Animal from "./Animal.js";
 
 // Associações
 Cargo.hasMany(Administrador, {
@@ -12,4 +16,11 @@ Administrador.belongsTo(Cargo, {
   as: "cargoRef",
 });
 
-export { Cargo, Administrador };
+export {
+  Cargo,
+  Administrador,
+  ImagemPerfil,
+  HistoricoSolicitacaoAdmin,
+  Publicacao,
+  Animal,
+};

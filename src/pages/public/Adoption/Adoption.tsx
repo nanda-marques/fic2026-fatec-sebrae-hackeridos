@@ -5,8 +5,8 @@ import PageHero from "../../../components/layout/PageHero";
 import PublicFooter from "../../../components/layout/PublicFooter";
 import AnimalCard from "../../../components/layout/AnimalCard";
 import PetDetailsModal from "../../../components/adoption/PetDetailsModal";
-import { pets } from "../../../data/pets";
-import type { Pet } from "../../../data/pets";
+import type { Pet } from "../../../types/pet";
+import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
 
 /** Props do componente de filtro. */
 interface SelectFiltroProps {
@@ -127,9 +127,9 @@ function SelectFiltro({
 
 /** Página de adoção com filtros, cards, modal de detalhes e formulário. */
 export default function Adoption(): JSX.Element {
+  const { animais: pets, carregando, erro } = useAnimaisDisponiveis();
   const [tipo, setTipo] = useState("todos");
   const [porte, setPorte] = useState("todos");
-  const [sexo, setSexo] = useState("todos");
   const [idade, setIdade] = useState("todos");
   const [pagina, setPagina] = useState(1);
   const [abertaFaq, setAbertaFaq] = useState<number | null>(null);
@@ -159,15 +159,14 @@ export default function Adoption(): JSX.Element {
       pets.filter((p: Pet) => {
         if (tipo !== "todos" && p.tipo !== tipo) return false;
         if (porte !== "todos" && p.porte !== porte) return false;
-        if (sexo !== "todos" && p.sexo !== sexo) return false;
-
-        const anos = p.anos ?? 0;
-        if (idade === "filhote" && anos > 1) return false;
-        if (idade === "adulto" && (anos < 2 || anos > 5)) return false;
-        if (idade === "idoso" && anos < 6) return false;
+        if (p.anos != null) {
+          if (idade === "filhote" && p.anos > 1) return false;
+          if (idade === "adulto" && (p.anos < 2 || p.anos > 5)) return false;
+          if (idade === "idoso" && p.anos < 6) return false;
+        }
         return true;
       }),
-    [tipo, porte, sexo, idade]
+    [pets, tipo, porte, idade]
   );
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / PER_PAGE));
@@ -244,16 +243,6 @@ export default function Adoption(): JSX.Element {
                 ]}
               />
               <SelectFiltro
-                label="Sexo"
-                value={sexo}
-                onChange={mudar(setSexo)}
-                options={[
-                  { value: "todos", label: "Qualquer" },
-                  { value: "F", label: "Fêmea" },
-                  { value: "M", label: "Macho" },
-                ]}
-              />
-              <SelectFiltro
                 label="Idade"
                 value={idade}
                 onChange={mudar(setIdade)}
@@ -268,7 +257,15 @@ export default function Adoption(): JSX.Element {
           </div>
 
           {/* Cards */}
-          {visiveis.length === 0 ? (
+          {carregando ? (
+            <p className="mt-10 text-center text-sm text-zinc-500">
+              Carregando animais...
+            </p>
+          ) : erro ? (
+            <p role="alert" className="mt-10 text-center text-sm text-red-700">
+              Não foi possível carregar os animais: {erro}
+            </p>
+          ) : visiveis.length === 0 ? (
             <p className="mt-10 text-center text-sm text-zinc-500">
               Nenhum animal encontrado com esses filtros.
             </p>
