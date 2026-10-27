@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { FaPaw } from "react-icons/fa";
+import { FiMail } from "react-icons/fi";
 import type { ComponentType, JSX } from "react";
 import {
   IconGift,
@@ -18,6 +20,7 @@ import NewsletterModal from "../../../components/newsletter/NewsletterModal";
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type { Publicacao } from "../../../services/publicacoesApi";
 import { resumoConteudo } from "../../../data/publicacoes";
+import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
 
 /** Tipo de item de forma de ajuda. */
 interface FormaAjuda {
