@@ -96,10 +96,10 @@ interface Equipe {
 }
 
 const equipe: Equipe[] = [
-  { nome: "Dra. Beatriz Lima", cargo: "Veterinária Chefe", imagem: "/images/sobre-nos/beatriz.jpg" },
-  { nome: "Carlos Eduardo", cargo: "Coordenador de Resgates", imagem: "/images/sobre-nos/carlos.jpg" },
-  { nome: "Gabriela Santos", cargo: "Comunicação & Eventos", imagem: "/images/sobre-nos/gabriela.jpg" },
-  { nome: "Luciana Rocha", cargo: "Cuidadora Especialista", imagem: "/images/sobre-nos/luciana.jpg" },
+  { nome: "Dra. Beatriz Lima", cargo: "Veterinária Chefe", imagem: "src/assets/images/pessoas/dra-beatriz-lima.png" },
+  { nome: "Carlos Eduardo", cargo: "Coordenador de Resgates", imagem: "src/assets/images/pessoas/carlos-eduardo.png" },
+  { nome: "Gabriela Santos", cargo: "Comunicação & Eventos", imagem: "src/assets/images/pessoas/gabriela-santos.png" },
+  { nome: "Luciana Rocha", cargo: "Cuidadora Especialista", imagem: "src/assets/images/pessoas/luciana-rocha.png" },
 ];
 
 /** Página "Sobre Nós" com história, pilares, linha do tempo e equipe. */

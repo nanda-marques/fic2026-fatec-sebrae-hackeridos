@@ -229,7 +229,6 @@ export default function CampaignsNews() {
         </div>
       </section>
 
-      <PublicFooter />
     </>
   );
 }

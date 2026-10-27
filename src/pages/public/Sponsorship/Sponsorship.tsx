@@ -1,9 +1,10 @@
-
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import PublicFooter from "../../../components/layout/PublicFooter";
 import AnimalCard from "../../../components/layout/AnimalCard";
 import PageHero from "../../../components/layout/PageHero";
-import { pets } from "../../../data/pets.js";
+import { pets } from "../../../data/pets";
+import type { Pet } from "../../../types/pet";
 
 // Benefícios do apadrinhamento
 const beneficios = [
@@ -23,6 +24,24 @@ const plano = {
   ],
 };
 
+/** Depoimento de um padrinho ou madrinha. */
+interface Depoimento {
+  nome: string;
+  relacao: string;
+  texto: string;
+  foto: string;
+}
+
+const depoimentos: Depoimento[] = [
+  {
+    nome: "Cláudia Ribeiro",
+    relacao: "Madrinha do Pirata há 1 ano",
+    texto:
+      "“Apadrinhar o Pirata foi a forma que encontrei de dar amor e suporte a um peludo necessitado mesmo não tendo espaço em casa. Fico extremamente feliz ao ver o Pirata correndo e recebendo o carinho dos cuidadores com a minha ajuda mensal.”",
+    foto: "src/assets/images/pessoas/claudia-ribeiro.png",
+  },
+];
+
 function Check() {
   return (
     <svg
@@ -41,14 +60,23 @@ function Check() {
 }
 
 export default function Sponsorship() {
+  // Se a URL tem um #trecho (ex.: /apadrinhamento#planos), rola até ele.
+  // É o que faz o botão "Quero apadrinhar" do pop-up chegar nos planos.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [hash]);
+
   // Seleciona somente os animais que precisam de apadrinhamento.
   const petsPrioritarios = pets.filter(
-    (pet) => pet.prioridadeApadrinhamento === true
+    (pet: Pet) => pet.prioridadeApadrinhamento === true
   );
 
   return (
     <>
-            <PageHero
+      <PageHero
         titulo="Apadrinhe um Focinho"
         descricao="Transforme positivamente o tratamento e o dia de um animal sem poder trazê-lo para casa."
         imagem="src/assets/images/hero/heroSponsorship.png"
@@ -182,16 +210,12 @@ export default function Sponsorship() {
 
           {petsPrioritarios.length > 0 ? (
             <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {petsPrioritarios.map((pet) => (
-                <div
+              {petsPrioritarios.map((pet: Pet) => (
+                <AnimalCard
                   key={pet.id ?? pet.nome}
-                  className={pet.soDesktop ? "hidden md:block" : ""}
-                >
-                  <AnimalCard
-                    animal={pet}
-                    variant="apadrinhamento"
-                  />
-                </div>
+                  animal={pet}
+                  variant="outro"
+                />
               ))}
             </div>
           ) : (
@@ -217,36 +241,28 @@ export default function Sponsorship() {
             desamparadas.
           </p>
 
-          <article className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
-            <p className="text-sm leading-6 text-zinc-800">
-              “Apadrinhar o Pirata foi a forma que encontrei de dar amor e
-              suporte a um peludo necessitado mesmo não tendo espaço em casa.
-              Fico extremamente feliz ao ver o Pirata correndo e recebendo o
-              carinho dos cuidadores com a minha ajuda mensal.”
-            </p>
+          <div className="mt-8 flex flex-col gap-5">
+            {depoimentos.map((d: Depoimento) => (
+              <article key={d.nome} className="rounded-2xl bg-white p-6 shadow-sm">
+                <p className="text-sm leading-6 text-zinc-800">{d.texto}</p>
 
-            <div className="mt-5 flex items-center gap-3">
-              <img
-                src="/images/apadrinhamento/claudia.jpg"
-                alt=""
-                className="h-11 w-11 rounded-full object-cover"
-              />
+                <div className="mt-5 flex items-center gap-3">
+                  <img
+                    src={d.foto}
+                    alt={`Foto de ${d.nome}`}
+                    className="h-11 w-11 rounded-full bg-zinc-200 object-cover"
+                  />
 
-              <div>
-                <strong className="block text-sm text-zinc-900">
-                  Cláudia Ribeiro
-                </strong>
-
-                <span className="text-xs text-zinc-500">
-                  Madrinha do Pirata há 1 ano
-                </span>
-              </div>
-            </div>
-          </article>
+                  <div>
+                    <strong className="block text-sm text-zinc-900">{d.nome}</strong>
+                    <span className="text-xs text-zinc-500">{d.relacao}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
-
     </>
   );
 }
-

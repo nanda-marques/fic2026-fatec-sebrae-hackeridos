@@ -67,18 +67,27 @@ const duvidas = [
   },
 ];
 
-const depoimentos = [
+interface Depoimento {
+  nome: string;
+  pet: string;
+  texto: string;
+  foto: string;
+}
+
+const depoimentos: Depoimento[] = [
   {
-    texto:
-      "“A Amora mudou nossas vidas. Todo o processo de adoção da Focinho Amigo foi feito com muita transparência e respeito pelo bem-estar animal. Somos eternamente gratos!”",
     nome: "Mariana Silva",
     pet: "Adotou a Amora",
+    texto:
+      "“A Amora mudou nossas vidas. Todo o processo de adoção da Focinho Amigo foi feito com muita transparência e respeito pelo bem-estar animal.”",
+    foto: "src/assets/images/pessoas/mariana-silva.png",
   },
   {
-    texto:
-      "“O Pipoca era super medroso quando chegou, mas com as instruções da ONG e muito amor, hoje ele corre feliz e confia em todo mundo. Adotar é tudo de bom!”",
     nome: "Rodrigo Costa",
     pet: "Adotou o Pipoca",
+    texto:
+      "“O Pipoca era super medroso quando chegou, mas com as instruções da ONG e muito amor, hoje ele corre feliz e confia em todo mundo.”",
+    foto: "src/assets/images/pessoas/rodrigo-costa.png",
   },
 ];
 
@@ -113,7 +122,8 @@ function SelectFiltro({
       </select>
     </label>
   );
-}
+};
+
 
 /** Página de adoção com filtros, cards, modal de detalhes e formulário. */
 export default function Adoption(): JSX.Element {
@@ -427,23 +437,35 @@ export default function Adoption(): JSX.Element {
           </div>
         </div>
       </section>
-
-      {/* FINAL FELIZ */}
-      <section className="bg-white px-5 py-12 lg:px-14 lg:py-16">
+      
+            {/* =====================================================
+          DEPOIMENTOS
+      ====================================================== */}
+      <section className="bg-[#f1f1f1] px-5 py-16 lg:px-14">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-2xl font-extrabold text-zinc-800 md:text-3xl">
-            Final Feliz de Quem Já Adotou
-          </h2>
+          <div className="text-center">
+            <h2 className="text-2xl font-extrabold text-zinc-800">
+              Histórias de Quem Adotou
+            </h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              A maior recompensa para o nosso coração é ver as famílias se
+              completando.
+            </p>
+          </div>
+
           <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {depoimentos.map((d) => (
-              <article key={d.nome} className="rounded-2xl bg-[#f8f9fb] p-6">
-                <p className="text-sm leading-6 text-zinc-600">{d.texto}</p>
+            {depoimentos.map((d: Depoimento) => (
+              <article key={d.nome} className="rounded-2xl bg-white p-6 shadow-sm">
+                <div className="text-destaque">★★★★★</div>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">{d.texto}</p>
                 <div className="mt-5 flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-zinc-200" />
+                  <img
+                    src={d.foto}
+                    alt={`Foto de ${d.nome}`}
+                    className="h-9 w-9 rounded-full bg-zinc-200 object-cover"
+                  />
                   <div>
-                    <strong className="block text-xs text-zinc-800">
-                      {d.nome}
-                    </strong>
+                    <strong className="block text-xs text-zinc-800">{d.nome}</strong>
                     <span className="text-[10px] text-zinc-500">{d.pet}</span>
                   </div>
                 </div>

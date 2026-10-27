@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
-import type { JSX } from "react";
-
+import type { ComponentType, JSX } from "react";
+import {
+  IconGift,
+  IconHeart,
+  IconHome,
+  IconUsers,
+  type IconProps,
+} from "../../../components/layout/Icons";
 import { pets } from "../../../data/pets";
 import AnimalCard from "../../../components/layout/AnimalCard";
 import type { Pet } from "../../../types/pet";
-
+import { campanhasUrgentes } from "../../../data/publicacoes";
+import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
 import PageHero from "../../../components/layout/PageHero";
 import Newsletter from "../newsletter/newsletter";
 
@@ -13,9 +20,34 @@ interface FormaAjuda {
   titulo: string;
   texto: string;
   link: string;
-  icone: string;
+  Icone: ComponentType<IconProps>;
   destaque: boolean;
 }
+
+/** Depoimento de quem adotou. */
+interface Depoimento {
+  nome: string;
+  pet: string;
+  texto: string;
+  foto: string;
+}
+
+const depoimentos: Depoimento[] = [
+  {
+    nome: "Mariana Silva",
+    pet: "Adotou a Amora",
+    texto:
+      "“A Amora mudou nossas vidas. Todo o processo de adoção da Focinho Amigo foi feito com muita transparência e respeito pelo bem-estar animal.”",
+    foto: "src/assets/images/pessoas/mariana-silva.png",
+  },
+  {
+    nome: "Rodrigo Costa",
+    pet: "Adotou o Pipoca",
+    texto:
+      "“O Pipoca era super medroso quando chegou, mas com as instruções da ONG e muito amor, hoje ele corre feliz e confia em todo mundo.”",
+    foto: "src/assets/images/pessoas/rodrigo-costa.png",
+  },
+];
 
 const formasAjuda: FormaAjuda[] = [
   {
@@ -23,7 +55,7 @@ const formasAjuda: FormaAjuda[] = [
     texto:
       "Abra as portas da sua casa e mude para sempre o destino de um animal resgatado.",
     link: "/adocao",
-    icone: "⌂",
+    Icone: IconHome,
     destaque: false,
   },
   {
@@ -31,7 +63,7 @@ const formasAjuda: FormaAjuda[] = [
     texto:
       "Ajude com os custos de alimentação e tratamento médico de um cão ou gato sem adotá-lo.",
     link: "/apadrinhamento",
-    icone: "♡",
+    Icone: IconHeart,
     destaque: false,
   },
   {
@@ -39,7 +71,7 @@ const formasAjuda: FormaAjuda[] = [
     texto:
       "Doe seu tempo e carinho participando de ações, banhos e feiras de adoção.",
     link: "/voluntariado",
-    icone: "♧",
+    Icone: IconUsers,
     destaque: false,
   },
   {
@@ -47,7 +79,7 @@ const formasAjuda: FormaAjuda[] = [
     texto:
       "Qualquer valor faz a diferença na compra de medicamentos, ração e manutenção do abrigo.",
     link: "/como-ajudar",
-    icone: "▣",
+    Icone: IconGift,
     destaque: true,
   },
 ];
@@ -87,38 +119,15 @@ export default function Home(): JSX.Element {
       </PageHero>
 
       {/* =====================================================
-          CAMPANHA URGENTE
+          CAMPANHAS URGENTES
       ====================================================== */}
-      <section className="bg-white px-5 py-10 lg:px-14">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid overflow-hidden rounded-2xl border border-destaque bg-[#fffdf3] md:grid-cols-[280px_1fr]">
-            <img
-              src="src/assets/images/pets/rex.png"
-              alt="Rex"
-              className="h-full min-h-[190px] w-full object-cover"
-            />
-            <div className="flex flex-col justify-center p-6 md:p-8">
-              <span className="w-fit rounded-full bg-destaque/20 px-3 py-1 text-[10px] font-bold uppercase text-destaque-escura">
-                Campanha urgente
-              </span>
-              <h2 className="mt-3 text-2xl font-extrabold text-zinc-800">
-                Ajude o Rex! Ele precisa de uma cirurgia.
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-5 text-zinc-500">
-                O Rex foi resgatado com uma fratura complexa no quadril após sofrer
-                um atropelamento. Precisamos arrecadar o valor do procedimento
-                cirúrgico ortopédico e os custos pós-operatórios.
-              </p>
-              <Link
-                to="/como-ajudar"
-                className="mt-5 w-fit rounded-lg bg-marca px-5 py-3 text-xs font-bold text-white"
-              >
-                Contribuir Agora
-              </Link>
-            </div>
+      {campanhasUrgentes.length > 0 && (
+        <section className="bg-white px-5 py-10 lg:px-14">
+          <div className="mx-auto max-w-6xl">
+            <CampanhasCarrossel campanhas={campanhasUrgentes} variant="home" />
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* =====================================================
           PETS
@@ -238,44 +247,25 @@ export default function Home(): JSX.Element {
               completando.
             </p>
           </div>
+
           <div className="mt-8 grid gap-5 md:grid-cols-2">
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
-              <div className="text-destaque">★★★★★</div>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">
-                “A Amora mudou nossas vidas. Todo o processo de adoção da Focinho
-                Amigo foi feito com muita transparência e respeito pelo
-                bem-estar animal.”
-              </p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-zinc-200" />
-                <div>
-                  <strong className="block text-xs text-zinc-800">
-                    Mariana Silva
-                  </strong>
-                  <span className="text-[10px] text-zinc-500">
-                    Adotou a Amora
-                  </span>
+            {depoimentos.map((d: Depoimento) => (
+              <article key={d.nome} className="rounded-2xl bg-white p-6 shadow-sm">
+                <div className="text-destaque">★★★★★</div>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">{d.texto}</p>
+                <div className="mt-5 flex items-center gap-3">
+                  <img
+                    src={d.foto}
+                    alt={`Foto de ${d.nome}`}
+                    className="h-9 w-9 rounded-full bg-zinc-200 object-cover"
+                  />
+                  <div>
+                    <strong className="block text-xs text-zinc-800">{d.nome}</strong>
+                    <span className="text-[10px] text-zinc-500">{d.pet}</span>
+                  </div>
                 </div>
-              </div>
-            </article>
-            <article className="rounded-2xl bg-white p-6 shadow-sm">
-              <div className="text-destaque">★★★★★</div>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">
-                “O Pipoca era super medroso quando chegou, mas com as instruções
-                da ONG e muito amor, hoje ele corre feliz e confia em todo mundo.”
-              </p>
-              <div className="mt-5 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-zinc-200" />
-                <div>
-                  <strong className="block text-xs text-zinc-800">
-                    Rodrigo Costa
-                  </strong>
-                  <span className="text-[10px] text-zinc-500">
-                    Adotou o Pipoca
-                  </span>
-                </div>
-              </div>
-            </article>
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -293,17 +283,19 @@ export default function Home(): JSX.Element {
             Escolha a que mais toca seu coração.
           </p>
           <div className="mt-8 grid gap-4 md:grid-cols-4">
-            {formasAjuda.map((item) => (
+            {formasAjuda.map((item: FormaAjuda) => (
               <article
                 key={item.titulo}
                 className="rounded-2xl bg-[#f1f1f1] p-5 transition hover:-translate-y-1 hover:shadow-md"
               >
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full text-lg text-white ${
-                    item.destaque ? "bg-destaque text-zinc-900" : "bg-marca"
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                    item.destaque
+                      ? "bg-destaque text-zinc-900"
+                      : "bg-marca text-white"
                   }`}
                 >
-                  {item.icone}
+                  <item.Icone className="h-5 w-5" />
                 </div>
                 <h3 className="mt-4 font-bold text-zinc-800">{item.titulo}</h3>
                 <p className="mt-2 text-xs leading-5 text-zinc-500">

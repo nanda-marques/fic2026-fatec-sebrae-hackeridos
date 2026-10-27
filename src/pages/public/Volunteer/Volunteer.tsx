@@ -31,6 +31,24 @@ const requisitos = [
   "Participar do treinamento introdutório obrigatório",
 ];
 
+/** Depoimento de um voluntário. */
+interface Depoimento {
+  nome: string;
+  relacao: string;
+  texto: string;
+  foto: string;
+}
+
+const depoimentos: Depoimento[] = [
+  {
+    nome: "Beatriz Souza",
+    relacao: "Voluntária desde 2021",
+    texto:
+      "“Comecei como voluntária nas feiras de adoção e hoje auxilio também no resgate. É indescritível a alegria de ver um animal que chegou assustado e machucado sair do abrigo abanando o rabo com seus novos donos.”",
+    foto: "src/assets/images/pessoas/beatriz-souza.png",
+  },
+];
+
 export default function Volunteer() {
   return (
     <>
@@ -129,7 +147,7 @@ export default function Volunteer() {
           </div>
 
           <img
-            src="/images/voluntariado/comecar.jpg"
+            src="src/assets/images/right-col.png"
             alt="Voluntária abraçando um cachorro"
             className="h-64 w-full rounded-3xl object-cover md:h-[270px]"
           />
@@ -163,7 +181,7 @@ export default function Volunteer() {
         </div>
       </section>
 
-      {/* =====================================================
+            {/* =====================================================
           VOZ DE QUEM NOS APOIA
       ====================================================== */}
       <section className="bg-[#f1f1f1] px-5 py-12 lg:px-14 lg:py-16">
@@ -175,28 +193,26 @@ export default function Volunteer() {
             Veja a experiência de quem já faz parte desse time de amor.
           </p>
 
-          <article className="mt-8 rounded-2xl bg-white p-6 shadow-sm">
-            <p className="text-sm leading-6 text-zinc-800">
-              “Comecei como voluntária nas feiras de adoção e hoje auxilio
-              também no resgate. É indescritível a alegria de ver um animal que
-              chegou assustado e machucado sair do abrigo abanando o rabo com
-              seus novos donos.”
-            </p>
-            <div className="mt-5 flex items-center gap-3">
-              <img
-                src="/images/voluntariado/beatriz.jpg"
-                alt=""
-                className="h-11 w-11 rounded-full object-cover"
-              />
-              <div>
-                <strong className="block text-sm text-zinc-900">Beatriz Souza</strong>
-                <span className="text-xs text-zinc-500">Voluntária desde 2021</span>
-              </div>
-            </div>
-          </article>
+          <div className="mt-8 flex flex-col gap-5">
+            {depoimentos.map((d: Depoimento) => (
+              <article key={d.nome} className="rounded-2xl bg-white p-6 shadow-sm">
+                <p className="text-sm leading-6 text-zinc-800">{d.texto}</p>
+                <div className="mt-5 flex items-center gap-3">
+                  <img
+                    src={d.foto}
+                    alt={`Foto de ${d.nome}`}
+                    className="h-11 w-11 rounded-full bg-zinc-200 object-cover"
+                  />
+                  <div>
+                    <strong className="block text-sm text-zinc-900">{d.nome}</strong>
+                    <span className="text-xs text-zinc-500">{d.relacao}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
-
     </>
   );
 }

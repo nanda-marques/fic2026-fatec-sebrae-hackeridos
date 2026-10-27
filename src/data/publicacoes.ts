@@ -137,9 +137,14 @@ export const publicacoes: Publicacao[] = [
 const maisRecentePrimeiro = (a: Publicacao, b: Publicacao) =>
   b.data.localeCompare(a.data);
 
-/** Carrossel: primeiro as campanhas urgentes, depois as em destaque. */
+/** Todas as campanhas urgentes, da mais recente para a mais antiga (usadas na Home). */
+export const campanhasUrgentes: Publicacao[] = publicacoes
+  .filter((p) => p.urgente)
+  .sort(maisRecentePrimeiro);
+
+/** Carrossel de Eventos: primeiro as urgentes, depois as em destaque. */
 export const campanhasEmDestaque: Publicacao[] = [
-  ...publicacoes.filter((p) => p.urgente).sort(maisRecentePrimeiro),
+  ...campanhasUrgentes,
   ...publicacoes.filter((p) => !p.urgente && p.destaque).sort(maisRecentePrimeiro),
 ];
 

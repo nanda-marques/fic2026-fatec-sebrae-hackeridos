@@ -226,6 +226,7 @@ export const pets: Pet[] = [
     porte: "Grande",
     tags: ["Leal", "Calmo"],
     descricao: "Um companheiro leal que merece uma família amorosa.",
+    prioridadeApadrinhamento: true,
     imagem: IMAGEM_TESTE,
     detalhes: {
       fotos: fotosTeste(IMAGEM_TESTE),
@@ -254,6 +255,7 @@ export const pets: Pet[] = [
     porte: "Pequeno",
     tags: ["Carinhosa", "Calma"],
     descricao: "Uma gata adulta que adora descansar perto de pessoas.",
+    prioridadeApadrinhamento: true,
     imagem: IMAGEM_TESTE,
     detalhes: {
       fotos: fotosTeste(IMAGEM_TESTE),
@@ -394,6 +396,7 @@ export const pets: Pet[] = [
     porte: "Médio",
     tags: ["Tranquilo", "Leal"],
     descricao: "Um cão tranquilo que procura um lar cheio de carinho.",
+    prioridadeApadrinhamento: true,
     imagem: IMAGEM_TESTE,
     detalhes: {
       fotos: fotosTeste(IMAGEM_TESTE),
