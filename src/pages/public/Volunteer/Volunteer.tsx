@@ -8,10 +8,8 @@ import {
   IconUsers,
 } from "../../../components/layout/Icons";
 
-// TODO: substituir pelo link real do formulário de voluntários (Google Forms)
-const LINK_FORMULARIO_VOLUNTARIO = "https://forms.google.com/";
+const LINK_FORMULARIO_VOLUNTARIO = "https://docs.google.com/forms/d/e/1FAIpQLSfq11pB4L1iXPFsMYhxWcNEZPccVfL5qa4uWRluVWaAjAi1OA/viewform";
 
-// Imagens ficam na pasta public: /images/voluntariado/<arquivo>
 const motivos = [
   { titulo: "Transforme Vidas", texto: "Ofereça carinho e reabilitação direta para animais que sofreram traumas, preparando-os para adoção.", Icone: IconHeart },
   { titulo: "Aprenda e Cresça", texto: "Adquira experiência prática com cuidados veterinários básicos, socialização animal e gestão de eventos.", Icone: IconStar },
@@ -154,28 +152,42 @@ export default function Volunteer() {
         </div>
       </section>
 
-      {/* =====================================================
+            {/* =====================================================
           FORMULÁRIO
       ====================================================== */}
-      <section className="bg-white px-5 pb-12 lg:px-14 lg:pb-16">
+      <section
+        id="formulario"
+        className="scroll-mt-4 bg-white px-5 pb-12 lg:px-14 lg:pb-16"
+      >
         <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col items-center rounded-xl border-2 border-dashed border-marca bg-[#f8f9fb] px-5 py-10 text-center md:py-14">
-            <IconDoc className="h-8 w-8 text-marca" />
-            <h2 className="mt-3 text-lg font-bold text-zinc-800">
-              <span className="md:hidden">Inscrição de Voluntários</span>
-              <span className="hidden md:inline">Formulário de Inscrição (Google Forms)</span>
-            </h2>
-            <p className="mt-1 max-w-xs text-xs text-zinc-500 md:max-w-none">
-              Preencha seus dados de contato e interesses de voluntariado
-              diretamente pelo formulário integrado.
-            </p>
+          <h2 className="text-center text-xl font-bold text-zinc-800 md:text-2xl">
+            <span className="md:hidden">Inscrição de Voluntários</span>
+            <span className="hidden md:inline">Formulário de Inscrição</span>
+          </h2>
+          <p className="mx-auto mt-1 max-w-xs text-center text-xs text-zinc-500 md:max-w-none">
+            Preencha seus dados de contato e interesses de voluntariado
+            diretamente pelo formulário integrado.
+          </p>
+
+          <div className="mt-6 overflow-hidden rounded-xl border-2 border-marca">
+            <iframe
+              title="Formulário de inscrição de voluntários"
+              src={`${LINK_FORMULARIO_VOLUNTARIO}?embedded=true`}
+              loading="lazy"
+              className="block h-[820px] w-full border-0 md:h-[1000px]"
+            >
+              Carregando formulário…
+            </iframe>
+          </div>
+
+          <div className="mt-5 text-center">
             <a
               href={LINK_FORMULARIO_VOLUNTARIO}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 w-full rounded-lg bg-marca px-6 py-2.5 text-center text-xs font-bold text-white transition hover:opacity-90 md:w-auto"
+              className="inline-block w-full rounded-lg bg-marca px-6 py-2.5 text-center text-xs font-bold text-white transition hover:opacity-90 md:w-auto"
             >
-              Abrir em Nova Aba
+              Abrir o formulário em nova aba
             </a>
           </div>
         </div>

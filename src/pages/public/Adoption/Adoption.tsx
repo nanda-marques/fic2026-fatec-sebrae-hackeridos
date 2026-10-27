@@ -16,7 +16,7 @@ interface SelectFiltroProps {
   options: Array<{ value: string; label: string }>;
 }
 
-const LINK_FORMULARIO = "https://forms.google.com/";
+const LINK_FORMULARIO = "https://docs.google.com/forms/d/e/1FAIpQLSc5MaIdjMHJLM84eiKYNFuGmzleNLMMfYNE5QaxScOrerSkGg/viewform";
 const PER_PAGE = 6;
 
 const passos = [
@@ -370,7 +370,7 @@ export default function Adoption(): JSX.Element {
         </div>
       </section>
 
-      {/* FORMULÁRIO */}
+            {/* FORMULÁRIO */}
       <section
         id="formulario"
         className="scroll-mt-4 bg-white px-5 py-12 lg:px-14 lg:py-16"
@@ -379,19 +379,27 @@ export default function Adoption(): JSX.Element {
           <h2 className="text-center text-2xl font-extrabold text-zinc-800 md:text-3xl">
             Inicie seu Processo de Adoção
           </h2>
-          <div className="mt-8 flex flex-col items-center rounded-xl border-2 border-dashed border-marca px-5 py-12 text-center md:py-16">
-            <span className="text-3xl text-marca">▤</span>
-            <h3 className="mt-3 text-base font-bold text-zinc-800">
-              Formulário de Adoção (Google Forms)
-            </h3>
-            <p className="mt-1 text-xs text-zinc-500">
-              Carregamento automático do formulário seguro incorporado.
+
+          <div className="mt-8 overflow-hidden rounded-xl border-2 border-marca">
+            <iframe
+              title="Formulário de entrevista de adoção"
+              src={`${LINK_FORMULARIO}?embedded=true`}
+              loading="lazy"
+              className="block h-[820px] w-full border-0 md:h-[1000px]"
+            >
+              Carregando formulário…
+            </iframe>
+          </div>
+
+          <div className="mt-5 text-center">
+            <p className="text-xs text-zinc-500">
+              O formulário não carregou ou ficou pequeno na tela?
             </p>
             <a
               href={LINK_FORMULARIO}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 rounded-lg bg-marca px-6 py-2.5 text-xs font-bold text-white transition hover:opacity-90"
+              className="mt-3 inline-block rounded-lg bg-marca px-6 py-2.5 text-xs font-bold text-white transition hover:opacity-90"
             >
               Abrir em Nova Aba
             </a>
@@ -434,7 +442,7 @@ export default function Adoption(): JSX.Element {
           </div>
         </div>
       </section>
-      
+
             {/* =====================================================
           DEPOIMENTOS
       ====================================================== */}
