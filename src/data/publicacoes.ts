@@ -13,23 +13,31 @@ export const nomeCategoria: Record<CategoriaConteudo, string> = {
   publicacao: "Publicação",
 };
 
+const publicacoes: Publicacao[] = [];
+
 export function resumoConteudo(publicacao: Publicacao): string {
-  return (publicacao.resumo || publicacao.descricaoConteudo || "")
+  const texto = publicacao.resumo ?? publicacao.descricaoConteudo ?? "";
+  return texto
     .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
 export function textoConteudoCompleto(publicacao: Publicacao): string {
   const html = publicacao.descricaoConteudo ?? "";
-  const comQuebras = html
+  return html
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(?:p|div|li|h[1-6]|blockquote)>/gi, "\n");
-  const documento = new DOMParser().parseFromString(comQuebras, "text/html");
-  documento.querySelectorAll("script, style").forEach((elemento) => elemento.remove());
+    .replace(/<\/?(?:p|div|li|h[1-6]|blockquote|ul|ol)>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 
 const maisRecentePrimeiro = (a: Publicacao, b: Publicacao) =>
-  b.data.localeCompare(a.data);
+  b.dataEventoCampanha.localeCompare(a.dataEventoCampanha);
 
 /** Todas as campanhas urgentes, da mais recente para a mais antiga (usadas na Home). */
 export const campanhasUrgentes: Publicacao[] = publicacoes
