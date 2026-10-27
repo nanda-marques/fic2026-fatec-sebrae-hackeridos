@@ -43,8 +43,16 @@ const campoClass="h-[48px] flex items-center gap-[14px] px-[14px] text-[#1f2937]
 
 const inputClass="w-full min-w-0 p-0 text-[15px] text-[#1f2937] bg-transparent border-0 outline-none placeholder:text-[#475569]";
 
+interface NewsletterModalProps {
+  abrirSolicitado: boolean;
+  aoFecharSolicitado: () => void;
+}
+
 /** Pop-up de cadastro na newsletter. Aparece uma vez ao entrar no site. */
-export default function NewsletterModal(): JSX.Element | null {
+export default function NewsletterModal({
+  abrirSolicitado,
+  aoFecharSolicitado,
+}: NewsletterModalProps): JSX.Element | null {
   const [aberto, setAberto] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [nome, setNome] = useState("");
@@ -55,7 +63,8 @@ export default function NewsletterModal(): JSX.Element | null {
   const fechar = useCallback(() => {
     marcarComoVista();
     setAberto(false);
-  }, []);
+    aoFecharSolicitado();
+  }, [aoFecharSolicitado]);
 
   // Abre sozinho, depois de um instante, se ainda não foi visto
   useEffect(() => {
@@ -63,6 +72,10 @@ export default function NewsletterModal(): JSX.Element | null {
     const temporizador = window.setTimeout(() => setAberto(true), ATRASO_MS);
     return () => window.clearTimeout(temporizador);
   }, []);
+
+  useEffect(() => {
+    if (abrirSolicitado) setAberto(true);
+  }, [abrirSolicitado]);
 
   // Enquanto aberto: trava a rolagem da página, foca o pop-up e fecha com Esc
   useEffect(() => {
