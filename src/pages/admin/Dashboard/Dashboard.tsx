@@ -135,8 +135,11 @@ export default function Dashboard(): JSX.Element {
   });
   const [carregando, setCarregando] = useState<boolean>(true);
   const [erro, setErro] = useState<string>("");
-  const [avisoPermissaoAberto, setAvisoPermissaoAberto] = useState(false);
+  const [avisoPermissao, setAvisoPermissao] = useState<
+    "conteudo" | "animais" | null
+  >(null);
   const podeGerenciarConteudo = authApi.podeGerenciar("conteudo");
+  const podeGerenciarAnimais = authApi.podeGerenciar("animais");
 
   async function carregar(): Promise<void> {
     setCarregando(true);
@@ -175,10 +178,18 @@ export default function Dashboard(): JSX.Element {
 
   function criarArtigo(): void {
     if (!podeGerenciarConteudo) {
-      setAvisoPermissaoAberto(true);
+      setAvisoPermissao("conteudo");
       return;
     }
     navigate("/admin/publicacoes/nova");
+  }
+
+  function irParaAnimais(): void {
+    if (!podeGerenciarAnimais) {
+      setAvisoPermissao("animais");
+      return;
+    }
+    navigate("/admin/animais");
   }
 
   async function excluirPublicacao(publicacao: Publicacao): Promise<void> {
@@ -205,12 +216,12 @@ export default function Dashboard(): JSX.Element {
     <div className="flex-1 min-w-0 min-h-screen flex flex-col font-['Inter',Arial,sans-serif] text-[#202b3e] bg-[#f0f0f0] box-border *:box-border">
       <AdminHeader titulo="Dashboard" />
 
-      {avisoPermissaoAberto && (
+      {avisoPermissao && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
           onClick={(evento) => {
             if (evento.target === evento.currentTarget) {
-              setAvisoPermissaoAberto(false);
+              setAvisoPermissao(null);
             }
           }}
         >
@@ -223,7 +234,7 @@ export default function Dashboard(): JSX.Element {
           >
             <button
               type="button"
-              onClick={() => setAvisoPermissaoAberto(false)}
+              onClick={() => setAvisoPermissao(null)}
               aria-label="Fechar aviso"
               className="absolute right-4 top-4 flex cursor-pointer border-0 bg-transparent p-1 text-[#667b9b] transition-colors hover:text-[#202b3e]"
             >
@@ -242,12 +253,14 @@ export default function Dashboard(): JSX.Element {
               id="aviso-permissao-descricao"
               className="m-0 mb-6 text-[14px] leading-relaxed text-[#667b9b]"
             >
-              Você não possui permissão para criar artigos. Atualmente, seu cargo permite apenas gerenciar animais.
+              {avisoPermissao === "conteudo"
+                ? "Você não possui permissão para criar artigos. Atualmente, seu cargo permite apenas gerenciar animais."
+                : "Você não possui permissão para gerenciar animais. Atualmente, seu cargo permite apenas gerenciar publicações."}
             </p>
             <button
               type="button"
               autoFocus
-              onClick={() => setAvisoPermissaoAberto(false)}
+              onClick={() => setAvisoPermissao(null)}
               className="h-10 cursor-pointer rounded-[8px] border-0 bg-[#2174b7] px-6 text-[14px] font-bold text-white transition-colors hover:bg-[#1767a8]"
             >
               Entendi
@@ -341,7 +354,7 @@ export default function Dashboard(): JSX.Element {
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/admin/animais")}
+                onClick={irParaAnimais}
                 className="h-[32px] px-[14px] text-white font-inherit text-[13px] font-bold bg-[#ffb800] border-0 rounded-[6px] cursor-pointer transition-colors duration-150 hover:bg-[#e6a600]"
               >
                 Ir para Animais
