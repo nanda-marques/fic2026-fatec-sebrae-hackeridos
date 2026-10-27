@@ -7,7 +7,7 @@ import type { Pet } from "../../../types/pet";
 import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
 
 import PageHero from "../../../components/layout/PageHero";
-import Newsletter from "../newsletter/newsletter";
+import NewsletterModal from "../../../components/newsletter/NewsletterModal";
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type { Publicacao } from "../../../services/publicacoesApi";
 import { resumoConteudo } from "../../../data/publicacoes";
@@ -98,7 +98,7 @@ export default function Home(): JSX.Element {
 
   return (
     <main>
-      <Newsletter />
+      <NewsletterModal />
 
       <PageHero
         grande
