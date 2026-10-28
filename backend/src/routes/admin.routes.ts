@@ -1,93 +1,15 @@
 import { Router } from "express";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
 import Administrador from "../models/Administrador.js";
 import Cargo from "../models/Cargo.js";
-import ImagemPerfil from "../models/ImagemPerfil.js";
-import { obterJwtSecret } from "../middlewares/auth.middleware.js";
 import HistoricoSolicitacaoAdmin from "../models/HistoricoSolicitacaoAdmin.js";
+import { autenticar } from "../middlewares/auth.middleware.js";
+import { exigirPermissaoGerenciarAdmins } from "../middlewares/admin.middleware.js";
+import { pathFotoDe } from "../helpers/perfil.helper.js";
 
 const router = Router();
-
-interface JwtPayload {
-  id: number;
-  email: string;
-  cargo: string;
-}
-
-// Middleware
-function autenticar(req: Request, res: Response, next: NextFunction): void {
-  const header = req.headers.authorization;
-
-  if (!header?.startsWith("Bearer ")) {
-    res.status(401).json({ mensagem: "Token não fornecido." });
-    return;
-  }
-
-  try {
-    const token = header.slice(7);
-    const payload = jwt.verify(token, obterJwtSecret()) as JwtPayload;
-
-    if (!payload.id) {
-      res.status(401).json({ mensagem: "Token inválido." });
-      return;
-    }
-
-    (req as Request & { adminId: number }).adminId = payload.id;
-    next();
-  } catch {
-    res.status(401).json({ mensagem: "Token inválido ou expirado." });
-  }
- }
-
-
-async function exigirPermissaoGerenciarAdmins(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const { adminId } = req as Request & { adminId: number };
-
-    const admin = await Administrador.findByPk(adminId, {
-      include: [{ model: Cargo, as: "cargoRef" }],
-    });
-
-    if (!admin || admin.status !== "ativo" || !admin.ativo) {
-      res.status(403).json({
-        mensagem: "Apenas administradores ativos podem realizar esta ação.",
-      });
-      return;
-    }
-
-    const cargoRef = admin.get("cargoRef") as Cargo | undefined;
-
-    if (!cargoRef?.podeGerenciarAdmins) {
-      res.status(403).json({
-        mensagem: "Você não tem permissão para gerenciar administradores.",
-      });
-      return;
-    }
-
-    next();
-  } catch (erro: unknown) {
-    console.error("Erro ao verificar permissão:", erro);
-    res.status(500).json({
-      mensagem: "Erro ao verificar permissões.",
-    });
-  }
-}
-
-
-// Helper: busca o path da foto de perfil
-async function pathFotoDe(adminId: number): Promise<string | null> {
-  const img = await ImagemPerfil.findOne({
-    where: { idAdministradores: adminId },
-  });
-  return img?.url ?? null;
-}
 
 // GET /api/admin/me
 router.get(
@@ -95,7 +17,7 @@ router.get(
   autenticar,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { adminId } = req as Request & { adminId: number };
+      const adminId = req.usuario!.id;
       const admin = await Administrador.findByPk(adminId, {
         include: [{ model: Cargo, as: "cargoRef" }],
       });
@@ -129,9 +51,12 @@ interface CorpoPerfil {
 router.put(
   "/me",
   autenticar,
-  async (req: Request<unknown, unknown, CorpoPerfil>, res: Response): Promise<void> => {
+  async (
+    req: Request<unknown, unknown, CorpoPerfil>,
+    res: Response
+  ): Promise<void> => {
     try {
-      const { adminId } = req as Request & { adminId: number };
+      const adminId = req.usuario!.id;
       const { nomeCompleto, email } = req.body;
 
       const admin = await Administrador.findByPk(adminId);
@@ -188,9 +113,12 @@ interface CorpoSenha {
 router.put(
   "/senha",
   autenticar,
-  async (req: Request<unknown, unknown, CorpoSenha>, res: Response): Promise<void> => {
+  async (
+    req: Request<unknown, unknown, CorpoSenha>,
+    res: Response
+  ): Promise<void> => {
     try {
-      const { adminId } = req as Request & { adminId: number };
+      const adminId = req.usuario!.id;
       const { senhaAtual, novaSenha } = req.body;
 
       if (!senhaAtual || !novaSenha) {
@@ -198,11 +126,15 @@ router.put(
         return;
       }
       if (novaSenha.length < 8) {
-        res.status(400).json({ mensagem: "A nova senha deve ter pelo menos 8 caracteres." });
+        res.status(400).json({
+          mensagem: "A nova senha deve ter pelo menos 8 caracteres.",
+        });
         return;
       }
       if (senhaAtual === novaSenha) {
-        res.status(400).json({ mensagem: "A nova senha deve ser diferente da atual." });
+        res.status(400).json({
+          mensagem: "A nova senha deve ser diferente da atual.",
+        });
         return;
       }
 
@@ -229,11 +161,7 @@ router.put(
   }
 );
 
-
-/**
- * GET /api/admin/pendentes
- * Lista os cadastros que aguardam aprovação.
- */
+// GET /api/admin/pendentes
 router.get(
   "/pendentes",
   autenticar,
@@ -243,7 +171,14 @@ router.get(
       const pendentes = await Administrador.findAll({
         where: { status: "pendente" },
         include: [{ model: Cargo, as: "cargoRef" }],
-        attributes: ["id", "nomeCompleto", "email", "cargo", "status", "criadoEm"],
+        attributes: [
+          "id",
+          "nomeCompleto",
+          "email",
+          "cargo",
+          "status",
+          "criadoEm",
+        ],
         order: [["criadoEm", "ASC"]],
       });
 
@@ -271,10 +206,7 @@ router.get(
   }
 );
 
-/**
- * PATCH /api/admin/:id/aprovar
- * Aprova o cadastro sem alterar o cargo escolhido.
- */
+// PATCH /api/admin/:id/aprovar
 router.patch(
   "/:id/aprovar",
   autenticar,
@@ -304,36 +236,36 @@ router.patch(
 
       const cargoRef = await Cargo.findByPk(admin.cargo);
 
-if (!cargoRef) {
-  res.status(500).json({
-    mensagem: "Cargo da solicitação não encontrado.",
-  });
-  return;
-}
+      if (!cargoRef) {
+        res.status(500).json({
+          mensagem: "Cargo da solicitação não encontrado.",
+        });
+        return;
+      }
 
-const { adminId } = req as Request & { adminId: number };
-const responsavel = await Administrador.findByPk(adminId);
+      const responsavelId = req.usuario!.id;
+      const responsavel = await Administrador.findByPk(responsavelId);
 
-if (!responsavel) {
-  res.status(401).json({
-    mensagem: "Administrador responsável não encontrado.",
-  });
-  return;
-}
+      if (!responsavel) {
+        res.status(401).json({
+          mensagem: "Administrador responsável não encontrado.",
+        });
+        return;
+      }
 
-admin.status = "ativo";
-admin.ativo = true;
-await admin.save();
+      admin.status = "ativo";
+      admin.ativo = true;
+      await admin.save();
 
-await HistoricoSolicitacaoAdmin.create({
-  solicitanteId: admin.id,
-  solicitanteNome: admin.nomeCompleto,
-  solicitanteEmail: admin.email,
-  cargoSolicitado: cargoRef.nomeCargo,
-  decisao: "aprovado",
-  administradorId: responsavel.id,
-  administradorNome: responsavel.nomeCompleto,
-});
+      await HistoricoSolicitacaoAdmin.create({
+        solicitanteId: admin.id,
+        solicitanteNome: admin.nomeCompleto,
+        solicitanteEmail: admin.email,
+        cargoSolicitado: cargoRef.nomeCargo,
+        decisao: "aprovado",
+        administradorId: responsavel.id,
+        administradorNome: responsavel.nomeCompleto,
+      });
 
       res.json({
         mensagem: "Cadastro aprovado com sucesso.",
@@ -353,10 +285,7 @@ await HistoricoSolicitacaoAdmin.create({
   }
 );
 
-/**
- * PATCH /api/admin/:id/rejeitar
- * Rejeita o cadastro usando o status inativo já existente no banco.
- */
+// PATCH /api/admin/:id/rejeitar
 router.patch(
   "/:id/rejeitar",
   autenticar,
@@ -386,36 +315,36 @@ router.patch(
 
       const cargoRef = await Cargo.findByPk(admin.cargo);
 
-if (!cargoRef) {
-  res.status(500).json({
-    mensagem: "Cargo da solicitação não encontrado.",
-  });
-  return;
-}
+      if (!cargoRef) {
+        res.status(500).json({
+          mensagem: "Cargo da solicitação não encontrado.",
+        });
+        return;
+      }
 
-const { adminId } = req as Request & { adminId: number };
-const responsavel = await Administrador.findByPk(adminId);
+      const responsavelId = req.usuario!.id;
+      const responsavel = await Administrador.findByPk(responsavelId);
 
-if (!responsavel) {
-  res.status(401).json({
-    mensagem: "Administrador responsável não encontrado.",
-  });
-  return;
-}
+      if (!responsavel) {
+        res.status(401).json({
+          mensagem: "Administrador responsável não encontrado.",
+        });
+        return;
+      }
 
-admin.status = "inativo";
-admin.ativo = false;
-await admin.save();
+      admin.status = "inativo";
+      admin.ativo = false;
+      await admin.save();
 
-await HistoricoSolicitacaoAdmin.create({
-  solicitanteId: admin.id,
-  solicitanteNome: admin.nomeCompleto,
-  solicitanteEmail: admin.email,
-  cargoSolicitado: cargoRef.nomeCargo,
-  decisao: "rejeitado",
-  administradorId: responsavel.id,
-  administradorNome: responsavel.nomeCompleto,
-});
+      await HistoricoSolicitacaoAdmin.create({
+        solicitanteId: admin.id,
+        solicitanteNome: admin.nomeCompleto,
+        solicitanteEmail: admin.email,
+        cargoSolicitado: cargoRef.nomeCargo,
+        decisao: "rejeitado",
+        administradorId: responsavel.id,
+        administradorNome: responsavel.nomeCompleto,
+      });
 
       res.json({
         mensagem: "Cadastro rejeitado.",
@@ -433,11 +362,7 @@ await HistoricoSolicitacaoAdmin.create({
   }
 );
 
-
-/**
- * GET /api/admin/historico-solicitacoes
- * Lista as últimas 5 solicitações analisadas.
- */
+// GET /api/admin/historico-solicitacoes
 router.get(
   "/historico-solicitacoes",
   autenticar,
@@ -463,13 +388,11 @@ router.get(
       res.json(historico);
     } catch (erro: unknown) {
       console.error("Erro ao buscar histórico de solicitações:", erro);
-
       res.status(500).json({
         mensagem: "Erro ao buscar histórico de solicitações.",
       });
     }
   }
 );
-
 
 export default router;
