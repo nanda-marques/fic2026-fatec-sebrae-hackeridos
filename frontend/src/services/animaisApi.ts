@@ -103,15 +103,11 @@ function paraPet(animal: AnimalPublico): Pet {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("pt-BR");
-  const tipo =
-    especieNormalizada.includes("felin") ||
-    especieNormalizada.includes("gat")
+  const tipo: "Gato" | "Cão" =
+    especieNormalizada.includes("felino") ||
+    especieNormalizada.includes("gato")
       ? "Gato"
-      : especieNormalizada.includes("canin") ||
-          especieNormalizada.includes("cao") ||
-          especieNormalizada.includes("cachorr")
-        ? "Cão"
-        : animal.especie;
+      : "Cão";
   const imagem = animal.imagem || imagemDoAnimal(animal.nome);
   const idade =
     animal.idade === null
