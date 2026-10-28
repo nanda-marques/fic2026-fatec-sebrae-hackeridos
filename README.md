@@ -1,72 +1,91 @@
-# Focinho Amigo
+﻿# Focinho Amigo
 
-Site institucional, informativo e dinâmico desenvolvido para a
-OSCIP de Proteção Animal Focinho Amigo.
+Site institucional, informativo e dinâmico desenvolvido para a OSCIP de Proteção Animal Focinho Amigo.
+Aplicação web organizada em frontend React/Vite e backend Node.js/Express com TypeScript.
 
 ## Sobre o projeto
 
-O projeto tem como objetivo ampliar a visibilidade da Focinho Amigo,
-facilitar o acesso às informações da organização e aproximar pessoas
-interessadas em adoção, apadrinhamento, voluntariado e outras formas
-de apoio.
+O projeto tem como objetivo ampliar a visibilidade da Focinho Amigo, facilitar o acesso às informações da organização e aproximar pessoas interessadas em adoção, apadrinhamento, voluntariado e outras formas de apoio.
 
-O sistema também contará com uma área administrativa para atualização
-dos animais disponíveis, publicações e acompanhamento dos cadastros
-realizados pelo site.
+O sistema também contará com uma área administrativa para atualização dos animais disponíveis, publicações e acompanhamento dos cadastros realizados pelo site.
 
 ## Tecnologias
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge\&logo=react\&logoColor=61DAFB)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=node.js\&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge\&logo=express\&logoColor=white)
-![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge\&logo=eslint\&logoColor=white)
-![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge\&logo=prettier\&logoColor=black)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge\&logo=git\&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge\&logo=github\&logoColor=white)
+Node.js {24.22.1} + Express, React + Vite (TypeScript), MySQL {versão} + Sequelize
 
-## Estrutura inicial
+## Estrutura
 
-O projeto está organizado em uma aplicação frontend desenvolvida
-com React e uma estrutura preparada para o desenvolvimento do
-backend em Node.js.
+- `frontend/`: interface pública e área administrativa em React.
+- `backend/`: API REST, autenticação, banco MySQL e integrações com Supabase.
+- `docs/`: documentação original, requisitos, arquitetura e apresentação.
+
+## Pré-requisitos
+
+- Node.js 24.22.1 (recomendado)
+- Git
+- npm 
+
+A versão configurada neste repositório é `24.22.1`; o arquivo `.nvmrc` pode ser utilizado pelo gerenciador de versões.
 
 ## Como executar
-### Pré-requisitos
 
-Antes de iniciar, é necessário ter instalado:
-```
-Node.js
-Git
-npm 
-```
-
-### 1. Clonar o repositório
+## Clonar o repositório
 
 Clone o repositório para sua máquina:
 ````
-git clone https://github.com/nanda-marques/focinho-amigo.git
+git clone https://github.com/nanda-marques/fic2026-fatec-sebrae-hackeridos.git
 ````
 
 Acesse a pasta do projeto:
 ````
-cd focinho-amigo
+cd fic2026-fatec-sebrae-hackeridos
 ````
 
-### 2. Instalar as dependências
+## Instalação
 
-Instale as dependências do projeto:
-````
+```bash
+nvm use
 npm install
-````
+```
 
-### 3. Executar o projeto
+No Windows sem `nvm`, instale o Node.js 24.22.1 antes de continuar.
 
-Inicie o servidor de desenvolvimento:
-````
-npm run dev
-````
+## Configuração
 
-Após a execução, o terminal exibirá o endereço local para acessar a aplicação no navegador.
+1. Copie `backend/.env.example` para `backend/.env` e informe as credenciais do banco, Supabase e JWT.
+2. Copie `frontend/.env.example` para `frontend/.env` e ajuste `VITE_API_URL` quando necessário.
+
+## Execução
+
+Em dois terminais:
+
+```bash
+npm run dev:backend
+npm run dev:frontend
+```
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
+
+Também é possível executar cada módulo diretamente com `npm run dev` dentro das respectivas pastas.
+
+## Build
+
+```bash
+npm run build
+npm run lint:frontend
+```
+
+## Perfis e usuários de teste (ambiente local)
+
+| Perfil | E-mail | Senha | O que acessa |
+|---|---|---|---|
+| Administrador Focinho Amigo | focinhoamigoadmin@gmail.com | Focinho@19 | Acesso a todas as funções administrativas (gerenciar publicações, animais e usuários) |
+
+
+## Observações de segurança
+
+Nunca envie arquivos `.env` ou credenciais reais para o repositório. Use apenas as chaves necessárias em ambiente local ou de implantação.
 
 ## Equipe
 
