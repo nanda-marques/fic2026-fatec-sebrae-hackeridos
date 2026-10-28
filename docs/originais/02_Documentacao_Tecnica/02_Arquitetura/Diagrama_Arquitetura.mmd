@@ -1,0 +1,40 @@
+---
+config:
+  layout: dagre
+---
+flowchart TB
+ subgraph Cliente["1. Usuários do Sistema"]
+        UserPub["Visitante / Adotante"]
+        UserAdmin["Voluntário / Administrador"]
+  end
+ subgraph FrontendLayer["2. Front-end - Interface do Usuário"]
+        ReactApp["Aplicação Web em React.js<br>• Portal Público<br>• Tela de Login Administrativo<br>• Painel de Gestão e Publicação de Postagens<br>• Widget Flutuante de Captura de E-mails<br>• Módulo de Leitura e Envio de CSV"]
+  end
+ subgraph BackendLayer["3. Back-end - Servidor na Nuvem Azure"]
+        API_Node["API REST em Node.js<br>• Hospedado no Azure App Service<br>• Autenticação e Controle de Acesso<br>• Processamento de CSV e Novas Postagens<br>• Disparo Automático de E-mails"]
+  end
+ subgraph DataLayer["4. Armazenamento"]
+        MySQL[("Banco de Dados MySQL - Azure Database for MySQL<br>Armazena informações dos pets, postagens, credenciais de acesso e e-mails")]
+        Blob@{ label: "Armazenamento de Arquivos - Azure Blob Storage<br>Guarda fotos dos animais, imagens das postagens e CSV's" }
+  end
+ subgraph SupportLayer["5. Integrações e Serviços Externos"]
+        CICD["GitHub Actions - Publicação Automática do Código"]
+        EmailAPI["Serviço de E-mail - API Resend / Azure Communication Services"]
+        GForms["Google Forms - Formulários"]
+        GMaps["Google Maps - Localização"]
+  end
+    UserPub -- "Navega pelo site e inscreve e-mail no widget" --> ReactApp
+    UserAdmin -- Realiza login com usuário e senha --> ReactApp
+    ReactApp -- Envia credenciais e recebe confirmação de acesso --> API_Node
+    ReactApp -- Envia novas postagens e atualizações com acesso validado --> API_Node
+    ReactApp -- Upload de arquivo CSV com lote de pets --> API_Node
+    ReactApp -- Carrega formulários --> GForms
+    ReactApp -- Carrega mapa --> GMaps
+    API_Node -- Dados estruturados --> MySQL
+    API_Node -- Dados não estrturados --> Blob
+    API_Node -- "Dispara e-mail sobre nova postagem ou evento" --> EmailAPI
+    EmailAPI -. Entrega as mensagens na caixa de entrada .-> UserPub
+    CICD -. Atualiza o site no Azure .-> ReactApp
+    CICD -. Atualiza o servidor no Azure .-> API_Node
+
+    Blob@{ shape: rect}

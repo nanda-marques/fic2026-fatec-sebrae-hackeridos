@@ -70,7 +70,7 @@ async function requisicao<T>(
     ...(opcoes.body && !(opcoes.body instanceof FormData)
       ? { "Content-Type": "application/json" }
       : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token ? { Authorization: "Bearer " + token } : {}),
     ...opcoes.headers,
   };
 
