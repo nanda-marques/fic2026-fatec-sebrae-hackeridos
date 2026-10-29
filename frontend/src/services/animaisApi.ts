@@ -1,5 +1,5 @@
 import type { Pet } from "../types/pet";
-import { imagemDoAnimal } from "../data/animalImages";
+import { imagemDoAnimal } from "../lib/animalFallback";
 import { api } from "./api";
 
 export interface Animal {
