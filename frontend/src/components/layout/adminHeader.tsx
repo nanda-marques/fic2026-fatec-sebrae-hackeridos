@@ -1,8 +1,8 @@
 import type { JSX, ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import { authApi } from "../../services/authApi";
 import { useFotoPerfil } from "../../hooks/useFotoPerfil";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface AdminHeaderProps {
   titulo: string;
@@ -11,19 +11,7 @@ interface AdminHeaderProps {
 }
 
 function AdminHeader({ titulo, subtitulo, acoes }: AdminHeaderProps): JSX.Element {
-  const [, forceUpdate] = useState(0);
-
-  useEffect(() => {
-    const handler = () => forceUpdate((n) => n + 1);
-    window.addEventListener("usuario-atualizado", handler);
-    window.addEventListener("storage", handler);
-    return () => {
-      window.removeEventListener("usuario-atualizado", handler);
-      window.removeEventListener("storage", handler);
-    };
-  }, []);
-
-  const usuario = authApi.usuarioAtual();   // agora é re-lido a cada render
+  const { user: usuario } = useAuth();
   const { url: fotoUrl } = useFotoPerfil(usuario?.fotoPath);
 
   const iniciais = useMemo(() => {

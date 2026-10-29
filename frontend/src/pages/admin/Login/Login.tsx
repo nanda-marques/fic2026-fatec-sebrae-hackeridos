@@ -5,9 +5,12 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiHeart, FiAlertCircle } from "react-i
 import { FaPaw } from "react-icons/fa";
 
 import { authApi } from "../../../services/authApi";
+import { useAuth } from "../../../contexts/AuthContext";
+
 import logo from "../../../assets/logo_pequena.svg";
 
 export default function Login(): JSX.Element {
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +25,7 @@ export default function Login(): JSX.Element {
 
     try {
       const resposta = await authApi.login(email, password);
-      authApi.salvarSessao(resposta);
+      signIn(resposta);
       navigate("/admin/dashboard");
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : "Erro ao entrar");
