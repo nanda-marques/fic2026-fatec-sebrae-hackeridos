@@ -13,7 +13,7 @@ import {
   LuEye,
   LuSave,
   LuMail,
-  LuMailCheck
+  LuMailCheck,
 } from "react-icons/lu";
 
 import { publicacoesApi } from "../../../services/publicacoesApi";
@@ -56,6 +56,13 @@ const categorias: { valor: CategoriaConteudo; rotulo: string }[] = [
   { valor: "publicacao", rotulo: "Publicação" },
 ];
 
+const rotuloStatus: Record<StatusPublicacao, string> = {
+  rascunho: "Rascunho",
+  publicado: "Publicado",
+  agendado: "Agendado",
+  arquivado: "Arquivado",
+};
+
 /* ---------- Estilos ---------- */
 const cardClass =
   "rounded-[17px] border border-[#e2e2e2] bg-white shadow-[0_2px_3px_rgb(0_0_0/22%)]";
@@ -85,15 +92,19 @@ export default function PublicationEditor(): JSX.Element {
     if (!id) return;
 
     let ativo = true;
+
     publicacoesApi
       .buscarAdmin(id)
       .then((p) => {
         if (!ativo) return;
+
+        const conteudo = p.descricaoConteudo ?? "";
+
         setForm({
           categoria: p.categoria,
           status: p.status,
           titulo: p.titulo,
-          descricaoConteudo: p.descricaoConteudo ?? "",
+          descricaoConteudo: conteudo,
           imagem: p.imagem,
           autor: p.autor ?? "",
           resumo: p.resumo ?? "",
@@ -104,6 +115,13 @@ export default function PublicationEditor(): JSX.Element {
           urlArrecadacao: p.urlArrecadacao ?? "",
           urlVideo: normalizarUrlVideo(p.urlVideo ?? ""),
           dispararNewsletter: p.dispararNewsletter ?? false,
+        });
+
+        // Injeta o HTML no contentEditable APÓS o React commitar o render.
+        requestAnimationFrame(() => {
+          if (conteudoRef.current) {
+            conteudoRef.current.innerHTML = conteudo;
+          }
         });
       })
       .catch((e: unknown) => {
@@ -122,13 +140,21 @@ export default function PublicationEditor(): JSX.Element {
     setForm((atual) => ({ ...atual, [campo]: valor }));
   }
 
+  function alterarCategoria(categoria: CategoriaConteudo): void {
+    setForm((atual) => ({
+      ...atual,
+      categoria,
+      urgente: categoria === "campanha" ? atual.urgente : false,
+    }));
+  }
+
   function formatar(comando: string, valor?: string): void {
     conteudoRef.current?.focus();
     document.execCommand(comando, false, valor);
     alterar("descricaoConteudo", conteudoRef.current?.innerHTML ?? "");
   }
 
-  function alternarNewsletter() {
+  function alternarNewsletter(): void {
     setForm((prev) => ({
       ...prev,
       dispararNewsletter: !prev.dispararNewsletter,
@@ -175,12 +201,19 @@ export default function PublicationEditor(): JSX.Element {
       const dataEventoCampanha = form.dataEventoCampanha
         ? new Date(form.dataEventoCampanha).toISOString()
         : null;
-      const salva = await publicacoesApi.salvar({
-        ...form,
-        status,
-        dataEventoCampanha,
-        urlVideo: normalizarUrlVideo(form.urlVideo ?? ""),
-      }, id);
+
+      const salva = await publicacoesApi.salvar(
+        {
+          ...form,
+          status,
+          dataEventoCampanha,
+          urgente: form.categoria === "campanha" ? form.urgente : false,
+          dispararNewsletter:
+            status === "publicado" ? form.dispararNewsletter : false,
+          urlVideo: normalizarUrlVideo(form.urlVideo ?? ""),
+        },
+        id
+      );
 
       if (irPreview) {
         if (!salva) {
@@ -193,7 +226,7 @@ export default function PublicationEditor(): JSX.Element {
     } catch (e: unknown) {
       setErro(
         mensagem(e) ||
-        "Não foi possível salvar. Verifique se o backend está funcionando."
+          "Não foi possível salvar. Verifique se o backend está funcionando."
       );
     } finally {
       setSalvando(false);
@@ -236,7 +269,6 @@ export default function PublicationEditor(): JSX.Element {
         }
       />
 
-
       <main className="flex-1 p-5 sm:p-6 lg:p-8">
         {erro && (
           <p
@@ -268,12 +300,14 @@ export default function PublicationEditor(): JSX.Element {
                   <select
                     value={form.categoria ?? ""}
                     onChange={(e) =>
-                      alterar("categoria", e.target.value as CategoriaConteudo)
+                      alterarCategoria(e.target.value as CategoriaConteudo)
                     }
                     className={`${inputClass} cursor-pointer`}
                   >
                     {categorias.map((c) => (
-                      <option key={c.valor} value={c.valor}>{c.rotulo}</option>
+                      <option key={c.valor} value={c.valor}>
+                        {c.rotulo}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -290,15 +324,19 @@ export default function PublicationEditor(): JSX.Element {
                     value={
                       form.dataEventoCampanha
                         ? new Date(
-                          new Date(form.dataEventoCampanha).getTime() -
-                          new Date(form.dataEventoCampanha).getTimezoneOffset() *
-                          60_000
-                        )
-                          .toISOString()
-                          .slice(0, 16)
+                            new Date(form.dataEventoCampanha).getTime() -
+                              new Date(
+                                form.dataEventoCampanha
+                              ).getTimezoneOffset() *
+                                60_000
+                          )
+                            .toISOString()
+                            .slice(0, 16)
                         : ""
                     }
-                    onChange={(e) => alterar("dataEventoCampanha", e.target.value || null)}
+                    onChange={(e) =>
+                      alterar("dataEventoCampanha", e.target.value || null)
+                    }
                     className={`${inputClass} cursor-pointer`}
                   />
                 </div>
@@ -325,10 +363,7 @@ export default function PublicationEditor(): JSX.Element {
                     className="mx-auto max-h-[210px] max-w-full rounded-[16px] object-cover"
                   />
                 ) : (
-                  <LuImage
-                    className="mx-auto my-1.5 text-[#8a9ab2]"
-                    size={36}
-                  />
+                  <LuImage className="mx-auto my-1.5 text-[#8a9ab2]" size={36} />
                 )}
                 <p className="m-0 mt-2.5 text-[13.5px] font-bold text-[#2174b7]">
                   {enviandoImagem
@@ -370,7 +405,9 @@ export default function PublicationEditor(): JSX.Element {
               <div className={fieldClass}>
                 <input
                   value={form.localEventoCampanha ?? ""}
-                  onChange={(e) => alterar("localEventoCampanha", e.target.value)}
+                  onChange={(e) =>
+                    alterar("localEventoCampanha", e.target.value)
+                  }
                   maxLength={255}
                   className={inputClass}
                   placeholder="Endereço/local do evento ou campanha"
@@ -441,7 +478,6 @@ export default function PublicationEditor(): JSX.Element {
                   onInput={(e) =>
                     alterar("descricaoConteudo", e.currentTarget.innerHTML)
                   }
-                  dangerouslySetInnerHTML={{ __html: form.descricaoConteudo ?? "" }}
                   className="min-h-[200px] bg-white p-4 text-[14px] leading-[1.6] text-[#273449] outline-none [&_a]:text-[#2174b7] [&_a]:underline [&_img]:max-w-full"
                 />
               </div>
@@ -449,23 +485,18 @@ export default function PublicationEditor(): JSX.Element {
           </section>
 
           <aside className={`${cardClass} flex flex-col gap-5 p-6`}>
-            <label className={labelClass}>
-              Definições de Status
-              <div className={`${fieldClass} bg-white`}>
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    alterar("status", e.target.value as StatusPublicacao)
-                  }
-                  className={`${inputClass} cursor-pointer`}
-                >
-                  <option value="rascunho">Rascunho</option>
-                  <option value="publicado">Publicado</option>
-                  <option value="agendado">Agendado</option>
-                  <option value="arquivado">Arquivado</option>
-                </select>
+            <div>
+              <p className={`${labelClass} mb-2`}>Status atual</p>
+              <div
+                className={`${fieldClass} cursor-default bg-[#f7f9fb]`}
+                title="O status é alterado pelos botões Salvar Rascunho / Publicar no topo."
+              >
+                <span className="text-[13.5px] font-semibold text-[#273449]">
+                  {rotuloStatus[form.status]}
+                </span>
               </div>
-            </label>
+            </div>
+
             <label className="flex cursor-pointer items-start justify-between gap-3">
               <span>
                 <strong className="block text-[14px] font-bold">
@@ -483,23 +514,43 @@ export default function PublicationEditor(): JSX.Element {
                 className={`${interruptorBase} checked:border-[#2174b7] checked:before:bg-[#2174b7]`}
               />
             </label>
-            <label className="flex cursor-pointer items-start justify-between gap-3">
+
+            <label
+              className={`flex items-start justify-between gap-3 ${
+                form.categoria === "campanha"
+                  ? "cursor-pointer"
+                  : "cursor-not-allowed opacity-60"
+              }`}
+              title={
+                form.categoria === "campanha"
+                  ? undefined
+                  : "Disponível apenas para publicações da categoria Campanha."
+              }
+            >
               <span>
                 <strong className="block text-[14px] font-bold">
                   Campanha urgente
                 </strong>
                 <small className="mt-0.5 block text-[12px] text-[#667b9b]">
-                  Aplica o destaque visual de urgência à campanha.
+                  {form.categoria === "campanha"
+                    ? "Aplica o destaque visual de urgência à campanha."
+                    : "Disponível apenas para publicações da categoria Campanha."}
                 </small>
               </span>
               <input
                 type="checkbox"
                 role="switch"
+                disabled={form.categoria !== "campanha"}
                 checked={form.urgente}
                 onChange={(e) => alterar("urgente", e.target.checked)}
-                className={`${interruptorBase} checked:border-[#ffb800] checked:before:bg-[#ffb800]`}
+                className={`${interruptorBase} ${
+                  form.categoria === "campanha"
+                    ? "checked:border-[#ffb800] checked:before:bg-[#ffb800]"
+                    : ""
+                } disabled:cursor-not-allowed`}
               />
             </label>
+
             <label className={labelClass}>
               Autor(a) (preenchido manualmente)
               <div className={`${fieldClass} bg-white`}>
@@ -512,6 +563,7 @@ export default function PublicationEditor(): JSX.Element {
                 />
               </div>
             </label>
+
             <label className={labelClass}>
               URL para arrecadação/doação
               <div className={`${fieldClass} bg-white`}>
@@ -525,6 +577,7 @@ export default function PublicationEditor(): JSX.Element {
                 />
               </div>
             </label>
+
             <label className={labelClass}>
               URL de vídeo incorporado
               <div className={`${fieldClass} bg-white`}>
@@ -541,20 +594,9 @@ export default function PublicationEditor(): JSX.Element {
                 YouTube, Vimeo e arquivos MP4 são suportados.
               </small>
             </label>
-            <label className="flex items-center gap-2 self-left text-sm font-semibold text-[#374151]">
-              <input
-                type="checkbox"
-                checked={form.dispararNewsletter}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    dispararNewsletter: e.target.checked,
-                  }))
-                }
-              />
-              Incluir na newsletter
-            </label>
-                          <button
+
+            <div className="flex flex-col gap-2">
+              <button
                 type="button"
                 disabled={salvando}
                 onClick={alternarNewsletter}
@@ -562,24 +604,28 @@ export default function PublicationEditor(): JSX.Element {
                 title={
                   form.dispararNewsletter
                     ? "Marcado para a newsletter. Clique para desmarcar."
-                    : "Marcar este animal para a newsletter"
+                    : "Marcar esta publicação para a newsletter"
                 }
-                className={`inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${form.dispararNewsletter
+                className={`inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  form.dispararNewsletter
                     ? "border-[#2174b7] bg-[#2174b7] text-white hover:bg-[#155a96]"
                     : "border-[#2174b7] bg-white text-[#2174b7] hover:bg-[#e8f3fd]"
-                  }`}
+                }`}
               >
                 {form.dispararNewsletter ? (
                   <LuMailCheck size={17} />
                 ) : (
                   <LuMail size={17} />
                 )}
-
                 {form.dispararNewsletter
-                  ? "Adicionado a newsletter"
-                  : "Adicionar na newsletter"}
+                  ? "Adicionado à newsletter"
+                  : "Adicionar à newsletter"}
               </button>
-            {/* Integrar futuramente o disparo de newsletter para conteúdos publicados. */}
+              <small className="text-[11px] font-normal text-[#667b9b]">
+                O envio só ocorre quando a publicação for salva como
+                &quot;Publicado&quot;.
+              </small>
+            </div>
           </aside>
         </div>
       </main>

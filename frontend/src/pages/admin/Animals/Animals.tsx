@@ -440,19 +440,6 @@ export default function Animais() {
                 onChange={handleChange}
                 placeholder="Ex.: Dócil"
               />
-              <label className="flex items-center gap-2 self-center text-sm font-semibold text-[#374151]">
-                <input
-                  type="checkbox"
-                  checked={form.dispararNewsletter}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      dispararNewsletter: e.target.checked,
-                    }))
-                  }
-                />
-                Incluir na newsletter
-              </label>
             </div>
 
             <label className="block">

@@ -82,7 +82,6 @@ export const newsletterService = {
     inscrito.ativo = false;
     await inscrito.save();
 
-    console.log(`🔕 Inscrito descadastrado com sucesso: ${email}`);
     return { mensagem: 'Inscrição cancelada com sucesso.' };
   },
 };
