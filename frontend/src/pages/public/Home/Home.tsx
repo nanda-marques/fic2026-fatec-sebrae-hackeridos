@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
 import { Link } from "react-router-dom";
 import { FaPaw } from "react-icons/fa";
 import { FiMail } from "react-icons/fi";
+
 import type { ComponentType, JSX } from "react";
 import {
   IconGift,
@@ -10,14 +12,16 @@ import {
   IconUsers,
   type IconProps,
 } from "../../../components/layout/Icons";
-import AnimalCard from "../../../components/layout/AnimalCard";
+
 import type { Pet } from "../../../types/pet";
+
+import AnimalCard from "../../../components/layout/AnimalCard";
 import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
 import PageHero from "../../../components/layout/PageHero";
 import NewsletterModal from "../../../components/newsletter/NewsletterModal";
-import { publicacoesApi } from "../../../services/publicacoesApi";
-import type { Publicacao } from "../../../services/publicacoesApi";
+
 import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
+import { useCampanhasDestaque } from "../../../hooks/usePublicacoes";
 
 /** Tipo de item de forma de ajuda. */
 interface FormaAjuda {
@@ -95,45 +99,22 @@ export default function Home(): JSX.Element {
     carregando: carregandoAnimais,
     erro: erroAnimais,
   } = useAnimaisDisponiveis();
-  const [campanhasVisiveis, setCampanhasVisiveis] = useState<Publicacao[]>([]);
-  const [erroCampanha, setErroCampanha] = useState("");
+
+  // ↓↓↓ ADICIONAR ESTAS LINHAS ↓↓↓
+  const {
+    data: campanhasVisiveis = [],
+    error: erroCampanhaApi,
+  } = useCampanhasDestaque();
+
+  const erroCampanha =
+    erroCampanhaApi instanceof Error
+      ? erroCampanhaApi.message
+      : erroCampanhaApi
+        ? "Não foi possível carregar a campanha."
+        : "";
+        
   const [newsletterSolicitada, setNewsletterSolicitada] = useState(false);
 
-  useEffect(() => {
-    let ativo = true;
-    publicacoesApi
-      .listarPublicadas()
-      .then((conteudos) => {
-        if (ativo) {
-          setCampanhasVisiveis(
-            conteudos
-              .filter(
-                (conteudo) =>
-                  conteudo.categoria === "campanha" &&
-                  (conteudo.destaque || conteudo.urgente)
-              )
-              .sort(
-                (a, b) =>
-                  Number(b.urgente) - Number(a.urgente) ||
-                  Number(b.destaque) - Number(a.destaque) ||
-                  b.criadoEm.localeCompare(a.criadoEm)
-              )
-          );
-        }
-      })
-      .catch((erro: unknown) => {
-        if (ativo) {
-          setErroCampanha(
-            erro instanceof Error
-              ? erro.message
-              : "Não foi possível carregar a campanha."
-          );
-        }
-      });
-    return () => {
-      ativo = false;
-    };
-  }, []);
 
   return (
     <main>
