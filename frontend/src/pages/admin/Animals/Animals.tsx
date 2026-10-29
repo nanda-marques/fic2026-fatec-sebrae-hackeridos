@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { LuUpload, LuPencil, LuTrash2, LuX } from "react-icons/lu";
 
-import { animaisApi } from "../../../services/animaisApi";
 import type { Animal, NovoAnimal } from "../../../services/animaisApi";
 import { imagemDoAnimal } from "../../../data/animalImages";
 
 import AdminHeader from "../../../components/layout/adminHeader";
+import {
+  useAnimais,
+  useAtualizarAnimal,
+  useCriarAnimal,
+  useExcluirAnimal,
+  useImportarCSVAnimais,
+  useUploadImagemAnimal,
+} from "../../../hooks/useAnimais";
 
 type TipoMensagem = "erro" | "sucesso" | "";
 interface Mensagem {
@@ -39,48 +46,30 @@ export default function Animais() {
   const imagemInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
-  const [animais, setAnimais] = useState<Animal[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [salvando, setSalvando] = useState(false);
-  const [enviandoImagem, setEnviandoImagem] = useState(false);
-  const [mensagem, setMensagem] = useState<Mensagem>({
-    tipo: "",
-    texto: "",
-  });
+  // React Query
+  const { data: animais = [], isLoading } = useAnimais();
+  const criarAnimal = useCriarAnimal();
+  const atualizarAnimal = useAtualizarAnimal();
+  const excluirAnimal = useExcluirAnimal();
+  const uploadImagem = useUploadImagemAnimal();
+  const importarCSV = useImportarCSVAnimais();
+
+  const salvando = criarAnimal.isPending || atualizarAnimal.isPending;
+  const enviandoImagem = uploadImagem.isPending;
+
+  // Estado de UI (não de servidor)
+  const [mensagem, setMensagem] = useState<Mensagem>({ tipo: "", texto: "" });
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [form, setForm] = useState<FormAnimal>(FORM_INICIAL);
 
-  const carregarAnimais = useCallback(async () => {
-    setCarregando(true);
-    setMensagem({ tipo: "", texto: "" });
-    try {
-      const dados = await animaisApi.listar();
-      setAnimais(Array.isArray(dados) ? dados : []);
-    } catch {
-      setMensagem({
-        tipo: "erro",
-        texto:
-          "Não foi possível carregar a lista de animais. Verifique se o backend está em execução.",
-      });
-    } finally {
-      setCarregando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    carregarAnimais();
-  }, [carregarAnimais]);
-
-  function handleChange(
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) {
+  function handleChange(e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleImagemChange(e: ChangeEvent<HTMLInputElement>) {
     const arquivo = e.target.files?.[0];
-    e.target.value = "";
+    e.target.value = ""; 
     if (!arquivo) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type)) {
       setMensagem({
@@ -94,10 +83,9 @@ export default function Animais() {
       return;
     }
 
-    setEnviandoImagem(true);
     setMensagem({ tipo: "", texto: "" });
     try {
-      const { url } = await animaisApi.enviarImagem(arquivo);
+      const { url } = await uploadImagem.mutateAsync(arquivo);
       setForm((prev) => ({ ...prev, imagem: url }));
     } catch (erro: unknown) {
       setMensagem({
@@ -107,8 +95,6 @@ export default function Animais() {
             ? erro.message
             : "Não foi possível enviar a imagem.",
       });
-    } finally {
-      setEnviandoImagem(false);
     }
   }
 
@@ -147,7 +133,6 @@ export default function Animais() {
       return;
     }
 
-    setSalvando(true);
     setMensagem({ tipo: "", texto: "" });
 
     try {
@@ -157,13 +142,13 @@ export default function Animais() {
         peso: form.peso.trim() ? Number(form.peso.replace(",", ".")) : null,
       };
       if (editandoId !== null) {
-        await animaisApi.atualizar(editandoId, dados);
+        await atualizarAnimal.mutateAsync({ id: editandoId, dados });
         setMensagem({
           tipo: "sucesso",
           texto: "Animal atualizado com sucesso!",
         });
       } else {
-        await animaisApi.criar(dados);
+        await criarAnimal.mutateAsync(dados);
         setMensagem({
           tipo: "sucesso",
           texto: "Animal cadastrado com sucesso!",
@@ -171,7 +156,6 @@ export default function Animais() {
       }
 
       cancelarEdicao();
-      await carregarAnimais();
     } catch (err: unknown) {
       setMensagem({
         tipo: "erro",
@@ -180,8 +164,6 @@ export default function Animais() {
             ? err.message
             : "Erro ao salvar os dados do animal.",
       });
-    } finally {
-      setSalvando(false);
     }
   }
 
@@ -192,15 +174,13 @@ export default function Animais() {
     if (!confirmou) return;
 
     try {
-      await animaisApi.excluir(animal.id);
+      await excluirAnimal.mutateAsync(animal.id);
       setMensagem({
         tipo: "sucesso",
         texto: `"${animal.nome}" foi removido com sucesso.`,
       });
 
       if (editandoId === animal.id) cancelarEdicao();
-
-      await carregarAnimais();
     } catch (err: unknown) {
       setMensagem({
         tipo: "erro",
@@ -217,10 +197,8 @@ export default function Animais() {
     if (!file) return;
 
     try {
-      setCarregando(true);
-      await animaisApi.importarCSV(file);
+      await importarCSV.mutateAsync(file);
       setMensagem({ tipo: "sucesso", texto: "CSV importado com sucesso!" });
-      await carregarAnimais();
     } catch (err: unknown) {
       setMensagem({
         tipo: "erro",
@@ -230,7 +208,6 @@ export default function Animais() {
             : "Erro ao importar o arquivo CSV.",
       });
     } finally {
-      setCarregando(false);
       if (csvInputRef.current) csvInputRef.current.value = "";
     }
   }
@@ -263,11 +240,12 @@ export default function Animais() {
           />
           <button
             type="button"
+            disabled={importarCSV.isPending}
             onClick={() => csvInputRef.current?.click()}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#1d70b8] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#155a96]"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#1d70b8] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#155a96] disabled:opacity-50"
           >
             <LuUpload size={18} />
-            Importar CSV
+            {importarCSV.isPending ? "Importando CSV..." : "Importar CSV"}
           </button>
         </div>
 
@@ -358,6 +336,7 @@ export default function Animais() {
                 name="nome"
                 value={form.nome}
                 onChange={handleChange}
+                required
                 placeholder="Ex.: Bela"
               />
               <Select
@@ -365,6 +344,7 @@ export default function Animais() {
                 name="especie"
                 value={form.especie ?? ""}
                 onChange={handleChange}
+                required
                 options={[
                   { value: "", label: "Selecione…" },
                   { value: "Canino", label: "Canino" },
@@ -404,8 +384,9 @@ export default function Animais() {
                 options={[
                   { value: "Disponível", label: "Disponível" },
                   { value: "Adotado", label: "Adotado" },
-                  { value: "Em tratamento", label: "Em tratamento" },
+                  { value: "Em Processo", label: "Em Processo" },
                 ]}
+                required
               />
               <Campo
                 label="Idade"
@@ -444,6 +425,7 @@ export default function Animais() {
                   { value: "Médio", label: "Médio" },
                   { value: "Grande", label: "Grande" },
                 ]}
+                required  
               />
               <Campo
                 label="Temperamento"
@@ -536,18 +518,18 @@ export default function Animais() {
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {carregando ? (
+                {isLoading ? (
                   <tr>
                     <td colSpan={12} className="p-8 text-center text-slate-500">
                       Carregando animais...
                     </td>
                   </tr>
                 ) : animais.length === 0 ? (
-                <tr>
-                  <td colSpan={12} className="p-8 text-center text-slate-500">
-                    Nenhum animal cadastrado.
-                  </td>
-                </tr>
+                  <tr>
+                    <td colSpan={12} className="p-8 text-center text-slate-500">
+                      Nenhum animal cadastrado.
+                    </td>
+                  </tr>
                 ) : (
                   animais.map((animal) => (
                     <tr
@@ -643,6 +625,7 @@ interface CampoProps {
   type?: "text" | "number";
   min?: string;
   step?: string;
+  required?: boolean;
 }
 
 function Campo({
@@ -654,6 +637,7 @@ function Campo({
   type = "text",
   min,
   step,
+  required,
 }: CampoProps) {
   return (
     <div>
@@ -668,6 +652,7 @@ function Campo({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        required={required} 
         className="w-full rounded-lg border border-slate-200 bg-[#f9fafb] px-4 py-2.5 text-sm outline-none transition focus:border-[#1d70b8] focus:bg-white"
       />
     </div>
@@ -681,9 +666,10 @@ interface SelectProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   options: Array<{ value: string; label: string }>;
+  required?: boolean;
 }
 
-function Select({ label, name, value, onChange, options }: SelectProps) {
+function Select({ label, name, value, onChange, options, required }: SelectProps) {
   return (
     <div>
       <label className="mb-1.5 block text-xs font-extrabold text-[#374151]">
@@ -693,6 +679,7 @@ function Select({ label, name, value, onChange, options }: SelectProps) {
         name={name}
         value={value}
         onChange={onChange}
+        required={required}
         className="w-full cursor-pointer rounded-lg border border-slate-200 bg-[#f9fafb] px-4 py-2.5 text-sm outline-none transition focus:border-[#1d70b8] focus:bg-white"
       >
         {options.map((o) => (
