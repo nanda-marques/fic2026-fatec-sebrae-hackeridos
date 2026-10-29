@@ -12,6 +12,8 @@ import {
   LuLink,
   LuEye,
   LuSave,
+  LuMail,
+  LuMailCheck
 } from "react-icons/lu";
 
 import { publicacoesApi } from "../../../services/publicacoesApi";
@@ -44,6 +46,7 @@ const vazio: FormPublicacao = {
   localEventoCampanha: "",
   urlArrecadacao: "",
   urlVideo: "",
+  dispararNewsletter: false,
 };
 
 const categorias: { valor: CategoriaConteudo; rotulo: string }[] = [
@@ -100,6 +103,7 @@ export default function PublicationEditor(): JSX.Element {
           localEventoCampanha: p.localEventoCampanha ?? "",
           urlArrecadacao: p.urlArrecadacao ?? "",
           urlVideo: normalizarUrlVideo(p.urlVideo ?? ""),
+          dispararNewsletter: p.dispararNewsletter ?? false,
         });
       })
       .catch((e: unknown) => {
@@ -122,6 +126,13 @@ export default function PublicationEditor(): JSX.Element {
     conteudoRef.current?.focus();
     document.execCommand(comando, false, valor);
     alterar("descricaoConteudo", conteudoRef.current?.innerHTML ?? "");
+  }
+
+  function alternarNewsletter() {
+    setForm((prev) => ({
+      ...prev,
+      dispararNewsletter: !prev.dispararNewsletter,
+    }));
   }
 
   async function selecionarImagem(arquivo: File | undefined): Promise<void> {
@@ -182,7 +193,7 @@ export default function PublicationEditor(): JSX.Element {
     } catch (e: unknown) {
       setErro(
         mensagem(e) ||
-          "Não foi possível salvar. Verifique se o backend está funcionando."
+        "Não foi possível salvar. Verifique se o backend está funcionando."
       );
     } finally {
       setSalvando(false);
@@ -190,7 +201,7 @@ export default function PublicationEditor(): JSX.Element {
   }
 
   return (
-        <div className="box-border flex min-h-screen min-w-0 flex-1 flex-col bg-[#f0f0f0] font-['Inter',Arial,sans-serif] text-[#202b3e] *:box-border">
+    <div className="box-border flex min-h-screen min-w-0 flex-1 flex-col bg-[#f0f0f0] font-['Inter',Arial,sans-serif] text-[#202b3e] *:box-border">
       <AdminHeader
         titulo={id ? "Editar Publicação" : "Nova Publicação"}
         acoes={
@@ -279,12 +290,12 @@ export default function PublicationEditor(): JSX.Element {
                     value={
                       form.dataEventoCampanha
                         ? new Date(
-                            new Date(form.dataEventoCampanha).getTime() -
-                              new Date(form.dataEventoCampanha).getTimezoneOffset() *
-                                60_000
-                          )
-                            .toISOString()
-                            .slice(0, 16)
+                          new Date(form.dataEventoCampanha).getTime() -
+                          new Date(form.dataEventoCampanha).getTimezoneOffset() *
+                          60_000
+                        )
+                          .toISOString()
+                          .slice(0, 16)
                         : ""
                     }
                     onChange={(e) => alterar("dataEventoCampanha", e.target.value || null)}
@@ -530,6 +541,44 @@ export default function PublicationEditor(): JSX.Element {
                 YouTube, Vimeo e arquivos MP4 são suportados.
               </small>
             </label>
+            <label className="flex items-center gap-2 self-left text-sm font-semibold text-[#374151]">
+              <input
+                type="checkbox"
+                checked={form.dispararNewsletter}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    dispararNewsletter: e.target.checked,
+                  }))
+                }
+              />
+              Incluir na newsletter
+            </label>
+                          <button
+                type="button"
+                disabled={salvando}
+                onClick={alternarNewsletter}
+                aria-pressed={form.dispararNewsletter ?? false}
+                title={
+                  form.dispararNewsletter
+                    ? "Marcado para a newsletter. Clique para desmarcar."
+                    : "Marcar este animal para a newsletter"
+                }
+                className={`inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${form.dispararNewsletter
+                    ? "border-[#2174b7] bg-[#2174b7] text-white hover:bg-[#155a96]"
+                    : "border-[#2174b7] bg-white text-[#2174b7] hover:bg-[#e8f3fd]"
+                  }`}
+              >
+                {form.dispararNewsletter ? (
+                  <LuMailCheck size={17} />
+                ) : (
+                  <LuMail size={17} />
+                )}
+
+                {form.dispararNewsletter
+                  ? "Adicionado a newsletter"
+                  : "Adicionar na newsletter"}
+              </button>
             {/* Integrar futuramente o disparo de newsletter para conteúdos publicados. */}
           </aside>
         </div>

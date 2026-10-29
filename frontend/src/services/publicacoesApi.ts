@@ -30,6 +30,7 @@ export interface Publicacao {
   criadoPor: number | null;
   criadoEm: string;
   atualizadoEm: string;
+  dispararNewsletter: boolean;
 }
 
 export interface ResumoDashboard {
@@ -55,6 +56,7 @@ export type PublicacaoPayload = Pick<
   | "resumo"
   | "destaque"
   | "urgente"
+  | "dispararNewsletter"
 >;
 
 export const publicacoesApi = {
