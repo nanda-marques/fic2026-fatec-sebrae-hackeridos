@@ -10,7 +10,6 @@ import {
   IconUsers,
   type IconProps,
 } from "../../../components/layout/Icons";
-import { pets } from "../../../data/pets";
 import AnimalCard from "../../../components/layout/AnimalCard";
 import type { Pet } from "../../../types/pet";
 import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
