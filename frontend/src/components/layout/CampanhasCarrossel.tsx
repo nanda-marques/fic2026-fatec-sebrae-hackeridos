@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IconChevronLeft, IconChevronRight } from "./Icons";
 import type { Publicacao } from "../../services/publicacoesApi";
-import { formatarDataCurta, nomeCategoria, resumoConteudo } from "../../data/publicacoes";
+import { formatarDataCurta, nomeCategoria, resumoConteudo } from "../../lib/publicacoesUtils";
+
 
 interface CampanhasCarrosselProps {
   campanhas: Publicacao[];

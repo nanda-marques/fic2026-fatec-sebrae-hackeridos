@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import PublicFooter from "../../../components/layout/PublicFooter";
+
 import AnimalCard from "../../../components/layout/AnimalCard";
 import PageHero from "../../../components/layout/PageHero";
-import { pets } from "../../../data/pets";
+
 import type { Pet } from "../../../types/pet";
+import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
 
 // Benefícios do apadrinhamento
 const beneficios = [
@@ -69,8 +70,10 @@ export default function Sponsorship() {
     }
   }, [hash]);
 
+  const { animais, carregando, erro } = useAnimaisDisponiveis();
+
   // Seleciona somente os animais que precisam de apadrinhamento.
-  const petsPrioritarios = pets.filter(
+  const petsPrioritarios = animais.filter(
     (pet: Pet) => pet.prioridadeApadrinhamento === true
   );
 
@@ -208,7 +211,15 @@ export default function Sponsorship() {
             ansiosamente.
           </p>
 
-          {petsPrioritarios.length > 0 ? (
+          {carregando ? (
+            <p className="mt-8 text-center text-sm text-zinc-500">
+              Carregando animais...
+            </p>
+          ) : erro ? (
+            <p role="alert" className="mt-8 text-center text-sm text-red-700">
+              Não foi possível carregar os animais: {erro}
+            </p>
+          ) : petsPrioritarios.length > 0 ? (
             <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {petsPrioritarios.map((pet: Pet) => (
                 <AnimalCard

@@ -12,7 +12,7 @@ import {
   formatarDataCurta,
   nomeCategoria,
   resumoConteudo,
-} from "../../../data/publicacoes";
+} from "../../../lib/publicacoesUtils";;
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type {
   CategoriaConteudo,
