@@ -357,7 +357,7 @@ export default function Dashboard(): JSX.Element {
               <button
                 type="button"
                 onClick={irParaAnimais}
-                className="h-[32px] px-[14px] text-white font-inherit text-[13px] font-bold bg-[#ffb800] border-0 rounded-[6px] cursor-pointer transition-colors duration-150 hover:bg-[#e6a600]"
+                className="h-[32px] px-[14px] text-black font-inherit text-[13px] font-bold bg-[#ffb800] border-0 rounded-[6px] cursor-pointer transition-colors duration-150 hover:bg-[#e6a600]"
               >
                 Ir para Animais
               </button>

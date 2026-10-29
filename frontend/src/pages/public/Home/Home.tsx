@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { Link } from "react-router-dom";
-import { FaPaw } from "react-icons/fa";
+import { FaPaw, FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa";
 import { FiMail } from "react-icons/fi";
 
 import type { ComponentType, JSX } from "react";
@@ -123,31 +123,67 @@ export default function Home(): JSX.Element {
         aoFecharSolicitado={() => setNewsletterSolicitada(false)}
       />
 
-      <PageHero
-        grande
-        titulo={
-          <>
-            Cada focinho merece um <br /> lar cheio de amor
-          </>
-        }
-        descricao="A Focinho Amigo resgata, cuida e encontra famílias definitivas para animais abandonados. Junte-se a nós nesta missão de salvar vidas."
-        imagem="src/assets/images/hero/heroHome.png"
-      >
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            to="/adocao"
-            className="rounded-lg bg-marca px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+      {/* O wrapper "relative" faz as redes sociais se ancorarem no canto do banner inteiro */}
+      <div className="relative">
+        <PageHero
+          grande
+          titulo={
+            <>
+              Cada focinho merece um <br /> lar cheio de amor
+            </>
+          }
+          descricao="A Focinho Amigo resgata, cuida e encontra famílias definitivas para animais abandonados. Junte-se a nós nesta missão de salvar vidas."
+          imagem="src/assets/images/hero/heroHome.png"
+        >
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              to="/adocao"
+              className="rounded-lg bg-marca px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+            >
+              Quero Adotar
+            </Link>
+            <Link
+              to="/como-ajudar"
+              className="rounded-lg bg-destaque px-5 py-3 text-sm font-bold text-zinc-900 transition hover:bg-destaque-escura"
+            >
+              Quero Ajudar
+            </Link>
+          </div>
+        </PageHero>
+
+        {/* Redes sociais no canto direito do banner (fora do PageHero) */}
+        <div className="absolute bottom-8 right-6 z-20 flex flex-col gap-3 sm:right-9">
+          <a
+            href="https://www.instagram.com/focinhoamigoindaiatuba/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram da Focinho Amigo"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-lg transition hover:scale-110 hover:bg-[#1264cc]"
           >
-            Quero Adotar
-          </Link>
-          <Link
-            to="/como-ajudar"
-            className="rounded-lg bg-destaque px-5 py-3 text-sm font-bold text-zinc-900 transition hover:bg-destaque-escura"
+            <FaInstagram className="h-5 w-5" />
+          </a>
+
+          <a
+            href="https://www.facebook.com/FocinhoAmigoIndaiatuba"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook da Focinho Amigo"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-lg transition hover:scale-110 hover:bg-[#1264cc]"
           >
-            Quero Ajudar
-          </Link>
+            <FaFacebookF className="h-5 w-5" />
+          </a>
+
+          <a
+            href="https://www.tiktok.com/@focinhoamigoindaiatuba"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok da Focinho Amigo"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-lg transition hover:scale-110 hover:bg-[#1264cc]"
+          >
+            <FaTiktok className="h-5 w-5" />
+          </a>
         </div>
-      </PageHero>
+      </div>
 
       {/* =====================================================
           CAMPANHAS URGENTES E EM DESTAQUE

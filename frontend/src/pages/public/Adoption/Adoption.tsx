@@ -7,6 +7,7 @@ import AnimalCard from "../../../components/layout/AnimalCard";
 import PetDetailsModal from "../../../components/adoption/PetDetailsModal";
 import type { Pet } from "../../../types/pet";
 import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
+import { Link } from "react-router-dom";
 
 /** Props do componente de filtro. */
 interface SelectFiltroProps {
@@ -487,6 +488,24 @@ export default function Adoption(): JSX.Element {
           onAdopt={irParaFormulario}
         />
       )}
+
+        {/* =====================================================
+          APADRINHAR
+      ====================================================== */}
+      <section className="bg-marca px-5 py-12 text-center text-white lg:px-14 lg:py-14">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-2xl font-extrabold md:text-3xl">Não pode adotar ?</h2>
+          <p className="mt-3 text-sm leading-6 text-white/90">
+            Seja padrinho de um focinho!.Ajude mesmo distante
+          </p>
+          <Link
+            to="/apadrinhamento"
+            className="mt-6 inline-block rounded-lg bg-destaque px-6 py-3 text-sm font-bold text-zinc-900 transition-colors hover:bg-destaque-escura"
+          >
+            Quero apadrinhar
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

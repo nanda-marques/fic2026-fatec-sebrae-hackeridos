@@ -1,6 +1,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import PageHero from "../../../components/layout/PageHero";
+import type { CSSProperties } from "react";
 import CampanhasCarrossel from "../../../components/layout/CampanhasCarrossel";
 import {
   IconFacebook,
@@ -33,6 +34,9 @@ interface Rede {
   seguidores: string;
   href: string;
   Icone: ComponentType<IconProps>;
+  corIcone: string;
+  corNumero: string;
+  estilo: CSSProperties; // borda colorida do card
 }
 
 const filtros: Filtro[] = [
@@ -52,9 +56,41 @@ const categoriaDoFiltro: Record<Exclude<Filtro, "Todas">, CategoriaConteudo> = {
 
 // TODO: trocar pelos perfis e números reais
 const redes: Rede[] = [
-  { nome: "Instagram", seguidores: "21K seguidores", href: "https://www.instagram.com/focinhoamigoindaiatuba/", Icone: IconInstagram },
-  { nome: "Facebook", seguidores: "12K seguidores", href: "https://www.facebook.com/", Icone: IconFacebook },
-  { nome: "TikTok", seguidores: "2K seguidores", href: "https://www.tiktok.com/", Icone: IconTikTok },
+  {
+    nome: "Instagram",
+    seguidores: "21K seguidores",
+    href: "https://www.instagram.com/focinhoamigoindaiatuba/",
+    Icone: IconInstagram,
+    corIcone: "#d62976",
+    corNumero: "#d62976",
+    estilo: {
+      border: "2px solid transparent",
+      background:
+        "linear-gradient(#fff,#fff) padding-box, linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5) border-box",
+    },
+  },
+  {
+    nome: "Facebook",
+    seguidores: "12K seguidores",
+    href: "https://www.facebook.com/FocinhoAmigoIndaiatuba",
+    Icone: IconFacebook,
+    corIcone: "#1877f2",
+    corNumero: "#1877f2",
+    estilo: { border: "2px solid #1877f2", background: "#fff" },
+  },
+  {
+    nome: "TikTok",
+    seguidores: "2K seguidores",
+    href: "https://www.tiktok.com/@focinhoamigoindaiatuba",
+    Icone: IconTikTok,
+    corIcone: "#111",
+    corNumero: "#fe2c55",
+    estilo: {
+      border: "2px solid #111",
+      background: "#fff",
+      boxShadow: "inset 0 0 0 2px #25f4ee, 0 1px 2px rgba(0,0,0,.05)",
+    },
+  },
 ];
 
 // 6 por página no desktop, 3 no mobile (como nos prints)
@@ -270,6 +306,7 @@ export default function CampaignsNews() {
       {/* =====================================================
           REDES SOCIAIS
       ====================================================== */}
+      
       <section className="bg-[#f1f1f1] px-5 py-12 lg:px-14 lg:py-16">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-2xl font-extrabold text-zinc-800 md:text-3xl">Siga-nos nas Redes Sociais</h2>
@@ -277,19 +314,27 @@ export default function CampaignsNews() {
             Acompanhe nosso trabalho e compartilhe amor! Veja resgates em tempo real.
           </p>
           <div className="mx-auto mt-8 grid max-w-xl grid-cols-3 gap-3 md:gap-5">
-            {redes.map(({ nome, seguidores, href, Icone }) => (
-              <a
-                key={nome}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center rounded-xl bg-white px-2 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:py-6"
-              >
-                <Icone className="h-7 w-7 text-zinc-800" />
-                <strong className="mt-2 text-sm text-zinc-900">{nome}</strong>
-                <span className="mt-0.5 text-[11px] text-zinc-400">{seguidores}</span>
-              </a>
-            ))}
+            {redes.map(({ nome, seguidores, href, Icone, corIcone, corNumero, estilo }) => {
+              const [numero, ...resto] = seguidores.split(" ");
+              return (
+                <a
+                  key={nome}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={estilo}
+                  className="flex flex-col items-center rounded-xl px-2 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:py-6"
+                >
+                  <span className="flex" style={{ color: corIcone }}>
+                    <Icone className="h-7 w-7 md:h-9 md:w-9" />
+                  </span>
+                  <strong className="mt-2 text-sm text-zinc-900">{nome}</strong>
+                  <span className="mt-0.5 text-[11px] text-zinc-400">
+                    <b style={{ color: corNumero }}>{numero}</b> {resto.join(" ")}
+                  </span>
+                </a>
+              );
+            })}
           </div>
         </div>
       </section>
