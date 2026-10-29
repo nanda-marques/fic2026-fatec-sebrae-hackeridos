@@ -32,6 +32,13 @@ function sanitize(name: string): string {
     .replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
+const CARGOS_AUTOCADASTRO = [
+  "Coordenador de Adoções",
+  "Coordenador de Voluntários",
+  "Comunicação e Marketing",
+  "Financeiro",
+] as const;
+
 export const authController = {
   // POST /api/auth/cadastro
   async cadastrar(
@@ -61,6 +68,9 @@ export const authController = {
       );
     }
 
+    if (!(CARGOS_AUTOCADASTRO as readonly string[]).includes(cargo)) {
+      throw new HttpError(400, "Cargo inválido para autocadastro.");
+    }
     // Verifica se o cargo escolhido existe
     const cargoRef = await Cargo.findOne({
       where: { nomeCargo: cargo },
@@ -206,7 +216,7 @@ export const authController = {
     };
 
     const token = jwt.sign(payload, obterJwtSecret(), {
-      expiresIn: "8h",
+      expiresIn: "2h",
     });
 
     res.json({
