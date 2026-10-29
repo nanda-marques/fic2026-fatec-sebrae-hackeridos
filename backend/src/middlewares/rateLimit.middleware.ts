@@ -16,6 +16,21 @@ export const loginRateLimit = rateLimit({
   },
 });
 
+export const recuperacaoRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    erro: "Muitas solicitações de recuperação. Tente novamente em 1 hora.",
+  },
+  keyGenerator: (req) => {
+    const email = (req.body as { email?: string })?.email ?? "anon";
+    const ip = ipKeyGenerator(req.ip ?? "unknown");
+    return `${ip}:${email.toLowerCase()}`;
+  },
+});
+
 export const cadastroRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,

@@ -31,6 +31,7 @@ import PublicationEditor from "./pages/admin/Publications/PublicationEditor";
 import PublicationPreview from "./pages/admin/Publications/PublicationPreview";
 import Settings from "./pages/admin/Settings/Settings";
 import RecuperarSenha from "./pages/admin/RecuperarSenha/Senha";
+import ResetarSenha from "./pages/admin/RecuperarSenha/ResetarSenha";
 import Administradores from "./pages/admin/Administradores/Administradores";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -120,6 +121,7 @@ function App(): JSX.Element {
           <Route path="/admin/login" element={<Login />} />
           <Route path="/admin/cadastro" element={<Register />} />
           <Route path="/admin/recuperar-senha" element={<RecuperarSenha />} />
+          <Route path="/admin/resetar-senha" element={<ResetarSenha />} />
 
           {/* Área administrativa autenticada */}
           <Route element={<ProtectedRoute />}>
