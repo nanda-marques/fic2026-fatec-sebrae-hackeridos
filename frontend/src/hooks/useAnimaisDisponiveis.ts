@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { animaisApi } from "../services/animaisApi";
 import type { Pet } from "../types/pet";
@@ -10,35 +10,19 @@ interface AnimaisDisponiveis {
 }
 
 export function useAnimaisDisponiveis(): AnimaisDisponiveis {
-  const [animais, setAnimais] = useState<Pet[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState("");
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["animais", "publicos"],
+    queryFn: () => animaisApi.listarPublicos(),
+  });
 
-  useEffect(() => {
-    let ativo = true;
-
-    animaisApi
-      .listarPublicos()
-      .then((dados) => {
-        if (ativo) setAnimais(dados);
-      })
-      .catch((erroApi: unknown) => {
-        if (ativo) {
-          setErro(
-            erroApi instanceof Error
-              ? erroApi.message
-              : "Não foi possível carregar os animais."
-          );
-        }
-      })
-      .finally(() => {
-        if (ativo) setCarregando(false);
-      });
-
-    return () => {
-      ativo = false;
-    };
-  }, []);
-
-  return { animais, carregando, erro };
+  return {
+    animais: data ?? [],
+    carregando: isLoading,
+    erro:
+      error instanceof Error
+        ? error.message
+        : error
+          ? "Não foi possível carregar os animais."
+          : "",
+  };
 }
