@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { FiX, FiUser, FiMail, FiShield, FiCheckCircle } from "react-icons/fi";
 import { FaPaw, FaBone } from "react-icons/fa";
 
+import { API_URL } from "../../config/api";
+
 // Configurações do pop-up        
 const CHAVE_DE_ARMAZENAMENTO = "focinho-amigo:newsletter";
 const DIAS_ATE_REAPARECER = 7; 
@@ -98,7 +100,7 @@ export default function NewsletterModal({
     setErro("");
 
     try {
-      const resposta = await fetch("http://localhost:3000/api/newsletter/subscribe", {
+      const resposta = await fetch(`${API_URL}/api/newsletter/subscribe`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
