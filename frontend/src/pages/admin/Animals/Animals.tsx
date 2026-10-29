@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { LuUpload, LuPencil, LuTrash2, LuX } from "react-icons/lu";
 
 import type { Animal, NovoAnimal } from "../../../services/animaisApi";
-import { imagemDoAnimal } from "../../../data/animalImages";
+import { imagemDoAnimal } from "../../../lib/animalFallback";
 
 import AdminHeader from "../../../components/layout/adminHeader";
 import {
