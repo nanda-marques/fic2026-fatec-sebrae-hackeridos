@@ -1,7 +1,10 @@
 {
-  "name": "focinho-amigo-backend",
+  "name": "fic2026-fatec-sebrae-hackeridos-backend",
   "private": true,
   "version": "0.0.0",
+  "description": "API REST do projeto Focinho Amigo",
+  "author": "Hackeridos",
+  "main": "dist/server.js",
   "type": "module",
   "engines": {
     "node": "24.22.1",
