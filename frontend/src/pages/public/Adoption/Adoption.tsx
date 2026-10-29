@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Dispatch, JSX, SetStateAction } from "react";
 import { useSearchParams } from "react-router-dom";
 import PageHero from "../../../components/layout/PageHero";
-import PublicFooter from "../../../components/layout/PublicFooter";
+
 import AnimalCard from "../../../components/layout/AnimalCard";
 import PetDetailsModal from "../../../components/adoption/PetDetailsModal";
 import type { Pet } from "../../../types/pet";
