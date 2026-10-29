@@ -10,8 +10,7 @@ import { loginRateLimit } from "../middlewares/rateLimit.middleware.js";
 const router = Router();
 
 router.post("/cadastro", upload.single("foto"), asyncHandler(authController.cadastrar));
-router.post("/login", asyncHandler(authController.login));
 router.get("/me", autenticar, asyncHandler(authController.me));
-router.post("/login", loginRateLimit, authController.login);
+router.post("/login", loginRateLimit, asyncHandler(authController.login));
 
 export default router;
