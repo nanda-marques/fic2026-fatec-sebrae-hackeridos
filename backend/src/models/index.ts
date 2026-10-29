@@ -1,5 +1,6 @@
 import Cargo from "./Cargo.js";
 import Administrador from "./Administrador.js";
+import TokenRecuperacao from "./TokenRecuperacao.js";
 import ImagemPerfil from "./ImagemPerfil.js"; 
 import HistoricoSolicitacaoAdmin from "./HistoricoSolicitacaoAdmin.js";
 import Publicacao from "./Publicacao.js";
@@ -19,6 +20,7 @@ Administrador.belongsTo(Cargo, {
 export {
   Cargo,
   Administrador,
+  TokenRecuperacao,
   ImagemPerfil,
   HistoricoSolicitacaoAdmin,
   Publicacao,

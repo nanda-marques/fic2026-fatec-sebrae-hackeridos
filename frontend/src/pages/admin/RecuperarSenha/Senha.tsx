@@ -4,16 +4,20 @@ import { FiMail, FiArrowLeft, FiHeart } from "react-icons/fi";
 import { FaPaw } from "react-icons/fa";
 
 import logo from "../../../assets/logo_pequena.svg";
+import { authApi } from "../../../services/authApi.ts";
 
 export default function RecuperarSenha(): React.JSX.Element {
   const [email, setEmail] = useState("administrador@focinhoamigo.org");
   const [enviado, setEnviado] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Conecte à API de recuperação de senha quando ela existir.
-    console.log({ email });
-    setEnviado(true);
+    try {
+      await authApi.solicitarRecuperacao(email);
+      setEnviado(true);
+    } catch {
+      setEnviado(true);
+    }
   }
 
   return (

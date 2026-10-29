@@ -167,4 +167,18 @@ export const authApi = {
     );
     return resp.url;
   },
+
+  solicitarRecuperacao(email: string): Promise<{ mensagem: string }> {
+    return requisicao<{ mensagem: string }>("/api/recuperacao/solicitar", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  redefinirSenha(token: string, novaSenha: string): Promise<{ mensagem: string }> {
+    return requisicao<{ mensagem: string }>("/api/recuperacao/redefinir", {
+      method: "POST",
+      body: JSON.stringify({ token, novaSenha }),
+    });
+  },
 };
