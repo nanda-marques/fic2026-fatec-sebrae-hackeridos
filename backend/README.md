@@ -254,11 +254,5 @@ npm start
 - `npm start`: executa a versão compilada.
 
 Na raiz do repositório, também estão disponíveis `npm run dev:backend` e `npm run build:backend`.
-
-## Observações
-
-- O banco é sincronizado durante a inicialização por meio de `sequelize.sync()`.
-- A API não possui rota raiz em `/` ou `/api/`.
-- A recuperação de senha ainda não possui endpoint no backend.
 - Não há scripts de testes automatizados configurados no backend.
 - As listagens não possuem paginação ou filtros de busca implementados.
