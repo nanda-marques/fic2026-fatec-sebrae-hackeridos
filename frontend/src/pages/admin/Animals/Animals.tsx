@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { LuUpload, LuPencil, LuTrash2, LuX } from "react-icons/lu";
+import { LuUpload, LuPencil, LuTrash2, LuX, LuMail, LuMailCheck } from "react-icons/lu";
 
 import type { Animal, NovoAnimal } from "../../../services/animaisApi";
 import { imagemDoAnimal } from "../../../lib/animalFallback";
@@ -67,9 +67,16 @@ export default function Animais() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function alternarNewsletter() {
+    setForm((prev) => ({
+      ...prev,
+      dispararNewsletter: !prev.dispararNewsletter,
+    }));
+  }
+
   async function handleImagemChange(e: ChangeEvent<HTMLInputElement>) {
     const arquivo = e.target.files?.[0];
-    e.target.value = ""; 
+    e.target.value = "";
     if (!arquivo) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(arquivo.type)) {
       setMensagem({
@@ -251,11 +258,10 @@ export default function Animais() {
 
         {mensagem.texto && (
           <div
-            className={`rounded-lg p-4 text-sm font-semibold ${
-              mensagem.tipo === "erro"
+            className={`rounded-lg p-4 text-sm font-semibold ${mensagem.tipo === "erro"
                 ? "border border-red-200 bg-red-50 text-red-700"
                 : "border border-emerald-200 bg-emerald-50 text-emerald-700"
-            }`}
+              }`}
           >
             {mensagem.texto}
           </div>
@@ -425,7 +431,7 @@ export default function Animais() {
                   { value: "Médio", label: "Médio" },
                   { value: "Grande", label: "Grande" },
                 ]}
-                required  
+                required
               />
               <Campo
                 label="Temperamento"
@@ -434,19 +440,6 @@ export default function Animais() {
                 onChange={handleChange}
                 placeholder="Ex.: Dócil"
               />
-              <label className="flex items-center gap-2 self-center text-sm font-semibold text-[#374151]">
-                <input
-                  type="checkbox"
-                  checked={form.dispararNewsletter}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      dispararNewsletter: e.target.checked,
-                    }))
-                  }
-                />
-                Incluir na newsletter
-              </label>
             </div>
 
             <label className="block">
@@ -473,10 +466,36 @@ export default function Animais() {
                 {enviandoImagem
                   ? "Enviando imagem..."
                   : salvando
-                  ? "Salvando..."
-                  : editandoId !== null
-                  ? "Salvar Alterações"
-                  : "Cadastrar"}
+                    ? "Salvando..."
+                    : editandoId !== null
+                      ? "Salvar Alterações"
+                      : "Cadastrar"}
+              </button>
+
+              <button
+                type="button"
+                disabled={salvando}
+                onClick={alternarNewsletter}
+                aria-pressed={form.dispararNewsletter ?? false}
+                title={
+                  form.dispararNewsletter
+                    ? "Marcado para a newsletter. Clique para desmarcar."
+                    : "Marcar este animal para a newsletter"
+                }
+                className={`inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${form.dispararNewsletter
+                    ? "border-[#2174b7] bg-[#2174b7] text-white hover:bg-[#155a96]"
+                    : "border-[#2174b7] bg-white text-[#2174b7] hover:bg-[#e8f3fd]"
+                  }`}
+              >
+                {form.dispararNewsletter ? (
+                  <LuMailCheck size={17} />
+                ) : (
+                  <LuMail size={17} />
+                )}
+
+                {form.dispararNewsletter
+                  ? "Adicionado a newsletter"
+                  : "Adicionar na newsletter"}
               </button>
 
               {editandoId !== null && (
@@ -652,7 +671,7 @@ function Campo({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        required={required} 
+        required={required}
         className="w-full rounded-lg border border-slate-200 bg-[#f9fafb] px-4 py-2.5 text-sm outline-none transition focus:border-[#1d70b8] focus:bg-white"
       />
     </div>

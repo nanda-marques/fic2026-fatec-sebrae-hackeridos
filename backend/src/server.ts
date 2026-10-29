@@ -11,6 +11,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import publicacoesRoutes from "./routes/publicacoes.routes.js";
 import animaisRoutes from "./routes/animais.routes.js";
+import newsletterRoutes from "./routes/newsletter.routes.js";
 
 import { tratarErros } from "./middlewares/error.middleware.js";
 
@@ -22,7 +23,7 @@ const FRONTEND_URL =
   (process.env.NODE_ENV === "production" ? null : "http://localhost:5173");
 
 if (!FRONTEND_URL) {
-  console.error("\n FRONTEND_URL não definida em produção.\n");
+  console.error("\nFRONTEND_URL não definida em produção.\n");
   console.error("Adicione no .env do backend:");
   process.exit(1);
 }
@@ -46,6 +47,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/publicacoes", publicacoesRoutes);
 app.use("/api/animais", animaisRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 app.use(tratarErros);
 

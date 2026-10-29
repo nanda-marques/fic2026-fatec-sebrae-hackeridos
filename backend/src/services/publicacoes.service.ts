@@ -2,6 +2,8 @@ import { Op } from "sequelize";
 
 import Administrador from "../models/Administrador.js";
 import Publicacao from "../models/Publicacao.js";
+import { ConteudoNewsletter } from "../models/ConteudoNewsletter.js";
+import { verificarEDispararNewsletter } from "./newsletter.service.js";
 
 import type {
   CategoriaConteudo,
@@ -218,7 +220,7 @@ export const publicacoesService = {
       throw new PublicacaoServiceError(400, "Dados do conteúdo inválidos.");
     }
 
-    return Publicacao.create({
+    const novaPublicacao = await Publicacao.create({
       titulo: dados.titulo.trim(),
       categoria: dados.categoria,
       status: dados.status ?? "rascunho",
@@ -232,15 +234,36 @@ export const publicacoesService = {
       localEventoCampanha: dados.localEventoCampanha?.trim() || null,
       urlArrecadacao: dados.urlArrecadacao?.trim() || null,
       urlVideo: dados.urlVideo?.trim() || null,
+      dispararNewsletter: dados.dispararNewsletter ?? false,
       criadoPor,
     });
+
+    if (novaPublicacao.dispararNewsletter) {
+      const jaExiste = await ConteudoNewsletter.findOne({
+        where: { conteudo_id: novaPublicacao.id, status: 'pendente' },
+      });
+
+      if (!jaExiste) {
+        await ConteudoNewsletter.create({
+          conteudo_id: novaPublicacao.id,
+          status: 'pendente',
+          adicionado_em: new Date(),
+        });
+        await verificarEDispararNewsletter();
+
+      }
+    }
+
+    return novaPublicacao;
   },
 
-  async atualizar(id: string, dados: Partial<PublicacaoInput>) {
+async atualizar(id: string, dados: Partial<PublicacaoInput>) {
     const conteudo = await this.buscar(id);
 
     const erro = validar(dados, true);
     if (erro) throw new PublicacaoServiceError(400, erro);
+
+    const estavaMarcadoAntes = Boolean(conteudo.dispararNewsletter);
 
     conteudo.set({
       ...(dados.titulo !== undefined && { titulo: dados.titulo.trim() }),
@@ -264,11 +287,38 @@ export const publicacoesService = {
         urlArrecadacao: dados.urlArrecadacao?.trim() || null,
       }),
       ...(dados.urlVideo !== undefined && { urlVideo: dados.urlVideo?.trim() || null }),
+      ...(dados.dispararNewsletter !== undefined && { dispararNewsletter: dados.dispararNewsletter }),
       atualizadoEm: new Date(),
     });
 
     await conteudo.save();
     await conteudo.reload();
+
+    const estaMarcadoAgora = Boolean(conteudo.dispararNewsletter);
+
+    if (!estaMarcadoAgora && estavaMarcadoAntes) {
+      await ConteudoNewsletter.destroy({
+        where: {
+          conteudo_id: conteudo.id,
+          status: 'pendente',
+        },
+      });
+    }
+
+    if (estaMarcadoAgora && !estavaMarcadoAntes) {
+      const jaExiste = await ConteudoNewsletter.findOne({
+        where: { conteudo_id: conteudo.id, status: 'pendente' },
+      });
+
+      if (!jaExiste) {
+        await ConteudoNewsletter.create({
+          conteudo_id: conteudo.id,
+          status: 'pendente',
+          adicionado_em: new Date(),
+        });
+        await verificarEDispararNewsletter();
+      }
+    }
 
     return conteudo;
   },

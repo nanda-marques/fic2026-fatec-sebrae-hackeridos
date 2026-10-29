@@ -6,10 +6,9 @@ import { FaPaw, FaBone } from "react-icons/fa";
 
 // Configurações do pop-up        
 const CHAVE_DE_ARMAZENAMENTO = "focinho-amigo:newsletter";
-const DIAS_ATE_REAPARECER = 7; // depois de fechado ou enviado, volta a aparecer após esse tempo
-const ATRASO_MS = 1500; // espera um pouco depois de entrar no site
+const DIAS_ATE_REAPARECER = 7; 
+const ATRASO_MS = 1500; 
 
-// Patinhas decorativas: distância da borda direita, do topo, e giro
 const patas = [
   { direita: 44, topo: 88, giro: 14 },
   { direita: 74, topo: 124, giro: -22 },
@@ -17,7 +16,6 @@ const patas = [
   { direita: 56, topo: 190, giro: -14 },
 ];
 
-// Controle de "já mostrei" (para o pop-up não aparecer a cada visita) 
 function jaFoiVista(): boolean {
   try {
     const salvo = localStorage.getItem(CHAVE_DE_ARMAZENAMENTO);
@@ -25,7 +23,6 @@ function jaFoiVista(): boolean {
     const dias = (Date.now() - Number(salvo)) / 86_400_000;
     return dias < DIAS_ATE_REAPARECER;
   } catch {
-    // Armazenamento bloqueado (ex.: aba anônima): mostra normalmente
     return false;
   }
 }
@@ -33,14 +30,10 @@ function jaFoiVista(): boolean {
 function marcarComoVista(): void {
   try {
     localStorage.setItem(CHAVE_DE_ARMAZENAMENTO, String(Date.now()));
-  } catch {
-    // Sem armazenamento disponível: só vai reaparecer na próxima visita
-  }
+  } catch {}
 }
 
-
 const campoClass="h-[48px] flex items-center gap-[14px] px-[14px] text-[#1f2937] bg-white border border-[#cfd8e3] rounded-[8px] transition-all duration-150 focus-within:border-[#1a73b8] focus-within:ring-4 focus-within:ring-[#1a73b8]/15";
-
 const inputClass="w-full min-w-0 p-0 text-[15px] text-[#1f2937] bg-transparent border-0 outline-none placeholder:text-[#475569]";
 
 interface NewsletterModalProps {
@@ -48,7 +41,7 @@ interface NewsletterModalProps {
   aoFecharSolicitado: () => void;
 }
 
-/** Pop-up de cadastro na newsletter. Aparece uma vez ao entrar no site. */
+/** Pop-up de cadastro na newsletter integrado ao banco. */
 export default function NewsletterModal({
   abrirSolicitado,
   aoFecharSolicitado,
@@ -58,6 +51,11 @@ export default function NewsletterModal({
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [aceito, setAceito] = useState(false);
+  
+  // Novos estados para requisição à API
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState("");
+
   const cartaoRef = useRef<HTMLDivElement>(null);
 
   const fechar = useCallback(() => {
@@ -66,7 +64,6 @@ export default function NewsletterModal({
     aoFecharSolicitado();
   }, [aoFecharSolicitado]);
 
-  // Abre sozinho, depois de um instante, se ainda não foi visto
   useEffect(() => {
     if (jaFoiVista()) return;
     const temporizador = window.setTimeout(() => setAberto(true), ATRASO_MS);
@@ -77,7 +74,6 @@ export default function NewsletterModal({
     if (abrirSolicitado) setAberto(true);
   }, [abrirSolicitado]);
 
-  // Enquanto aberto: trava a rolagem da página, foca o pop-up e fecha com Esc
   useEffect(() => {
     if (!aberto) return;
 
@@ -96,12 +92,32 @@ export default function NewsletterModal({
     };
   }, [aberto, fechar]);
 
-  function handleSubmit(evento: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    // Conecte à API de newsletter quando ela existir.
-    console.log({ nome, email, aceito });
-    marcarComoVista();
-    setEnviado(true);
+    setCarregando(true);
+    setErro("");
+
+    try {
+      const resposta = await fetch("http://localhost:3000/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nome, email }),
+      });
+
+      if (!resposta.ok) {
+        const dadosErro = await resposta.json();
+        throw new Error(dadosErro.erro || "Erro ao realizar inscrição.");
+      }
+
+      marcarComoVista();
+      setEnviado(true);
+    } catch (err: any) {
+      setErro(err.message || "Ocorreu um erro ao conectar com o servidor.");
+    } finally {
+      setCarregando(false);
+    }
   }
 
   if (!aberto) return null;
@@ -110,7 +126,6 @@ export default function NewsletterModal({
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3 font-['Inter',Arial,sans-serif] text-[#202b3e] box-border *:box-border sm:p-4"
       onClick={(evento) => {
-        // Clicar fora do cartão fecha
         if (evento.target === evento.currentTarget) fechar();
       }}
     >
@@ -185,13 +200,8 @@ export default function NewsletterModal({
 
               <form onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-3 sm:gap-[16px]">
-                  <label
-                    className={`${campoClass} h-[46px] gap-3 sm:h-[48px] sm:gap-[14px]`}
-                  >
-                    <FiUser
-                      className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]"
-                      aria-hidden="true"
-                    />
+                  <label className={`${campoClass} h-[46px] gap-3 sm:h-[48px] sm:gap-[14px]`}>
+                    <FiUser className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]" aria-hidden="true" />
                     <span className="sr-only">Nome</span>
                     <input
                       type="text"
@@ -204,13 +214,8 @@ export default function NewsletterModal({
                     />
                   </label>
 
-                  <label
-                    className={`${campoClass} h-[46px] gap-3 sm:h-[48px] sm:gap-[14px]`}
-                  >
-                    <FiMail
-                      className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]"
-                      aria-hidden="true"
-                    />
+                  <label className={`${campoClass} h-[46px] gap-3 sm:h-[48px] sm:gap-[14px]`}>
+                    <FiMail className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]" aria-hidden="true" />
                     <span className="sr-only">E-mail</span>
                     <input
                       type="email"
@@ -224,6 +229,12 @@ export default function NewsletterModal({
                   </label>
                 </div>
 
+                {erro && (
+                  <p className="mt-2 text-xs font-semibold text-red-600">
+                    {erro}
+                  </p>
+                )}
+
                 <label className="mt-4 flex cursor-pointer items-start gap-3 text-[12px] leading-[1.45] text-[#475569] sm:mt-[20px] sm:gap-[14px] sm:text-[12.5px]">
                   <input
                     type="checkbox"
@@ -234,7 +245,6 @@ export default function NewsletterModal({
                   />
                   <span>
                     Eu autorizo o envio de mensagens por e-mail e concordo com a{" "}
-                    {/* Ajuste a rota se a página de privacidade tiver outro endereço */}
                     <Link
                       to="/politica-de-privacidade"
                       className="font-semibold text-[#0b5cb8] underline-offset-2 hover:underline"
@@ -247,21 +257,16 @@ export default function NewsletterModal({
 
                 <button
                   type="submit"
-                  className="mt-4 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[12px] border-0 bg-[#ffb800] text-[16px] font-extrabold text-white shadow-[0_2px_3px_rgb(0_0_0/22%)] transition-colors duration-150 hover:bg-[#e6a600] sm:mt-[20px] sm:h-[52px] sm:gap-[10px] sm:text-[18px]"
+                  disabled={carregando}
+                  className="mt-4 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[12px] border-0 bg-[#ffb800] text-[16px] font-extrabold text-white shadow-[0_2px_3px_rgb(0_0_0/22%)] transition-colors duration-150 hover:bg-[#e6a600] disabled:opacity-55 sm:mt-[20px] sm:h-[52px] sm:gap-[10px] sm:text-[18px]"
                 >
-                  <FaBone
-                    className="h-5 w-5 sm:h-[22px] sm:w-[22px]"
-                    aria-hidden="true"
-                  />
-                  Quero receber novidades!
+                  <FaBone className="h-5 w-5 sm:h-[22px] sm:w-[22px]" aria-hidden="true" />
+                  {carregando ? "Cadastrando..." : "Quero receber novidades!"}
                 </button>
               </form>
 
               <p className="m-0 mt-4 flex items-center justify-center gap-2 text-[12px] leading-[1.4] text-[#667b9b] sm:mt-[20px] sm:gap-[12px] sm:text-[12.5px]">
-                <FiShield
-                  className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]"
-                  aria-hidden="true"
-                />
+                <FiShield className="h-5 w-5 shrink-0 sm:h-[22px] sm:w-[22px]" aria-hidden="true" />
                 <span>
                   Seus dados estão protegidos.
                   <br />
