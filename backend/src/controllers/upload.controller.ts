@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase.js";
-import { Foto } from "../models/Foto.js";
 
+import Administrador from "../models/Administrador.js";
+import Cargo from "../models/Cargo.js";
 import ImagemPerfil from "../models/ImagemPerfil.js";
 import { HttpError } from "../middlewares/error.middleware.js";
 
@@ -13,40 +14,50 @@ function sanitize(name: string) {
 }
 
 export const uploadController = {
-  async uploadFoto(req: Request, res: Response): Promise<any> {
-    try {
-      const file = req.file;
-      if (!file) return res.status(400).json({ error: "Nenhum ficheiro enviado." });
-
-      const bucket = (req.body.bucket as string) || process.env.SUPABASE_BUCKET!;
-      const prefixo = (req.body.prefixo as string) || "uploads";
-      const fileName = `${prefixo}/${Date.now()}_${sanitize(file.originalname)}`;
-
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-          upsert: false,
-        });
-
-      if (error) {
-        return res.status(502).json({ error: `Supabase: ${error.message}` });
-      }
-
-      const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
-      const novaFoto = await Foto.create({ url: data.publicUrl });
-
-      return res.status(201).json({ message: "Upload OK", dados: novaFoto });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
-    }
-  },
-
   async signedUrl(req: Request, res: Response): Promise<any> {
     try {
+      const u = req.usuario;
+      if (!u) return res.status(401).json({ error: "Não autenticado." });
+
       const path = req.query.path as string;
       const bucket = (req.query.bucket as string) || "container-perfis";
+
       if (!path) return res.status(400).json({ error: "path obrigatório" });
+
+      // Whitelist de buckets
+      const BUCKETS_PERMITIDOS = [
+        "container-perfis",
+        "container-animais",
+        "container-posts",
+      ];
+      if (!BUCKETS_PERMITIDOS.includes(bucket)) {
+        return res.status(400).json({ error: "Bucket inválido." });
+      }
+
+      // Bucket de perfis: valida acesso
+      if (bucket === "container-perfis") {
+        const ehProprioArquivo = path.startsWith(`admins/${u.id}/`);
+
+        if (!ehProprioArquivo) {
+          // Só permite ver foto de outro admin se tiver permissão "admins"
+          const administrador = await Administrador.findByPk(u.id, {
+            include: [{ model: Cargo, as: "cargoRef" }],
+          });
+
+          if (
+            !administrador ||
+            !administrador.ativo ||
+            administrador.status !== "ativo"
+          ) {
+            return res.status(403).json({ error: "Acesso negado." });
+          }
+
+          const cargo = administrador.get("cargoRef") as Cargo | undefined;
+          if (!cargo?.podeGerenciarAdmins) {
+            return res.status(403).json({ error: "Acesso negado." });
+          }
+        }
+      }
 
       const { data, error } = await supabase.storage
         .from(bucket)

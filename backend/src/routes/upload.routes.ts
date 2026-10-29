@@ -33,6 +33,9 @@ router.post(
   asyncHandler(uploadController.uploadImagemAnimal)
 );
 
-router.get("/foto-privada", asyncHandler(uploadController.signedUrl));
-
+router.get(
+  "/foto-privada",
+  autenticar,
+  asyncHandler(uploadController.signedUrl)
+);
 export default router;
