@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
+    "postbuild": "node -e \"require('fs').cpSync('src/config/ca.pem','dist/config/ca.pem')\"",
     "start": "node dist/server.js"
   },
   "devDependencies": {
@@ -32,6 +33,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.5.0",
     "mysql2": "^3.24.6",
+    "resend": "^6.35.0",
     "sequelize": "^6.37.8",
     "uuid": "^14.0.3"
   }
