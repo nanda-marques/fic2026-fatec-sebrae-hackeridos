@@ -157,16 +157,6 @@ npm run lint:frontend
 npm run build
 ```
 
-## Observações
-
-A aplicação utiliza React Strict Mode durante o desenvolvimento.
-
-A recuperação de senha possui interface, mas depende da implementação do endpoint correspondente no backend.
-
-A inscrição na newsletter possui interface, mas a integração com um serviço de envio ainda precisa ser implementada.
-
-O frontend não acessa diretamente o banco de dados; as operações são realizadas pela API.
-
 Testes automatizados ainda não estão configurados no frontend.
 
 Testes automatizados ainda não estão configurados no frontend.
