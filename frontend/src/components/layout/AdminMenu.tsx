@@ -10,7 +10,7 @@ import {
 } from "react-icons/lu";
 
 import logo from "../../assets/logo_pequena.svg";
-import { authApi } from "../../services/authApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface LinkItem {
   to: string;
@@ -25,17 +25,17 @@ const itemClass =
 export default function AdminMenu(): React.JSX.Element {
   const [aberto, setAberto] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut, podeGerenciar } = useAuth();
 
-  function sair(): void {
-    authApi.limparSessao();
+  function sair() {
+    signOut();
     navigate("/admin/login");
   }
 
-  const permissoes = authApi.usuarioAtual()?.permissoes;
+  const permissoes = user?.permissoes;
 
   const linksVisiveis: LinkItem[] = [
-    ...(permissoes &&
-    Object.values(permissoes).some(Boolean)
+    ...(permissoes && Object.values(permissoes).some(Boolean)
       ? [
           {
             to: "/admin/dashboard",
@@ -45,7 +45,7 @@ export default function AdminMenu(): React.JSX.Element {
         ]
       : []),
 
-    ...(authApi.podeGerenciar("conteudo")
+    ...(podeGerenciar("conteudo")
       ? [
           {
             to: "/admin/publicacoes",
@@ -55,7 +55,7 @@ export default function AdminMenu(): React.JSX.Element {
         ]
       : []),
 
-    ...(authApi.podeGerenciar("animais")
+    ...(podeGerenciar("animais")
       ? [
           {
             to: "/admin/animais",
@@ -71,7 +71,7 @@ export default function AdminMenu(): React.JSX.Element {
       icone: LuSettings,
     },
 
-    ...(authApi.podeGerenciar("admins")
+    ...(podeGerenciar("admins")
       ? [
           {
             to: "/admin/administradores",
@@ -116,11 +116,7 @@ export default function AdminMenu(): React.JSX.Element {
           className="mb-10 flex items-center gap-2.5 text-white no-underline"
           onClick={() => setAberto(false)}
         >
-          <img
-            src={logo}
-            alt=""
-            className="h-12 w-[54px] object-contain"
-          />
+          <img src={logo} alt="" className="h-12 w-[54px] object-contain" />
 
           <span className="flex flex-col leading-tight">
             <strong className="text-[17px] font-extrabold">
@@ -143,17 +139,13 @@ export default function AdminMenu(): React.JSX.Element {
               to={to}
               onClick={() => setAberto(false)}
               className={({ isActive }) =>
-                `${itemClass} ${
-                  isActive ? "bg-white/20" : "hover:bg-white/10"
-                }`
+                `${itemClass} ${isActive ? "bg-white/20" : "hover:bg-white/10"}`
               }
             >
               {({ isActive }) => (
                 <>
                   <Icone
-                    className={`h-5 w-5 shrink-0 ${
-                      isActive ? "text-destaque" : ""
-                    }`}
+                    className={`h-5 w-5 shrink-0 ${isActive ? "text-destaque" : ""}`}
                   />
                   {label}
                 </>

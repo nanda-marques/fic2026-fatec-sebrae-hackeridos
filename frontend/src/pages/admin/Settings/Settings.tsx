@@ -11,8 +11,9 @@ import {
 
 import AdminHeader from "../../../components/layout/adminHeader";
 import { adminApi } from "../../../services/adminApi";
-import { authApi } from "../../../services/authApi";
 import { useFotoPerfil } from "../../../hooks/useFotoPerfil";
+
+import { useAuth } from "../../../contexts/AuthContext";
 
 type TipoMensagem = "erro" | "sucesso" | "";
 
@@ -29,6 +30,9 @@ interface Seguranca {
 
 export default function Configuracoes() {
   const fotoInputRef = useRef<HTMLInputElement>(null);
+
+  // Auth Context — chamado no topo, uma única vez
+  const { refreshUser } = useAuth();
 
   const [perfil, setPerfil] = useState({
     nomeCompleto: "",
@@ -78,7 +82,7 @@ export default function Configuracoes() {
           nomeCompleto: p.nomeCompleto,
           email: p.email,
           cargo: p.cargo ?? "",
-          foto: p.fotoPath ?? "", 
+          foto: p.fotoPath ?? "",
         });
       })
       .catch((e: unknown) => {
@@ -125,56 +129,37 @@ export default function Configuracoes() {
   }
 
   async function handleSalvarPerfil(e: FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-  setSalvandoPerfil(true);
-  setMensagem({ tipo: "", texto: "" });
+    e.preventDefault();
+    setSalvandoPerfil(true);
+    setMensagem({ tipo: "", texto: "" });
 
-  try {
-    // Atualiza nome + email
-    const resp = await adminApi.atualizarPerfil({
-      nomeCompleto: perfil.nomeCompleto,
-      email: perfil.email,
-    });
+    try {
+      // 1. Atualiza nome + email
+      const resp = await adminApi.atualizarPerfil({
+        nomeCompleto: perfil.nomeCompleto,
+        email: perfil.email,
+      });
 
-    // Sincroniza localStorage 
-    const u = authApi.usuarioAtual();
-    if (u) {
-      const usuarioAtualizado = {
-        ...u,
-        nomeCompleto: resp.usuario.nomeCompleto ?? u.nomeCompleto,
-        email: resp.usuario.email ?? u.email,
-      };
-      localStorage.setItem("usuario", JSON.stringify(usuarioAtualizado));
-      window.dispatchEvent(new Event("usuario-atualizado"));
-    }
-
-    // Se tem foto nova, envia e atualiza o path
-    if (arquivoFoto) {
-      const up = await adminApi.atualizarFotoPerfil(arquivoFoto);
-
-      setPerfil((p) => ({ ...p, foto: up.path }));
-
-      const u2 = authApi.usuarioAtual();
-      if (u2) {
-        localStorage.setItem(
-          "usuario",
-          JSON.stringify({ ...u2, fotoPath: up.path })
-        );
-        window.dispatchEvent(new Event("usuario-atualizado"));
+      // 2. Se tem foto nova, envia e atualiza o path local
+      if (arquivoFoto) {
+        const up = await adminApi.atualizarFotoPerfil(arquivoFoto);
+        setPerfil((p) => ({ ...p, foto: up.path }));
+        setArquivoFoto(null);
       }
-      setArquivoFoto(null);
-    }
 
-    setMensagem({
-      tipo: "sucesso",
-      texto: resp.mensagem || "Perfil atualizado.",
-    });
-    window.setTimeout(() => setMensagem({ tipo: "", texto: "" }), 4000);
-  } catch (err: unknown) {
-    setMensagem({
-      tipo: "erro",
-      texto: err instanceof Error ? err.message : "Erro ao salvar perfil.",
-    });
+      // 3. Ressincroniza o usuário global (authApi.me() + Context)
+      await refreshUser();
+
+      setMensagem({
+        tipo: "sucesso",
+        texto: resp.mensagem || "Perfil atualizado.",
+      });
+      window.setTimeout(() => setMensagem({ tipo: "", texto: "" }), 4000);
+    } catch (err: unknown) {
+      setMensagem({
+        tipo: "erro",
+        texto: err instanceof Error ? err.message : "Erro ao salvar perfil.",
+      });
     } finally {
       setSalvandoPerfil(false);
     }
@@ -405,7 +390,7 @@ export default function Configuracoes() {
   );
 }
 
-// Campo texto 
+// Campo texto
 interface CampoProps {
   label: string;
   name: string;

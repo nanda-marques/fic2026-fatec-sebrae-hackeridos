@@ -20,7 +20,8 @@ import type {
   ResumoDashboard,
   StatusPublicacao,
 } from "../../../services/publicacoesApi";
-import { authApi } from "../../../services/authApi";
+
+import { useAuth } from "../../../contexts/AuthContext";
 
 const cardClass =
   "bg-white border border-[#e2e2e2] rounded-[12px] shadow-[0_2px_3px_rgb(0_0_0/22%)]";
@@ -138,8 +139,9 @@ export default function Dashboard(): JSX.Element {
   const [avisoPermissao, setAvisoPermissao] = useState<
     "conteudo" | "animais" | null
   >(null);
-  const podeGerenciarConteudo = authApi.podeGerenciar("conteudo");
-  const podeGerenciarAnimais = authApi.podeGerenciar("animais");
+  const { podeGerenciar } = useAuth();
+  const podeGerenciarConteudo = podeGerenciar("conteudo");
+  const podeGerenciarAnimais = podeGerenciar("animais");
 
   async function carregar(): Promise<void> {
     setCarregando(true);
