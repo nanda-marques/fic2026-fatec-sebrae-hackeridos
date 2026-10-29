@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+import { api } from "./api";
 
 export type CategoriaConteudo =
   | "noticia"
@@ -57,108 +57,54 @@ export type PublicacaoPayload = Pick<
   | "urgente"
 >;
 
-interface ErroApi {
-  erro?: string;
-  mensagem?: string;
-  message?: string;
-}
-
-async function requisicao<T>(
-  caminho: string,
-  opcoes: RequestInit = {},
-  exigirAutenticacao = false
-): Promise<T> {
-  const token = localStorage.getItem("token");
-  if (exigirAutenticacao && !token) {
-    throw new Error("Sessão expirada. Faça login novamente.");
-  }
-
-  const headers = new Headers(opcoes.headers);
-  if (opcoes.body && !(opcoes.body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
-  }
-  if (token) headers.set("Authorization", `Bearer ${token}`);
-
-  const resposta = await fetch(`${API_URL}${caminho}`, {
-    ...opcoes,
-    headers,
-  });
-
-  if (resposta.status === 204) {
-    if (!resposta.ok) throw new Error(`Erro ${resposta.status} em ${caminho}`);
-    return undefined as T;
-  }
-
-  const texto = await resposta.text();
-  let dados: unknown = null;
-  if (texto) {
-    try {
-      dados = JSON.parse(texto);
-    } catch {
-      dados = texto;
-    }
-  }
-  if (!resposta.ok) {
-    const erro = dados as ErroApi | string | null;
-    const mensagem =
-      typeof erro === "string"
-        ? erro
-        : erro?.erro ?? erro?.mensagem ?? erro?.message ?? `Erro ${resposta.status}`;
-    throw new Error(mensagem);
-  }
-  return dados as T;
-}
-
 export const publicacoesApi = {
   resumoDashboard: (): Promise<ResumoDashboard> =>
-    requisicao<ResumoDashboard>("/api/publicacoes/dashboard/resumo", {}, true),
+    api
+      .get<ResumoDashboard>("/api/publicacoes/dashboard/resumo")
+      .then((r) => r.data),
 
   listarAdmin: (): Promise<Publicacao[]> =>
-    requisicao<Publicacao[]>("/api/publicacoes/admin", {}, true),
+    api.get<Publicacao[]>("/api/publicacoes/admin").then((r) => r.data),
 
   listarPublicadas: (): Promise<Publicacao[]> =>
-    requisicao<Publicacao[]>("/api/publicacoes"),
+    api.get<Publicacao[]>("/api/publicacoes").then((r) => r.data),
 
   buscar: (id: number | string): Promise<Publicacao> => {
     if (id === undefined || id === null || id === "") {
       return Promise.reject(new Error("ID do conteúdo não informado."));
     }
-    return requisicao<Publicacao>(`/api/publicacoes/${id}`);
+    return api.get<Publicacao>(`/api/publicacoes/${id}`).then((r) => r.data);
   },
 
   buscarAdmin: (id: number | string): Promise<Publicacao> => {
     if (id === undefined || id === null || id === "") {
       return Promise.reject(new Error("ID do conteúdo não informado."));
     }
-    return requisicao<Publicacao>(`/api/publicacoes/admin/${id}`, {}, true);
+    return api
+      .get<Publicacao>(`/api/publicacoes/admin/${id}`)
+      .then((r) => r.data);
   },
 
   salvar: (
     dados: PublicacaoPayload,
     id?: number | string
-  ): Promise<Publicacao> =>
-    requisicao<Publicacao>(
-      id != null ? `/api/publicacoes/${id}` : "/api/publicacoes",
-      {
-        method: id != null ? "PUT" : "POST",
-        body: JSON.stringify(dados),
-      },
-      true
-    ),
+  ): Promise<Publicacao> => {
+    if (id != null) {
+      return api
+        .put<Publicacao>(`/api/publicacoes/${id}`, dados)
+        .then((r) => r.data);
+    }
+    return api.post<Publicacao>("/api/publicacoes", dados).then((r) => r.data);
+  },
 
   enviarImagem: (arquivo: File): Promise<{ url: string }> => {
     const form = new FormData();
     form.append("imagem", arquivo);
-    return requisicao(
-      "/api/upload/publicacao",
-      {
-        method: "POST",
-        body: form,
-      },
-      true
-    );
+    return api
+      .post<{ url: string }>("/api/upload/publicacao", form)
+      .then((r) => r.data);
   },
 
   excluir: (id: number | string): Promise<void> =>
-    requisicao<void>(`/api/publicacoes/${id}`, { method: "DELETE" }, true),
+    api.delete(`/api/publicacoes/${id}`).then(() => undefined),
 };
