@@ -1,4 +1,6 @@
 import Animal from "../models/Animal.js";
+import { ConteudoNewsletter } from "../models/ConteudoNewsletter.js";
+import { verificarEDispararNewsletter } from "./newsletter.service.js";
 
 import type { AnimalInput } from "../types/animal.js";
 
@@ -133,7 +135,7 @@ export const animaisService = {
     const erro = validarAnimal(dados);
     if (erro) throw new AnimalServiceError(400, erro);
 
-    return Animal.create({
+    const novoAnimal = await Animal.create({
       nome: dados!.nome!.trim(),
       especie: dados!.especie!.trim(),
       status: dados!.status?.trim() || "Disponível",
@@ -149,6 +151,23 @@ export const animaisService = {
       dispararNewsletter: dados!.dispararNewsletter ?? false,
       criadoPor,
     });
+
+    if (novoAnimal.dispararNewsletter) {
+      const jaExiste = await ConteudoNewsletter.findOne({
+        where: { animal_id: novoAnimal.id, status: 'pendente' },
+      });
+
+      if (!jaExiste) {
+        await ConteudoNewsletter.create({
+          animal_id: novoAnimal.id,
+          status: 'pendente',
+          adicionado_em: new Date(),
+        });
+        await verificarEDispararNewsletter();
+      }
+    }
+
+    return novoAnimal;
   },
 
   async atualizar(id: number, dados: Partial<AnimalInput> | undefined) {
@@ -156,6 +175,8 @@ export const animaisService = {
 
     const erro = validarAnimal(dados, true);
     if (erro) throw new AnimalServiceError(400, erro);
+
+    const estavaMarcadoAntes = Boolean(animal.dispararNewsletter);
 
     const atualizacao: Partial<AnimalInput> = {};
 
@@ -183,6 +204,34 @@ export const animaisService = {
     }
 
     await animal.update(atualizacao);
+    await animal.reload();
+
+    const estaMarcadoAgora = Boolean(animal.dispararNewsletter);
+
+    if (!estaMarcadoAgora && estavaMarcadoAntes) {
+      await ConteudoNewsletter.destroy({
+        where: {
+          animal_id: animal.id,
+          status: 'pendente',
+        },
+      });
+    }
+
+    if (estaMarcadoAgora && !estavaMarcadoAntes) {
+      const jaExiste = await ConteudoNewsletter.findOne({
+        where: { animal_id: animal.id, status: 'pendente' },
+      });
+
+      if (!jaExiste) {
+        await ConteudoNewsletter.create({
+          animal_id: animal.id,
+          status: 'pendente',
+          adicionado_em: new Date(),
+        });
+        await verificarEDispararNewsletter();
+      }
+    }
+
     return animal;
   },
 

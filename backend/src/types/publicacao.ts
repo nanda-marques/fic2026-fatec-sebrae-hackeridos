@@ -24,11 +24,11 @@ export interface Publicacao {
   dataEventoCampanha: string | null;
   localEventoCampanha: string | null;
   urlArrecadacao: string | null;
-  urlVideo: string | null;
-  // TODO: incluir o campo na API quando a integração de newsletter for implementada.
+  urlVideo: string | null; 
   criadoPor: number | null;
   criadoEm: string;
   atualizadoEm: string;
+  dispararNewsletter: boolean; 
 }
 
 export type PublicacaoInput = Pick<
@@ -45,6 +45,7 @@ export type PublicacaoInput = Pick<
   | "resumo"
   | "destaque"
   | "urgente"
+  | "dispararNewsletter"
 > & {
   status?: StatusPublicacao;
 };
