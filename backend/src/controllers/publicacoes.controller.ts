@@ -1,27 +1,18 @@
 import type { Request, Response } from "express";
 
-import { PublicacaoServiceError, publicacoesService } from "../services/publicacoes.service.js";
+import { HttpError } from "../middlewares/error.middleware.js";
+import { publicacoesService } from "../services/publicacoes.service.js";
 
 import type { PublicacaoInput } from "../types/publicacao.js";
 
-function obterId(req: Request, res: Response): string | null {
+function obterId(req: Request): string {
   const id = req.params.id;
 
   if (typeof id !== "string" || !/^\d+$/.test(id)) {
-    res.status(400).json({ erro: "ID do conteúdo inválido." });
-    return null;
+    throw new HttpError(400, "ID do conteúdo inválido.");
   }
 
   return id;
-}
-
-function responderErro(error: unknown, res: Response): boolean {
-  if (error instanceof PublicacaoServiceError) {
-    res.status(error.status).json({ erro: error.message });
-    return true;
-  }
-
-  return false;
 }
 
 export const publicacoesController = {
@@ -30,11 +21,7 @@ export const publicacoesController = {
   },
 
   async dashboard(req: Request, res: Response) {
-    try {
-      res.json(await publicacoesService.dashboard(req.usuario?.id));
-    } catch (error) {
-      if (!responderErro(error, res)) throw error;
-    }
+    res.json(await publicacoesService.dashboard(req.usuario?.id));
   },
 
   async listarAdmin(_req: Request, res: Response) {
@@ -42,62 +29,36 @@ export const publicacoesController = {
   },
 
   async buscarAdmin(req: Request, res: Response) {
-    const id = obterId(req, res);
-    if (!id) return;
-
-    try {
-      res.json(await publicacoesService.buscar(id));
-    } catch (error) {
-      if (!responderErro(error, res)) throw error;
-    }
+    const id = obterId(req);
+    res.json(await publicacoesService.buscar(id));
   },
 
   async buscarPublica(req: Request, res: Response) {
-    const id = obterId(req, res);
-    if (!id) return;
-
-    try {
-      res.json(await publicacoesService.buscar(id, true));
-    } catch (error) {
-      if (!responderErro(error, res)) throw error;
-    }
+    const id = obterId(req);
+    res.json(await publicacoesService.buscar(id, true));
   },
 
   async criar(req: Request, res: Response) {
-    try {
-      if (!req.usuario) {
-        res.status(401).json({ erro: "Não autenticado." });
-        return;
-      }
-
-      res.status(201).json(
-        await publicacoesService.criar(req.body as Partial<PublicacaoInput>, req.usuario.id)
-      );
-    } catch (error) {
-      if (!responderErro(error, res)) throw error;
-    }
+    if (!req.usuario) throw new HttpError(401, "Não autenticado.");
+    const publicacao = await publicacoesService.criar(
+      req.body as Partial<PublicacaoInput>,
+      req.usuario.id
+    );
+    res.status(201).json(publicacao);
   },
 
   async atualizar(req: Request, res: Response) {
-    const id = obterId(req, res);
-    if (!id) return;
-
-    try {
-      res.json(await publicacoesService.atualizar(id, req.body as Partial<PublicacaoInput>));
-    } catch (error) {
-      if (!responderErro(error, res)) throw error;
-    }
+    const id = obterId(req);
+    const publicacao = await publicacoesService.atualizar(
+      id,
+      req.body as Partial<PublicacaoInput>
+    );
+    res.json(publicacao);
   },
 
   async excluir(req: Request, res: Response) {
-    const id = obterId(req, res);
-    if (!id) return;
-
-    try {
-      await publicacoesService.excluir(id);
-      res.status(204).end();
-    } catch (error) {
-      if (!responderErro(error, res)) throw error;
-    }
+    const id = obterId(req);
+    await publicacoesService.excluir(id);
+    res.status(204).end();
   },
 };
