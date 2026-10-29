@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import PublicFooter from "../../../components/layout/PublicFooter";
 import { IconPaw } from "../../../components/layout/Icons";
 import {
   formatarDataExtenso,
   nomeCategoria,
   textoConteudoCompleto,
-} from "../../../data/publicacoes";
+} from "../../../lib/publicacoesUtils";
 import { publicacoesApi } from "../../../services/publicacoesApi";
 import type { Publicacao } from "../../../services/publicacoesApi";
 import { extrairVideoInfo } from "../../../utils/videoProviders";

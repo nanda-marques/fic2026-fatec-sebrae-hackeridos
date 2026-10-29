@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { LuMonitor, LuSmartphone } from "react-icons/lu";
 
 import { publicacoesApi } from "../../../services/publicacoesApi";
-import { textoConteudoCompleto } from "../../../data/publicacoes";
+import { textoConteudoCompleto } from "../../../lib/publicacoesUtils";
 import { extrairVideoInfo } from "../../../utils/videoProviders";
 import type {
   CategoriaConteudo,
