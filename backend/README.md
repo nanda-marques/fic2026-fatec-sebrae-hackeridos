@@ -1,6 +1,6 @@
 # Backend
 
-API do Focinho Amigo, desenvolvida com Node.js, Express 5, TypeScript e Sequelize. Utiliza MySQL para armazenar os dados e Supabase Storage para guardar as imagens.
+API do Focinho Amigo, desenvolvida com Node.js, Express 5, TypeScript e Sequelize. Utiliza MySQL para armazenar os dados e Supabase Storage para guardar as imagens, além do Resend para envio de e-mails transacionais e newsletters.
 
 ## Tecnologias
 
@@ -15,7 +15,7 @@ API do Focinho Amigo, desenvolvida com Node.js, Express 5, TypeScript e Sequeliz
 - CORS para controle de acesso entre origens
 - dotenv para variáveis de ambiente
 - Supabase Storage para armazenamento de arquivos
-- Resend para envio de e-mails de recuperação de senha
+- Resend para envio de e-mails transacionais (recuperação de senha e inscrições/disparos de newsletter)
 
 ## Tecnologias utilizadas
 
@@ -81,7 +81,24 @@ Os modelos utilizam `underscored: true`, que mantém os nomes das colunas no pad
 
 Na inicialização, o servidor executa `sequelize.sync()`. A função `adicionarCamposComplementares()` verifica se algumas colunas do modelo `Animal` precisam ser adicionadas.
 
+## Regras de Negócio e Serviço da Newsletter
+
+O `newsletterService` e o helper `verificarEDispararNewsletter()` gerenciam o fluxo automático da newsletter:
+
+1. **Fila de Conteúdo:** Cada novo animal ou publicação relevante pode ser adicionado à tabela `ConteudoNewsletter` com status `pendente`.
+2. **Gatilho de Disparo Automático (`verificarEDispararNewsletter`):** O sistema verifica a quantidade de itens pendentes na fila. Assim que atinge **4 ou mais itens**, o disparo é ativado.
+3. **Layout em Grade:** Os itens são organizados em pares (linhas de 2 colunas) e o HTML individualizado é montado dinamicamente via `gerarHtmlNewsletter`.
+4. **Envio via Resend API:** O e-mail é disparado para todos os inscritos com status `ativo = true`.
+5. **Atualização de Status:** Após o envio, os registros em `ConteudoNewsletter` passam para o status `enviado` com a data/hora registrada.
+6. **Descadastro (`descadastrarInscrito`):** Altera a flag `ativo` do usuário para `false`.
+
 ## Endpoints
+
+### Newsletter  — `/api/newsletter`
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | `/subscribe` | Cadastra ou reativa a inscrição de um e-mail na newsletter da ONG. |
+| GET | `/unsubscribe` | Cancela a inscrição de um e-mail via parâmetro de query (?email=...) e retorna confirmação visual em HTML. |
 
 ### Recuperação de senha — `/api/recuperacao`
 
