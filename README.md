@@ -10,6 +10,10 @@ A versão publicada do frontend está disponível em:
 
 https://fic2026-fatec-sebrae-hackeridos.vercel.app/
 
+A versão publicada do frontend para administradores está disponível em:
+
+https://fic2026-fatec-sebrae-hackeridos.vercel.app/admin/login
+
 A API é executada separadamente no ambiente de backend.
 
 ## Problema
