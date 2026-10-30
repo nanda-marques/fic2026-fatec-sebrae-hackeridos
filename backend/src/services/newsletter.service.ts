@@ -1,11 +1,11 @@
-import { Resend } from 'resend';
+import { criarResendClient } from "./resendClient.js";
 import { ConteudoNewsletter } from '../models/ConteudoNewsletter.js';
 import Animal from '../models/Animal.js';
 import Publicacao from '../models/Publicacao.js';
 import { InscritoNewsletter } from '../models/InscritoNewsletter.js';
 import { gerarHtmlNewsletter } from '../helpers/newsletterHelper.js';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = criarResendClient();
 
 export const newsletterService = {
   async dispararNewsletterSemanal() {

@@ -1,10 +1,14 @@
-import { Resend } from "resend";
+import { criarResendClient } from "./resendClient.js";
 import bcryptjs from "bcryptjs";
 import TokenRecuperacao from "../models/TokenRecuperacao.js";
 import Administrador from "../models/Administrador.js";
 import crypto from "crypto";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend = criarResendClient();
+
+export function configurarResend(client: typeof resend) {
+  resend = client;
+}
 
 function gerarTokenAleatorio(): string {
   return crypto.randomBytes(32).toString("hex");
