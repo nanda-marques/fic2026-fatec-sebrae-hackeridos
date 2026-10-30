@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model administradores {
+  id                 Int                    @id @default(autoincrement())
+  nome_completo      String                 @db.VarChar(255)
+  email              String                 @unique(map: "email") @db.VarChar(255)
+  senha_hash         String                 @db.VarChar(255)
+  cargo              Int
+  criado_em          DateTime               @default(now()) @db.DateTime(0)
+  status             administradores_status @default(ativo)
+  ativo              Boolean                @default(true)
+  cargos             cargos                 @relation(fields: [cargo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_administradores_cargo")
+  animais            animais[]
+  conteudos          conteudos[]
+  imagem_perfil      imagem_perfil?
+  tokens_recuperacao tokens_recuperacao[]
+
+  @@index([cargo], map: "fk_administradores_cargo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model animais {
+  id                  Int                   @id @default(autoincrement())
+  especie             String                @db.VarChar(20)
+  status              String                @db.VarChar(20)
+  nome                String                @db.VarChar(100)
+  idade               Int?
+  porte               String?               @db.VarChar(20)
+  temperamento        String?               @db.Text
+  sobre               String?               @db.Text
+  disparar_newsletter Boolean               @default(false)
+  criado_por          Int?
+  criado_em           DateTime              @default(now()) @db.DateTime(0)
+  raca                String?               @db.VarChar(255)
+  peso                Decimal?              @db.Decimal(6, 2)
+  castracao           String?               @db.VarChar(50)
+  vacinacao_em_dia    Boolean               @default(false)
+  imagem              String?               @db.VarChar(500)
+  administradores     administradores?      @relation(fields: [criado_por], references: [id], onUpdate: NoAction, map: "fk_animais_criado_por")
+  conteudo_newsletter conteudo_newsletter[]
+
+  @@index([criado_por], map: "fk_animais_criado_por")
+}
+
+model cargos {
+  id                        Int               @id @default(autoincrement())
+  nome_cargo                String            @unique(map: "nome_cargo") @db.VarChar(50)
+  pode_gerenciar_animais    Boolean           @default(false)
+  pode_gerenciar_conteudo   Boolean           @default(false)
+  pode_gerenciar_newsletter Boolean           @default(false)
+  pode_gerenciar_admins     Boolean           @default(false)
+  administradores           administradores[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model conteudo_newsletter {
+  id            Int                        @id @default(autoincrement())
+  conteudo_id   Int?
+  animal_id     Int?
+  status        conteudo_newsletter_status @default(pendente)
+  adicionado_em DateTime                   @default(now()) @db.DateTime(0)
+  enviado_em    DateTime?                  @db.DateTime(0)
+  animais       animais?                   @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_cn_animal")
+  conteudos     conteudos?                 @relation(fields: [conteudo_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_cn_conteudo")
+
+  @@index([animal_id], map: "fk_cn_animal")
+  @@index([conteudo_id], map: "fk_cn_conteudo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model conteudos {
+  id                    Int                   @id @default(autoincrement())
+  categoria             String                @db.VarChar(50)
+  status                conteudos_status      @default(rascunho)
+  titulo                String                @db.VarChar(255)
+  descricao_conteudo    String                @db.Text
+  imagem                String?               @db.VarChar(500)
+  data_evento_campanha  DateTime?             @db.DateTime(0)
+  local_evento_campanha String?               @db.VarChar(255)
+  url_arrecadacao       String?               @db.VarChar(500)
+  url_video             String?               @db.VarChar(500)
+  disparar_newsletter   Boolean               @default(false)
+  criado_por            Int?
+  criado_em             DateTime              @default(now()) @db.DateTime(0)
+  atualizado_em         DateTime              @default(now()) @db.DateTime(0)
+  fixado                Boolean?              @default(false)
+  autor                 String?               @db.VarChar(255)
+  resumo                String?               @db.VarChar(500)
+  destaque              Boolean               @default(false)
+  urgente               Boolean               @default(false)
+  conteudo_newsletter   conteudo_newsletter[]
+  administradores       administradores?      @relation(fields: [criado_por], references: [id], onUpdate: NoAction, map: "fk_conteudos_criado_por")
+
+  @@index([criado_por], map: "fk_conteudos_criado_por")
+}
+
+model fotos {
+  id         Int      @id @default(autoincrement())
+  url        String   @db.VarChar(500)
+  created_at DateTime @db.DateTime(0)
+  updated_at DateTime @db.DateTime(0)
+}
+
+model historico_solicitacoes_admin {
+  id                 Int                                  @id @default(autoincrement()) @db.UnsignedInt
+  solicitante_id     Int                                  @db.UnsignedInt
+  solicitante_nome   String                               @db.VarChar(255)
+  solicitante_email  String                               @db.VarChar(255)
+  cargo_solicitado   String                               @db.VarChar(255)
+  decisao            historico_solicitacoes_admin_decisao
+  administrador_id   Int                                  @db.UnsignedInt
+  administrador_nome String                               @db.VarChar(255)
+  decidido_em        DateTime                             @db.DateTime(0)
+}
+
+model imagem_perfil {
+  id                 Int             @id @default(autoincrement())
+  id_administradores Int             @unique(map: "id_administradores")
+  url                String          @db.VarChar(500)
+  administradores    administradores @relation(fields: [id_administradores], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_imagem_perfil_admin")
+}
+
+model inscritos_newsletter {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(255)
+  email     String   @unique(map: "email") @db.VarChar(255)
+  ativo     Boolean  @default(true)
+  criado_em DateTime @default(now()) @db.DateTime(0)
+}
+
+model tokens_recuperacao {
+  id              Int             @id @default(autoincrement()) @db.UnsignedInt
+  admin_id        Int
+  token_hash      String          @db.VarChar(255)
+  usado           Boolean         @default(false)
+  expira_em       DateTime        @db.DateTime(0)
+  criado_em       DateTime        @db.DateTime(0)
+  administradores administradores @relation(fields: [admin_id], references: [id], onDelete: Cascade, map: "tokens_recuperacao_ibfk_1")
+
+  @@index([admin_id], map: "admin_id")
+}
+
+enum conteudos_status {
+  rascunho
+  publicado
+  agendado
+  arquivado
+}
+
+enum conteudo_newsletter_status {
+  pendente
+  enviado
+}
+
+enum historico_solicitacoes_admin_decisao {
+  aprovado
+  rejeitado
+}
+
+enum administradores_status {
+  pendente
+  ativo
+  inativo
+}
