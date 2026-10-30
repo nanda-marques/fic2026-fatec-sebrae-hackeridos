@@ -1,13 +1,11 @@
 import { useMemo, useState } from "react";
 import type { Dispatch, JSX, SetStateAction } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import PageHero from "../../../components/layout/PageHero";
-
 import AnimalCard from "../../../components/layout/AnimalCard";
 import PetDetailsModal from "../../../components/adoption/PetDetailsModal";
 import type { Pet } from "../../../types/pet";
 import { useAnimaisDisponiveis } from "../../../hooks/useAnimaisDisponiveis";
-import { Link } from "react-router-dom";
 
 /** Props do componente de filtro. */
 interface SelectFiltroProps {
@@ -16,6 +14,7 @@ interface SelectFiltroProps {
   onChange: (valor: string) => void;
   options: Array<{ value: string; label: string }>;
 }
+
 
 const LINK_FORMULARIO = "https://docs.google.com/forms/d/e/1FAIpQLSc5MaIdjMHJLM84eiKYNFuGmzleNLMMfYNE5QaxScOrerSkGg/viewform";
 const PER_PAGE = 6;
@@ -101,6 +100,18 @@ const filtroTipos = [
 const selectClass =
   "cursor-pointer bg-transparent text-xs font-bold text-marca focus:outline-none";
 
+function normalizarGenero(pet: Pet): "M" | "F" | null {
+  const valor = String(pet.sexo ?? pet.detalhes?.sexo ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+
+  if (["m", "macho"].includes(valor)) return "M";
+  if (["f", "femea"].includes(valor)) return "F";
+  return null;
+}
+
 function SelectFiltro({
   label,
   value,
@@ -123,15 +134,18 @@ function SelectFiltro({
       </select>
     </label>
   );
-};
-
+}
 
 /** Página de adoção com filtros, cards, modal de detalhes e formulário. */
 export default function Adoption(): JSX.Element {
   const { animais: pets, carregando, erro } = useAnimaisDisponiveis();
+  
+  // Estados dos Filtros
   const [tipo, setTipo] = useState("todos");
   const [porte, setPorte] = useState("todos");
   const [idade, setIdade] = useState("todos");
+  const [sexo, setSexo] = useState("todos"); // "todos", "M" ou "F"
+  
   const [pagina, setPagina] = useState(1);
   const [abertaFaq, setAbertaFaq] = useState<number | null>(null);
 
@@ -141,7 +155,6 @@ export default function Adoption(): JSX.Element {
     pets.find((p) => String(p.id) === idDaUrl) ?? null;
 
   const abrirPet = (pet: Pet) => setSearchParams({ animal: String(pet.id) });
-
   const fecharPet = () => setSearchParams({});
 
   const irParaFormulario = () => {
@@ -155,11 +168,15 @@ export default function Adoption(): JSX.Element {
     );
   };
 
+  // Lógica de Filtragem
   const filtrados = useMemo(
     () =>
       pets.filter((p: Pet) => {
         if (tipo !== "todos" && p.tipo !== tipo) return false;
         if (porte !== "todos" && p.porte !== porte) return false;
+        
+        if (sexo !== "todos" && normalizarGenero(p) !== sexo) return false;
+        
         if (p.anos != null) {
           if (idade === "filhote" && p.anos > 1) return false;
           if (idade === "adulto" && (p.anos < 2 || p.anos > 5)) return false;
@@ -167,7 +184,7 @@ export default function Adoption(): JSX.Element {
         }
         return true;
       }),
-    [pets, tipo, porte, idade]
+    [pets, tipo, porte, idade, sexo] // 'sexo' adicionado às dependências
   );
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / PER_PAGE));
@@ -188,19 +205,19 @@ export default function Adoption(): JSX.Element {
 
   return (
     <>
-     <PageHero
-  titulo="Adote um Amigo"
-  descricao="Abra os braços para um carinho sincero e sinta a incomparável emoção de salvar e acolher uma vida."
-  imagem="src/assets/images/hero/heroAdoption.png"
->
-  <a
-    href="#formulario"
-    className="mt-5 block rounded-lg bg-marca px-5 py-3 text-center text-sm font-bold text-white transition hover:opacity-90 md:inline-block"
-  >
-    <span className="md:hidden">Formulário de Adoção</span>
-    <span className="hidden md:inline">Preencher Formulário de Adoção</span>
-  </a>
-</PageHero>
+      <PageHero
+        titulo="Adote um Amigo"
+        descricao="Abra os braços para um carinho sincero e sinta a incomparável emoção de salvar e acolher uma vida."
+        imagem="src/assets/images/hero/heroAdoption.png"
+      >
+        <a
+          href="#formulario"
+          className="mt-5 block rounded-lg bg-marca px-5 py-3 text-center text-sm font-bold text-white transition hover:opacity-90 md:inline-block"
+        >
+          <span className="md:hidden">Formulário de Adoção</span>
+          <span className="hidden md:inline">Preencher Formulário de Adoção</span>
+        </a>
+      </PageHero>
 
       {/* NOSSOS PELUDOS */}
       <section className="bg-[#f8f9fb] px-5 py-10 lg:px-14 lg:py-12">
@@ -244,6 +261,16 @@ export default function Adoption(): JSX.Element {
                 ]}
               />
               <SelectFiltro
+                label="Gênero"
+                value={sexo}
+                onChange={mudar(setSexo)}
+                options={[
+                  { value: "todos", label: "Qualquer" },
+                  { value: "M", label: "Macho" }, 
+                  { value: "F", label: "Fêmea" }, 
+                ]}
+              />
+              <SelectFiltro
                 label="Idade"
                 value={idade}
                 onChange={mudar(setIdade)}
@@ -254,6 +281,41 @@ export default function Adoption(): JSX.Element {
                   { value: "idoso", label: "6 anos ou mais" },
                 ]}
               />
+              
+            </div>
+            <div className="grid grid-cols-2 gap-2 md:hidden">
+              <select
+                aria-label="Filtrar por porte"
+                value={porte}
+                onChange={(e) => mudar(setPorte)(e.target.value)}
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-marca"
+              >
+                <option value="todos">Qualquer porte</option>
+                <option value="Pequeno">Pequeno</option>
+                <option value="Médio">Médio</option>
+                <option value="Grande">Grande</option>
+              </select>
+              <select
+                aria-label="Filtrar por gênero"
+                value={sexo}
+                onChange={(e) => mudar(setSexo)(e.target.value)}
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-marca"
+              >
+                <option value="todos">Qualquer gênero</option>
+                <option value="M">Macho</option>
+                <option value="F">Fêmea</option>
+              </select>
+              <select
+                aria-label="Filtrar por idade"
+                value={idade}
+                onChange={(e) => mudar(setIdade)(e.target.value)}
+                className="col-span-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-marca"
+              >
+                <option value="todos">Qualquer idade</option>
+                <option value="filhote">Até 1 ano</option>
+                <option value="adulto">2 a 5 anos</option>
+                <option value="idoso">6 anos ou mais</option>
+              </select>
             </div>
           </div>
 
@@ -371,7 +433,7 @@ export default function Adoption(): JSX.Element {
         </div>
       </section>
 
-            {/* FORMULÁRIO */}
+      {/* FORMULÁRIO */}
       <section
         id="formulario"
         className="scroll-mt-4 bg-white px-5 py-12 lg:px-14 lg:py-16"
@@ -444,9 +506,7 @@ export default function Adoption(): JSX.Element {
         </div>
       </section>
 
-            {/* =====================================================
-          DEPOIMENTOS
-      ====================================================== */}
+      {/* DEPOIMENTOS */}
       <section className="bg-[#f1f1f1] px-5 py-16 lg:px-14">
         <div className="mx-auto max-w-6xl">
           <div className="text-center">
@@ -489,9 +549,7 @@ export default function Adoption(): JSX.Element {
         />
       )}
 
-        {/* =====================================================
-          APADRINHAR
-      ====================================================== */}
+      {/* APADRINHAR */}
       <section className="bg-marca px-5 py-12 text-center text-white lg:px-14 lg:py-14">
         <div className="mx-auto max-w-2xl">
           <h2 className="text-2xl font-extrabold md:text-3xl">Não pode adotar ?</h2>

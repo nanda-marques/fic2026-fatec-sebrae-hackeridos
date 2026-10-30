@@ -8,12 +8,28 @@ interface AnimalCardProps {
   onConhecer?: (animal: Pet) => void;
 }
 
+/** Normaliza o sexo do animal para "F" ou "M", independente do formato vindo da API. */
+function normalizarSexo(sexo?: string | null): "F" | "M" | null {
+  if (!sexo) return null;
+  const valor = String(sexo)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+  
+  if (["f", "femea", "female"].includes(valor)) return "F";
+  if (["m", "macho", "male"].includes(valor)) return "M";
+  
+  return null;
+}
+
 export default function AnimalCard({
   animal,
   variant = "home",
   onConhecer,
 }: AnimalCardProps): JSX.Element {
   const isHome = variant === "home";
+  const sexoNormalizado = normalizarSexo(animal.sexo);
 
   return (
     <article
@@ -33,43 +49,48 @@ export default function AnimalCard({
       {/* Informações do animal */}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-lg font-bold text-zinc-800">{animal.nome}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-zinc-800">{animal.nome}</h3>
+            {/* Tag do tipo (Cão/Gato) - igual à imagem */}
+            {animal.tipo && (
+              <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                {animal.tipo}
+              </span>
+            )}
+          </div>
 
-          {!isHome && animal.sexo && (
+          {/* SÍMBOLO DE GÊNERO - sempre visível fora da home */}
+          {!isHome && sexoNormalizado && (
             <span
               role="img"
-              aria-label={animal.sexo === "F" ? "Fêmea" : "Macho"}
-              className={`text-base font-bold ${
-                animal.sexo === "F" ? "text-red-500" : "text-marca"
+              aria-label={sexoNormalizado === "F" ? "Fêmea" : "Macho"}
+              title={sexoNormalizado === "F" ? "Fêmea" : "Macho"}
+              className={`text-2xl font-black leading-none ${
+                sexoNormalizado === "F" ? "text-[#e83f5b]" : "text-marca"
               }`}
             >
-              {animal.sexo === "F" ? "♀" : "♂"}
+              {sexoNormalizado === "F" ? "♀" : "♂"}
             </span>
           )}
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-700">
-            {animal.raca || animal.tipo || "Raça não informada"}
-          </span>
-
-          <span className="rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-700">
+        {/* Tags: idade, porte, etc. */}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <span className="rounded-md bg-zinc-100 px-2 py-1 text-[10px] font-semibold text-zinc-600">
             {animal.idade ||
               (animal.anos != null
                 ? `${animal.anos} ${animal.anos === 1 ? "ano" : "anos"}`
                 : "Idade não informada")}
           </span>
+          <span className="rounded-md bg-zinc-100 px-2 py-1 text-[10px] font-semibold text-zinc-600">
+            Porte {animal.porte || "Não informado"}
+          </span>
         </div>
 
         {!isHome && (
-          <>
-            <p className="mt-3 flex-1 text-xs leading-5 text-zinc-500">
-              {animal.descricao}
-            </p>
-            <div className="mt-2 text-xs text-zinc-500">
-              Porte: {animal.porte || "Não informado"}
-            </div>
-          </>
+          <p className="mt-3 flex-1 text-xs leading-5 text-zinc-500 line-clamp-3">
+            {animal.descricao}
+          </p>
         )}
 
         {onConhecer ? (
