@@ -96,7 +96,7 @@ export default function Publications(): JSX.Element {
 
   const filtradas = useMemo(() => {
     const termo = busca.trim().toLocaleLowerCase("pt-BR");
-    return publicacoes.filter((item) => {
+    const listaFiltrada = publicacoes.filter((item) => {
       const correspondeBusca =
         !termo ||
         `${item.titulo} ${item.descricaoConteudo ?? ""}`
@@ -107,6 +107,18 @@ export default function Publications(): JSX.Element {
         (categoria === "todas" || item.categoria === categoria) &&
         (status === "todos" || item.status === status)
       );
+    });
+
+    // Hierarquia: Destaques primeiro, seguidos pelos mais recentes
+    return listaFiltrada.sort((a, b) => {
+      const destaqueA = a.destaque ? 1 : 0;
+      const destaqueB = b.destaque ? 1 : 0;
+
+      if (destaqueB !== destaqueA) {
+        return destaqueB - destaqueA; // Destaque true (1) vem antes de false (0)
+      }
+
+      return (b.criadoEm ?? "").localeCompare(a.criadoEm ?? "");
     });
   }, [publicacoes, busca, categoria, status]);
 

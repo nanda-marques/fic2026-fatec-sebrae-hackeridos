@@ -47,6 +47,7 @@
   "homepage": "https://github.com/nanda-marques/fic2026-fatec-sebrae-hackeridos#readme",
   "devDependencies": {
     "@prisma/client": "^6.19.3",
+    "dotenv": "^18.0.9",
     "prisma": "^6.19.3"
   }
 }

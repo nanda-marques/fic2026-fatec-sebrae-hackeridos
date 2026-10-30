@@ -15,8 +15,9 @@ export const nomeCategoria: Record<CategoriaConteudo, string> = {
 
 const publicacoes: Publicacao[] = [];
 
+// Altere para ordenar estritamente pela data de criação (ou atualização)
 const dataMaisRecente = (publicacao: Publicacao): string =>
-  publicacao.dataEventoCampanha ?? publicacao.criadoEm ?? "";
+  publicacao.criadoEm ?? "";
 
 const maisRecentePrimeiro = (a: Publicacao, b: Publicacao): number =>
   dataMaisRecente(b).localeCompare(dataMaisRecente(a));

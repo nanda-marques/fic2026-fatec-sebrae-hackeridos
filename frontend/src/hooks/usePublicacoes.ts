@@ -10,7 +10,7 @@ export function usePublicacoes() {
   });
 }
 
-// Retorna apenas as campanhas em destaque ou urgentes, ordenadas. 
+
 export function useCampanhasDestaque() {
   return useQuery({
     queryKey: ["publicacoes", "campanhas-destaque"],
@@ -19,15 +19,14 @@ export function useCampanhasDestaque() {
       return conteudos
         .filter(
           (conteudo) =>
-            conteudo.categoria === "campanha" &&
-            (conteudo.destaque || conteudo.urgente)
+            conteudo.destaque || conteudo.urgente
         )
         .sort(
           (a, b) =>
             Number(b.urgente) - Number(a.urgente) ||
             Number(b.destaque) - Number(a.destaque) ||
             b.criadoEm.localeCompare(a.criadoEm)
-        );
+        )
     },
   });
 }
