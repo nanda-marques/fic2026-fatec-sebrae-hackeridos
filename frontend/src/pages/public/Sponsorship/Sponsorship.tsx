@@ -72,9 +72,10 @@ export default function Sponsorship() {
 
   const { animais, carregando, erro } = useAnimaisDisponiveis();
 
-  // Seleciona somente os animais que precisam de apadrinhamento.
   const petsPrioritarios = animais.filter(
-    (pet: Pet) => pet.prioridadeApadrinhamento === true
+    (pet: Pet) =>
+      pet.prioridadeApadrinhamento === true ||
+      pet.detalhes?.prioridadeApadrinhamento === true
   );
 
   return (
@@ -222,11 +223,9 @@ export default function Sponsorship() {
           ) : petsPrioritarios.length > 0 ? (
             <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {petsPrioritarios.map((pet: Pet) => (
-                <AnimalCard
-                  key={pet.id ?? pet.nome}
-                  animal={pet}
-                  variant="outro"
-                />
+                <div key={pet.id ?? pet.nome} className="relative">
+                  <AnimalCard animal={pet} variant="outro" />
+                </div>
               ))}
             </div>
           ) : (

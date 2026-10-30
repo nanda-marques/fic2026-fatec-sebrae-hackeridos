@@ -109,22 +109,21 @@ AnimalModel.init(
       defaultValue: DataTypes.NOW,
       field: "criado_em",
     },
-    // ✅ NOVOS — com `field` explícito, igual aos outros que já funcionavam
     sexo: {
       type: DataTypes.STRING(20),
       allowNull: true,
-      field: "sexo",
+      field: "sexo",                              
     },
     situacaoSaude: {
       type: DataTypes.TEXT,
       allowNull: true,
-      field: "situacao_saude",
+      field: "situacao_saude",                    
     },
     prioridadeApadrinhamento: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-      field: "prioridade_apadrinhamento",
+      field: "prioridade_apadrinhamento",        
     },
   },
   {

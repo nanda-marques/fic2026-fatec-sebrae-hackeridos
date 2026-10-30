@@ -47,6 +47,10 @@ export type NovoAnimal = Pick<
 >;
 
 function paraPet(animal: AnimalPublico): Pet {
+  const prioridadeApadrinhamento =
+    animal.prioridadeApadrinhamento === true ||
+    (animal.prioridadeApadrinhamento as unknown as string) === "true";
+
   const especieNormalizada = animal.especie
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -62,7 +66,7 @@ function paraPet(animal: AnimalPublico): Pet {
       ? undefined
       : `${animal.idade} ${animal.idade === 1 ? "ano" : "anos"}`;
 
-  return {
+    return {
     id: animal.id,
     nome: animal.nome,
     tipo,
@@ -79,6 +83,7 @@ function paraPet(animal: AnimalPublico): Pet {
       : [],
     descricao: animal.sobre ?? undefined,
     disponivelAdocao: animal.status === "Disponível",
+    prioridadeApadrinhamento,
     detalhes: {
       fotos: [imagem],
       idadeEstimada: idade,
@@ -87,12 +92,14 @@ function paraPet(animal: AnimalPublico): Pet {
       vacinacaoEmDia: animal.vacinacaoEmDia,
       temperamento: animal.temperamento ?? undefined,
       sobre: animal.sobre ?? undefined,
-      sexo:
-        animal.sexo?.toUpperCase() === "M" || animal.sexo?.toUpperCase() === "F"
-          ? (animal.sexo.toUpperCase() as "M" | "F")
-          : undefined,
+      sexo: (() => {
+        const sexo = animal.sexo?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        if (sexo === "MACHO" || sexo === "M") return "M";
+        if (sexo === "FEMEA" || sexo === "F") return "F";
+        return undefined;
+      })(),
       situacaoSaude: animal.situacaoSaude ?? undefined,
-      prioridadeApadrinhamento: animal.prioridadeApadrinhamento,
+      prioridadeApadrinhamento,
     },
   };
 }
@@ -140,11 +147,11 @@ export const animaisApi = {
     return api.delete(`/api/animais/${id}`).then(() => undefined);
   },
 
-  importarCSV: (file: File): Promise<{ importados: number }> => {
+  importarCSV: (file: File): Promise<{ importados: number; ignorados: number; erros: string[] }> => {
     const fd = new FormData();
     fd.append("file", file);
     return api
-      .post<{ importados: number }>("/api/animais/importar-csv", fd)
+      .post<{ importados: number; ignorados: number; erros: string[] }>("/api/animais/importar-csv", fd)
       .then((r) => r.data);
   },
 };

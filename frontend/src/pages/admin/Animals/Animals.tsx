@@ -218,8 +218,13 @@ export default function Animais() {
     if (!file) return;
 
     try {
-      await importarCSV.mutateAsync(file);
-      setMensagem({ tipo: "sucesso", texto: "CSV importado com sucesso!" });
+      const resultado = await importarCSV.mutateAsync(file);
+      setMensagem({
+        tipo: resultado.importados > 0 ? "sucesso" : "erro",
+        texto: resultado.importados > 0
+          ? `${resultado.importados} animal(is) importado(s)${resultado.ignorados ? `; ${resultado.ignorados} ignorado(s)` : ""}.`
+          : resultado.erros[0] ?? "Nenhum animal foi importado.",
+      });
     } catch (err: unknown) {
       setMensagem({
         tipo: "erro",
