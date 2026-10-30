@@ -1,6 +1,6 @@
 # Backend
 
-API REST do Focinho Amigo, desenvolvida com Node.js, Express 5, TypeScript e Sequelize. O projeto utiliza MySQL para persistência dos dados e Supabase Storage para armazenamento de imagens.
+API do Focinho Amigo, desenvolvida com Node.js, Express 5, TypeScript e Sequelize. Utiliza MySQL para armazenar os dados e Supabase Storage para guardar as imagens.
 
 ## Tecnologias
 
@@ -13,7 +13,7 @@ API REST do Focinho Amigo, desenvolvida com Node.js, Express 5, TypeScript e Seq
 - bcryptjs para hash de senhas
 - Multer para upload de imagens
 - CORS para controle de acesso entre origens
-- dotenv para gerenciamento de variáveis de ambiente
+- dotenv para variáveis de ambiente
 - Supabase Storage para armazenamento de arquivos
 - Resend para envio de e-mails de recuperação de senha
 
@@ -53,33 +53,33 @@ backend/
     └── seed/
 ```
 
-- `server.ts`: inicializa o servidor, registra as rotas e estabelece a conexão com o banco.
-- `models/`: define os modelos e as associações do banco de dados.
-- `config/`: reúne as configurações do MySQL e do Supabase.
-- `controllers/`: trata as requisições e as respostas da API.
-- `routes/`: define os endpoints disponíveis.
-- `middlewares/`: contém autenticação, controle de permissões, upload e tratamento de erros.
-- `services/`: concentra regras de negócio e integrações externas.
-- `types/`: reúne as definições de tipos utilizadas na aplicação.
+- `server.ts`: inicia o servidor, registra as rotas e conecta ao banco de dados.
+- `models/`: contém os modelos e as associações do banco.
+- `config/`: configura as conexões com MySQL e Supabase.
+- `controllers/`: recebe as requisições e retorna as respostas da API.
+- `routes/`: define os endpoints da aplicação.
+- `middlewares/`: contém autenticação, permissões, upload e tratamento de erros.
+- `services/`: implementa as regras de negócio e as integrações externas.
+- `types/`: contém as definições de tipos utilizadas no projeto.
 - `seed/`: contém os dados iniciais dos cargos do sistema.
 
 ## Banco de dados
 
-O banco de dados utiliza MySQL com Sequelize e conexão SSL.
+O projeto utiliza MySQL com Sequelize e conexão SSL.
 
-Principais modelos:
+Os principais modelos são:
 
-- `Cargo`: define os cargos e suas permissões para gerenciar animais, conteúdo, newsletter e administradores.
-- `Administrador`: armazena nome, e-mail, senha, cargo e status da conta.
-- `Animal`: reúne os dados dos animais disponíveis para adoção.
-- `Publicacao`: armazena notícias, eventos, campanhas e outras publicações.
-- `ImagemPerfil`: mantém as referências às fotos de perfil armazenadas no Supabase.
-- `HistoricoSolicitacaoAdmin`: registra aprovações e rejeições de cadastros.
-- `TokenRecuperacao`: armazena os hashes dos tokens utilizados na recuperação de senha, além da validade e do status de uso.
+- `Cargo`: define os cargos dos administradores e suas permissões.
+- `Administrador`: armazena os dados de acesso, cargo e situação da conta.
+- `Animal`: contém as informações dos animais cadastrados para adoção.
+- `Publicacao`: armazena notícias, eventos, campanhas e outros conteúdos.
+- `ImagemPerfil`: guarda as referências às fotos de perfil armazenadas no Supabase.
+- `HistoricoSolicitacaoAdmin`: registra as aprovações e rejeições de cadastros.
+- `TokenRecuperacao`: armazena os hashes dos tokens de recuperação de senha, junto com a validade e a situação de uso.
 
-Os modelos utilizam `underscored: true`, mantendo os nomes das colunas no padrão `snake_case`.
+Os modelos utilizam `underscored: true`, que mantém os nomes das colunas no padrão `snake_case`.
 
-Na inicialização, o servidor executa `sequelize.sync()`. A função `adicionarCamposComplementares()` verifica e adiciona algumas colunas do modelo `Animal`, quando necessário.
+Na inicialização, o servidor executa `sequelize.sync()`. A função `adicionarCamposComplementares()` verifica se algumas colunas do modelo `Animal` precisam ser adicionadas.
 
 ## Endpoints
 
@@ -88,13 +88,13 @@ Na inicialização, o servidor executa `sequelize.sync()`. A função `adicionar
 | Método | Endpoint | Descrição |
 |---|---|---|
 | POST | `/solicitar` | Solicita a recuperação de senha e envia o link por e-mail. |
-| POST | `/redefinir` | Redefine a senha utilizando um token válido. |
+| POST | `/redefinir` | Altera a senha usando um token válido. |
 
-O endpoint `/solicitar` recebe o e-mail do administrador. Quando o endereço está cadastrado, o sistema gera um token aleatório com `crypto.randomBytes`, armazena seu hash com `bcryptjs` e envia o link de recuperação pelo Resend.
+O endpoint `/solicitar` recebe o e-mail do administrador. Quando o endereço está cadastrado, a API gera um token aleatório com `crypto.randomBytes`, armazena seu hash com `bcryptjs` e envia o link pelo Resend.
 
-O token tem validade de uma hora e só pode ser utilizado uma vez. A resposta da solicitação não informa se o e-mail está cadastrado.
+O token é válido por uma hora e só pode ser usado uma vez. A resposta não informa se o e-mail está cadastrado.
 
-O endpoint `/redefinir` recebe o token e a nova senha. Após validar o token, o sistema atualiza a senha do administrador e marca o token como utilizado.
+Em `/redefinir`, o administrador envia o token e a nova senha. Depois da validação, a senha é atualizada e o token é marcado como utilizado.
 
 ### Autenticação — `/api/auth`
 
@@ -104,9 +104,9 @@ O endpoint `/redefinir` recebe o token e a nova senha. Após validar o token, o 
 | POST | `/login` | Autentica um administrador. |
 | GET | `/me` | Retorna os dados do usuário autenticado. |
 
-O cadastro aceita `multipart/form-data`, com nome, sobrenome, e-mail, cargo, senha e foto opcional. As novas contas são criadas com status pendente.
+O cadastro recebe os dados em `multipart/form-data`: nome, sobrenome, e-mail, cargo, senha e, opcionalmente, uma foto. As novas contas ficam com status pendente até serem aprovadas.
 
-No login, são verificadas a senha e a situação da conta. Administradores autorizados recebem um JWT com validade de duas horas.
+No login, a API verifica a senha e a situação da conta. Administradores autorizados recebem um JWT com validade de duas horas.
 
 ### Administradores — `/api/admin`
 
@@ -120,7 +120,7 @@ No login, são verificadas a senha e a situação da conta. Administradores auto
 | PATCH | `/:id/rejeitar` | Rejeita um cadastro. |
 | GET | `/historico-solicitacoes` | Lista as últimas solicitações. |
 
-Todas as rotas exigem autenticação. A consulta de pendências, as decisões sobre cadastros e o acesso ao histórico também exigem permissão para gerenciar administradores.
+Todas as rotas exigem autenticação. Para consultar pendências, aprovar ou rejeitar cadastros e acessar o histórico, o administrador também precisa ter permissão para gerenciar administradores.
 
 ### Animais — `/api/animais`
 
@@ -132,27 +132,62 @@ Todas as rotas exigem autenticação. A consulta de pendências, as decisões so
 | POST | `/` | Cadastra um animal. |
 | PUT | `/:id` | Atualiza os dados de um animal. |
 | DELETE | `/:id` | Exclui um animal. |
+| POST | `/importar-csv` | Importa animais por arquivo CSV. |
 
-A rota `/publicos` não exige autenticação e retorna somente os dados destinados à consulta pública. As demais operações exigem autenticação e as permissões correspondentes.
+A rota `/publicos` não exige login e retorna apenas os dados destinados à consulta pública. As demais operações exigem autenticação e as permissões correspondentes.
 
-Os campos são validados conforme os tipos e limites definidos na aplicação.
+Os dados enviados são validados de acordo com os tipos e limites definidos na aplicação.
+
+A importação por CSV aceita arquivos com cabeçalhos correspondentes aos campos reconhecidos pelo serviço. Os campos obrigatórios são `nome`, `especie`, `status` e `porte`. Cada registro é processado individualmente: os válidos são cadastrados e os que apresentam problemas retornam o número da linha e o motivo do erro.
+
+As imagens não são importadas pelo CSV. Elas podem ser adicionadas posteriormente pelo painel administrativo.
+
+### Importação CSV
+
+O arquivo deve utilizar os nomes de campos aceitos pelo importador. Os cabeçalhos abaixo podem ser usados:
+
+`nome`, `especie`, `raca`, `idade`, `porte`, `peso`, `castracao`, `temperamento`, `sobre`, `status`.
+
+Valores utilizados no cadastro:
+
+- `especie`: `Canino` ou `Felino`
+- `porte`: `Pequeno`, `Médio` ou `Grande`
+- `status`: `Disponível`, `Adotado` ou `Em Processo`
+- `castracao`: `Não informado`, `Castrado(a)`, `Pendente` ou `Agendada`
+- `idade`: número inteiro (ex.: `2`)
+- `peso`: número com ponto decimal (ex.: `12.5`), sem a unidade `kg`
+
+Exemplo de arquivo:
+
+```csv
+nome,especie,raca,idade,porte,peso,castracao,temperamento,sobre,status
+Luna,Canino,Caramelo,2,Médio,12.5,Não informado,Brincalhona,Dócil e sociável,Disponível
+```
+
+**Cuidados ao montar o arquivo:**
+
+- Salvar em UTF-8 sem BOM.
+- Utilizar vírgulas como separadores.
+- Não incluir a coluna `cor`, pois ela não é reconhecida pelo importador.
+- Os campos opcionais podem ficar vazios.
+- Os campos `nome`, `especie`, `status` e `porte` precisam estar preenchidos.
 
 ### Publicações — `/api/publicacoes`
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| GET | `/` | Lista publicações publicadas. |
+| GET | `/` | Lista as publicações publicadas. |
 | GET | `/dashboard/resumo` | Retorna os indicadores do painel. |
-| GET | `/admin` | Lista todas as publicações no painel administrativo. |
+| GET | `/admin` | Lista as publicações no painel administrativo. |
 | GET | `/admin/:id` | Consulta uma publicação no painel administrativo. |
 | GET | `/:id` | Consulta uma publicação pública. |
 | POST | `/` | Cria uma publicação. |
 | PUT | `/:id` | Atualiza uma publicação. |
 | DELETE | `/:id` | Exclui uma publicação. |
 
-As operações administrativas exigem autenticação e permissão para gerenciar conteúdo. As consultas públicas retornam somente publicações com status `publicado`.
+As operações administrativas exigem autenticação e permissão para gerenciar conteúdo. Nas consultas públicas, são retornadas apenas publicações com status `publicado`.
 
-As publicações podem ser classificadas como `noticia`, `evento`, `campanha` ou `publicacao`. Os status disponíveis são `rascunho`, `publicado`, `agendado` e `arquivado`.
+As publicações podem ter as categorias `noticia`, `evento`, `campanha` ou `publicacao`. Os status disponíveis são `rascunho`, `publicado`, `agendado` e `arquivado`.
 
 ### Uploads — `/api/upload`
 
@@ -163,58 +198,58 @@ As publicações podem ser classificadas como `noticia`, `evento`, `campanha` ou
 | POST | `/animal` | Envia uma imagem de animal. |
 | GET | `/foto-privada` | Gera uma URL assinada para acessar uma imagem. |
 
-Os arquivos são armazenados no Supabase Storage. Os uploads administrativos exigem autenticação e as permissões correspondentes.
+As imagens são armazenadas no Supabase Storage. Os uploads feitos pelo painel administrativo exigem autenticação e as permissões correspondentes.
 
-A rota `/foto-privada` gera uma URL assinada com validade de 60 segundos e verifica as permissões de acesso.
+A rota `/foto-privada` gera uma URL assinada com validade de 60 segundos e verifica se o usuário tem permissão para acessar o arquivo.
 
 ## Autenticação e permissões
 
-A API utiliza JWT para autenticação. As requisições protegidas devem enviar o token no cabeçalho:
+A API utiliza JWT para autenticar os usuários. Nas rotas protegidas, o token deve ser enviado no cabeçalho:
 
 ```http
 Authorization: Bearer <token>
 ```
 
-As senhas são armazenadas em formato de hash, gerado pelo bcryptjs. Contas pendentes ou inativas não podem realizar login.
+As senhas são armazenadas como hashes gerados pelo bcryptjs. Contas pendentes ou inativas não conseguem fazer login.
 
-As permissões são associadas ao cargo do administrador:
+As permissões são definidas pelo cargo do administrador:
 
 - `pode_gerenciar_animais`
 - `pode_gerenciar_conteudo`
 - `pode_gerenciar_newsletter`
 - `pode_gerenciar_admins`
 
-Nas rotas protegidas, são verificadas a autenticação, a situação da conta e as permissões necessárias para cada operação.
+Cada rota protegida verifica a autenticação, a situação da conta e a permissão necessária para a operação.
 
 ## Integrações externas
 
 ### MySQL — Aiven
 
-Armazena os dados de administradores, cargos, animais, publicações e histórico de solicitações. A conexão utiliza SSL.
+Armazena os dados de administradores, cargos, animais, publicações e histórico de solicitações. A conexão com o banco utiliza SSL.
 
 ### Supabase Storage
 
-Armazena imagens nos seguintes buckets:
+As imagens são armazenadas nos seguintes buckets:
 
 - `container-perfis`
 - `container-posts`
 - `container-animais`
 
-A integração utiliza as variáveis `SUPABASE_URL` e `SUPABASE_KEY`.
+A conexão utiliza as variáveis `SUPABASE_URL` e `SUPABASE_KEY`.
 
 ### Resend
 
-Utilizado no envio dos e-mails de recuperação de senha. A integração é configurada pelas variáveis `RESEND_API_KEY` e `EMAIL_FROM`.
+Utilizado para enviar os e-mails de recuperação de senha. A configuração é feita pelas variáveis `RESEND_API_KEY` e `EMAIL_FROM`.
 
 ### Newsletter
 
 Os modelos `Animal` e `Publicacao` possuem o campo `disparar_newsletter`, que indica se o registro deve ser incluído em um envio de newsletter.
 
-Atualmente, o campo funciona como uma indicação no cadastro. O envio de e-mails da newsletter ainda não está integrado a um serviço externo.
+Por enquanto, esse campo é utilizado como uma indicação no cadastro. O envio dos e-mails da newsletter ainda não está integrado a um serviço externo.
 
 ## Variáveis de ambiente
 
-Configure o arquivo `backend/.env` utilizando o `backend/.env.example` como referência.
+Crie o arquivo `backend/.env` com base no `backend/.env.example`.
 
 ```env
 PORT=3000
@@ -238,14 +273,14 @@ RESEND_API_KEY=
 EMAIL_FROM=
 ```
 
-Preencha as variáveis com os dados dos serviços utilizados. Não versione o arquivo `.env` nem compartilhe suas credenciais.
+Preencha as variáveis com os dados dos serviços configurados. O arquivo `.env` não deve ser enviado ao repositório nem compartilhado, pois contém credenciais de acesso.
 
 ## Pré-requisitos
 
 - Node.js 24.22.1
 - npm 11 ou superior
 - MySQL
-- Projeto Supabase configurado para armazenamento de imagens
+- Projeto Supabase configurado para armazenar imagens
 - Conta no Resend para envio de e-mails de recuperação de senha
 
 ## Execução local
@@ -257,16 +292,16 @@ npm install
 npm run dev:backend
 ```
 
-Ou dentro do diretório `backend/`:
+Ou, dentro do diretório `backend/`:
 
 ```bash
 npm install
 npm run dev
 ```
 
-O servidor fica disponível em `http://localhost:3000`, salvo configuração diferente na variável `PORT`.
+Por padrão, o servidor fica disponível em `http://localhost:3000`. A porta pode ser alterada pela variável `PORT`.
 
-Para verificar a API, acesse:
+Para testar a API, é possível acessar:
 
 - `GET /api/publicacoes/`
 - `GET /api/animais/publicos`
@@ -283,9 +318,9 @@ npm start
 
 - `npm run dev`: inicia o servidor em modo de desenvolvimento.
 - `npm run build`: compila o TypeScript.
-- `npm start`: executa a versão compilada.
+- `npm start`: inicia a versão compilada.
 
-Na raiz do repositório, também estão disponíveis:
+Na raiz do repositório, também podem ser utilizados:
 
 ```bash
 npm run dev:backend
@@ -294,5 +329,5 @@ npm run build:backend
 
 ## Observações
 
-- O backend não possui testes automatizados configurados.
-- As listagens ainda não possuem paginação nem filtros de busca implementados.
+- O backend ainda não possui testes automatizados configurados.
+- As listagens ainda não contam com paginação ou filtros de busca.

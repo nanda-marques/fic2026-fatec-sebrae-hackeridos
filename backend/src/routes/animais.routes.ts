@@ -12,5 +12,7 @@ router.get("/", autenticar, exigirPermissaoAnimais, asyncHandler(animaisControll
 router.get("/:id", autenticar, exigirPermissaoAnimais, asyncHandler(animaisController.buscar));
 router.post("/", autenticar, exigirPermissaoAnimais, asyncHandler(animaisController.criar));
 router.put("/:id", autenticar, exigirPermissaoAnimais, asyncHandler(animaisController.atualizar));
+router.get("/resumo", autenticar, exigirPermissaoAnimais, asyncHandler(animaisController.resumo));
 router.delete("/:id", autenticar, exigirPermissaoAnimais, asyncHandler(animaisController.excluir));
+router.post("/importar-csv", autenticar, exigirPermissaoAnimais, uploadCsv.single("file"), asyncHandler(importarCsvController.importar));
 export default router;
