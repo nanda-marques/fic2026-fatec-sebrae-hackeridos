@@ -1,0 +1,35 @@
+flowchart TB
+subgraph Cliente["1. Usuários do Sistema"]
+        UserPub["Visitante / Adotante"]
+        UserAdmin["Voluntário / Administrador"]
+  end
+subgraph FrontendLayer["2. Front-end - Vercel"]
+        ReactApp["Aplicação Web em React.js (Vite)<br>• Hospedado na Vercel<br>• Portal Público<br>• Tela de Login / Redefinição de Senha<br>• Painel de Gestão e Publicação<br>• Widget Flutuante de Captura (Newsletter)<br>• Leitura e Envio de CSV"]
+  end
+subgraph BackendLayer["3. Back-end - Render"]
+        API_Node["API REST em Node.js / Express<br>• Hospedado no Render (Web Service)<br>• Autenticação, Tokens JWT e Redefinição de Senha<br>• Processamento de CSV, Postagens e Inscrições<br>• Disparo Automático de E-mails"]
+  end
+subgraph DataLayer["4. Armazenamento e Banco de Dados"]
+        MySQL[("Banco de Dados - Aiven MySQL<br>Armazena pets, postagens, inscritos da newsletter, credenciais e tokens de redefinição")]
+        SupabaseBucket@{ label: "Armazenamento de Arquivos - Supabase Storage<br>Guarda fotos de perfil, imagens de publicações e dos animais" }
+  end
+subgraph SupportLayer["5. Integrações e Serviços Externos"]
+        CICD["GitHub Actions / Deploy Automático (Vercel & Render)"]
+        EmailAPI["Serviço de E-mail - Resend API"]
+        GForms["Google Forms - Formulários"]
+        GMaps["Google Maps - Localização"]
+  end
+    UserPub -- "Navega pelo site e inscreve e-mail na newsletter" --> ReactApp
+    UserAdmin -- "Realiza login ou solicita redefinição de senha" --> ReactApp
+    ReactApp -- "Requisições da API REST (HTTPS/JSON)" --> API_Node
+    ReactApp -- "Carrega formulários" --> GForms
+    ReactApp -- "Carrega mapa" --> GMaps
+    API_Node -- "Dados estruturados e tokens de senha" --> MySQL
+    API_Node -- "Upload/Gerenciamento de mídias" --> SupabaseBucket
+    API_Node -- "Dispara e-mails (Newsletter e Link de Redefinição de Senha)" --> EmailAPI
+    EmailAPI -. "Entrega newsletters e links de recuperação na caixa de entrada" .-> UserPub
+    EmailAPI -. "Entrega links de redefinição de senha na caixa de entrada" .-> UserAdmin
+    CICD -. "Deploy automático a partir da branch main" .-> ReactApp
+    CICD -. "Deploy automático a partir da branch main" .-> API_Node
+
+    SupabaseBucket@{ shape: rect}
