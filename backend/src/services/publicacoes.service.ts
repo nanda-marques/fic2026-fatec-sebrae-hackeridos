@@ -1,5 +1,8 @@
 import { Op } from "sequelize";
 
+import Animal from "../models/Animal.js";
+import { animaisService } from "./animais.service.js";
+
 import Administrador from "../models/Administrador.js";
 import Publicacao from "../models/Publicacao.js";
 import { ConteudoNewsletter } from "../models/ConteudoNewsletter.js";
@@ -183,6 +186,7 @@ export const publicacoesService = {
     const ha7Dias = new Date(hoje);
     ha7Dias.setUTCDate(ha7Dias.getUTCDate() - 7);
 
+    const resumoAnimaisData = await animaisService.resumo();
     const [
       totalPublicacoes,
       campanhasAtivas,
@@ -206,6 +210,7 @@ export const publicacoesService = {
       campanhasAtivas,
       eventosProximos,
       noticiasRecentes,
+      animais: resumoAnimaisData,
       publicacoesPorCategoria: Object.fromEntries(
         CATEGORIAS_DASHBOARD.map((categoria, indice) => [categoria, contagens[indice]])
       ),

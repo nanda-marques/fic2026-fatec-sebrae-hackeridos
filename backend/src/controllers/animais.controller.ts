@@ -52,4 +52,8 @@ export const animaisController = {
     await animaisService.excluir(id);
     res.status(204).end();
   },
+
+  async resumo(_req: Request, res: Response) {
+    res.json(await animaisService.resumo());
+  },
 };

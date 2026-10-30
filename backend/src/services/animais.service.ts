@@ -239,4 +239,30 @@ export const animaisService = {
     const animal = await this.buscar(id);
     await animal.destroy();
   },
+
+  async resumo() {
+    const total = await Animal.count();
+    const disponiveis = await Animal.count({ where: { status: "Disponível" } });
+    const adotados = await Animal.count({ where: { status: "Adotado" } });
+    const vacinacaoDia = await Animal.count({ where: { vacinacaoEmDia: true } });
+    const vacinacaoNaoDia = await Animal.count({ where: { vacinacaoEmDia: false } });
+    const castrado = await Animal.count({ where: { castracao: "Castrado" } });
+    const castradoA = await Animal.count({ where: { castracao: "Castrado(a)" } });
+    const totalCastrados = castrado + castradoA;
+    const pendente = await Animal.count({ where: { castracao: "Pendente" } });
+    const agendada = await Animal.count({ where: { castracao: "Agendada" } });
+    const naoInformado = await Animal.count({ where: { castracao: "Não informado" } });
+    return {
+      total,
+      disponiveis,
+      adotados,
+      vacinacao: { dia: vacinacaoDia, naoDia: vacinacaoNaoDia },
+      castracao: {
+        castrado: totalCastrados,
+        pendente,
+        agendada,
+        naoInformado,
+      },
+    };
+  },
 };
