@@ -13,7 +13,7 @@ export default function PublicFooter(): React.JSX.Element {
           {/* Logo e descrição */}
           <div>
             <Link to="/" className="flex items-center gap-2">
-              <img src="../src/assets/logo.svg" alt="Focinho Amigo" className="h-10 w-auto" />
+              <img src="/images/logo.svg" alt="Focinho Amigo" className="h-10 w-auto" />
               <span className="text-lg font-bold">Focinho Amigo</span>
             </Link>
 

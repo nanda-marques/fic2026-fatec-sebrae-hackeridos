@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FiMail, FiArrowLeft, FiHeart } from "react-icons/fi";
 import { FaPaw } from "react-icons/fa";
 
-import logo from "../../../assets/logo_pequena.svg";
+const logo = "/images/logo_pequena.svg";
 import { authApi } from "../../../services/authApi.js";
 
 export default function RecuperarSenha(): React.JSX.Element {

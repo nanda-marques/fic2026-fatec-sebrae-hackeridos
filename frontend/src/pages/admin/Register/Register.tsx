@@ -20,7 +20,7 @@ import {
 
 import { authApi } from "../../../services/authApi";
 
-import logo from "../../../assets/logo_pequena.svg";
+const logo = "/images/logo_pequena.svg";
 
 const CARGOS = [
   "Coordenador de Adoções",

@@ -10,7 +10,7 @@ import {
 import { FaPaw } from "react-icons/fa";
 
 import { authApi } from "../../../services/authApi";
-import logo from "../../../assets/logo_pequena.svg";
+const logo = "/images/logo_pequena.svg";
 
 export default function ResetarSenha() {
   const [searchParams] = useSearchParams();

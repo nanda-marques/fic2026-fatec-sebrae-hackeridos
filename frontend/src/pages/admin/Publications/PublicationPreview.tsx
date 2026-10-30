@@ -10,7 +10,7 @@ import type {
   CategoriaConteudo,
   Publicacao,
 } from "../../../services/publicacoesApi";
-import logoImg from "../../../assets/logo.svg";
+const logoImg = "/images/logo.svg";
 
 const categorias: Record<CategoriaConteudo, string> = {
   noticia: "Notícia",

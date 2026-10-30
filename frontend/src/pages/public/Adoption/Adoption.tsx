@@ -80,14 +80,14 @@ const depoimentos: Depoimento[] = [
     pet: "Adotou a Amora",
     texto:
       "“A Amora mudou nossas vidas. Todo o processo de adoção da Focinho Amigo foi feito com muita transparência e respeito pelo bem-estar animal.”",
-    foto: "src/assets/images/pessoas/mariana-silva.png",
+    foto: "/images/pessoas/mariana-silva.png",
   },
   {
     nome: "Rodrigo Costa",
     pet: "Adotou o Pipoca",
     texto:
       "“O Pipoca era super medroso quando chegou, mas com as instruções da ONG e muito amor, hoje ele corre feliz e confia em todo mundo.”",
-    foto: "src/assets/images/pessoas/rodrigo-costa.png",
+    foto: "/images/pessoas/rodrigo-costa.png",
   },
 ];
 
@@ -208,7 +208,7 @@ export default function Adoption(): JSX.Element {
       <PageHero
         titulo="Adote um Amigo"
         descricao="Abra os braços para um carinho sincero e sinta a incomparável emoção de salvar e acolher uma vida."
-        imagem="src/assets/images/hero/heroAdoption.png"
+        imagem="/images/hero/heroAdoption.png"
       >
         <a
           href="#formulario"
