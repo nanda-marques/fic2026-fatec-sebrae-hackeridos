@@ -7,6 +7,9 @@ import { gerarHtmlNewsletter } from '../helpers/newsletterHelper.js';
 
 const resend = criarResendClient();
 
+// Define a URL base da API dinamicamente via variável de ambiente
+const API_URL = process.env.API_URL || (typeof window !== 'undefined' && (import.meta as any).env?.VITE_API_URL) || 'http://localhost:3000';
+
 export const newsletterService = {
   async dispararNewsletterSemanal() {
     const itensPendentes = await ConteudoNewsletter.findAll({
@@ -97,7 +100,7 @@ export async function verificarEDispararNewsletter() {
 }
 
 export async function inscreverNewsletter(nome: string, email: string) {
-  const resposta = await fetch('http://localhost:3000/api/newsletter/subscribe', {
+  const resposta = await fetch(`${API_URL}/api/newsletter/subscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
