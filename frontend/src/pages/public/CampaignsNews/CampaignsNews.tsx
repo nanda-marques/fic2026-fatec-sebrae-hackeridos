@@ -148,7 +148,7 @@ export default function CampaignsNews() {
   const campanhasVisiveis = publicacoes.filter(
     (p) =>
       p.categoria === "campanha" &&
-      (p.destaque || p.urgente) &&
+      (p.urgente) &&
       combinaComFiltro(p)
   ).sort(
     (a, b) =>
@@ -156,9 +156,10 @@ export default function CampaignsNews() {
       Number(b.destaque) - Number(a.destaque) ||
       b.criadoEm.localeCompare(a.criadoEm)
   );
+
   const outras = publicacoes.filter(
     (p) =>
-      !(p.categoria === "campanha" && (p.destaque || p.urgente)) &&
+      !(p.categoria === "campanha" && (p.urgente)) &&
       combinaComFiltro(p)
   );
 

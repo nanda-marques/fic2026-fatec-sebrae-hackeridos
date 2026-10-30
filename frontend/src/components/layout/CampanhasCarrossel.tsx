@@ -18,10 +18,12 @@ export default function CampanhasCarrossel({
   variant = "eventos",
   intervalo = 6000,
 }: CampanhasCarrosselProps) {
+  // 1. FILTRA AQUI: Apenas itens com urgente ou destaque verdadeiros (1)
+  const campanhasFiltradas = campanhas.filter((c) => c.urgente || c.destaque);
+
   const [indice, setIndice] = useState(0);
   const [pausado, setPausado] = useState(false);
-  const total = campanhas.length;
-
+  const total = campanhasFiltradas.length; // 2. Usa o tamanho da lista filtrada
   // Troca automática. Como `indice` está nas dependências, o contador
   // recomeça sempre que a campanha muda (inclusive por clique do usuário).
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function CampanhasCarrossel({
     return () => window.clearInterval(timer);
   }, [total, pausado, intervalo, indice]);
 
-  if (total === 0) return null;
+if (total === 0) return null;
 
   const posicao = Math.min(indice, total - 1);
   const home = variant === "home";
@@ -43,20 +45,17 @@ export default function CampanhasCarrossel({
   const girando = total > 1 && !pausado;
 
   return (
-    // Todos os cards ficam empilhados na mesma célula da grade. Assim a altura
-    // do carrossel é a do maior card, e todos têm exatamente o mesmo tamanho.
     <div
       aria-roledescription="carousel"
       aria-live={girando ? "off" : "polite"}
       className="grid"
-      // Pausa quando o mouse está em cima ou o foco chega pelo teclado.
-      // Em telas de toque, o toque não pausa a troca.
       onPointerEnter={(e) => e.pointerType === "mouse" && setPausado(true)}
       onPointerLeave={() => setPausado(false)}
       onFocus={(e) => e.target.matches(":focus-visible") && setPausado(true)}
       onBlur={() => setPausado(false)}
     >
-      {campanhas.map((c, i) => {
+      {/* 3. Mapeia sobre 'campanhasFiltradas' em vez de 'campanhas' */}
+      {campanhasFiltradas.map((c, i) => {
         const ativo = i === posicao;
         const cores = home
           ? c.urgente

@@ -186,7 +186,7 @@ export default function Home(): JSX.Element {
       </div>
 
       {/* =====================================================
-          CAMPANHAS URGENTES E EM DESTAQUE
+          CAMPANHAS URGENTES E Outras PUBLICAÇÕES EM DESTAQUE
       ====================================================== */}
       {(campanhasVisiveis.length > 0 || erroCampanha) && (
         <section className="bg-white px-5 py-10 lg:px-14">
