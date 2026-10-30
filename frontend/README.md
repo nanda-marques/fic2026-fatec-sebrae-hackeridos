@@ -122,16 +122,6 @@ O processo de recuperação de senha acontece em duas etapas:
 
 A validação do token, a atualização da senha e o envio do e-mail são realizados pelo backend.
 
-## Variáveis de ambiente
-
-Crie o arquivo `frontend/.env` com base no `.env.example`:
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-Se o backend estiver rodando em outro endereço ou porta, atualize o valor de `VITE_API_URL`.
-
 ## Estrutura das Integrações da Newsletter
 
 A integração com o backend para a inscrição na newsletter ocorre por meio da função auxiliar `inscreverNewsletter`:
@@ -162,6 +152,16 @@ export async function inscreverNewsletter(nome: string, email: string) {
    - Utiliza a função `inscreverNewsletter` para disparar a requisição ao servidor.
 2. **Link de Descadastro (Unsubscribe):**
    - Cada e-mail recebido pelo usuário contém um link direcionando para o endpoint do backend `/api/newsletter/unsubscribe?email=...`, exibindo a tela visual de confirmação do cancelamento.
+
+## Variáveis de ambiente
+
+Crie o arquivo `frontend/.env` com base no `.env.example`:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+Se o backend estiver rodando em outro endereço ou porta, atualize o valor de `VITE_API_URL`.
 
 ## Pré-requisitos
 
