@@ -22,6 +22,9 @@ export interface DetalhesPet {
   sobre?: string;
   vacinacaoEmDia?: boolean;
   historico?: ItemHistorico[];
+  sexo?: "M" | "F";
+  situacaoSaude?: string;
+  prioridadeApadrinhamento?: boolean;
 }
 
 export interface Pet {
@@ -33,11 +36,11 @@ export interface Pet {
   idade?: string;
   anos?: number;
   porte?: string;
-  sexo?: "M" | "F";
   tags?: string[];
   descricao?: string;
   disponivelAdocao?: boolean;
-  /** Aparece em "Peludinhos que mais precisam" na página de Apadrinhamento */
-  prioridadeApadrinhamento?: boolean;
   detalhes?: DetalhesPet;
+  sexo?: string;
+  situacaoSaude?: string;
+  prioridadeApadrinhamento?: boolean;
 }

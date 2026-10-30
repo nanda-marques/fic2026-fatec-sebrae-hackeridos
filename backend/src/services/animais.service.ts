@@ -25,7 +25,101 @@ const CAMPOS_PUBLICOS = [
   "temperamento",
   "sobre",
   "criadoEm",
+  "sexo",
+  "situacaoSaude",
+  "prioridadeApadrinhamento",
 ] as const;
+
+/** Valores aceitos para `sexo`. Ajuste se o domínio mudar. */
+const SEXOS_VALIDOS = ["Macho", "Fêmea"] as const;
+type Sexo = (typeof SEXOS_VALIDOS)[number];
+
+function lerCSV(texto: string): { cabecalho: string[]; linhas: string[][] } {
+  const conteudo = texto.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+  const primeiraLinha = conteudo.split("\n", 1)[0] ?? "";
+  const contadores = { ";": 0, ",": 0, "\t": 0 };
+  let aspas = false;
+
+  for (const caractere of primeiraLinha) {
+    if (caractere === '"') aspas = !aspas;
+    else if (!aspas && caractere in contadores) contadores[caractere as keyof typeof contadores]++;
+  }
+
+  const delimitador = contadores[";"] >= contadores[","] && contadores[";"] >= contadores["\t"]
+    ? ";"
+    : contadores[","] >= contadores["\t"] ? "," : "\t";
+
+  const linhas: string[][] = [];
+  let linha: string[] = [];
+  let campo = "";
+  aspas = false;
+
+  for (let i = 0; i < conteudo.length; i++) {
+    const caractere = conteudo[i];
+    if (caractere === '"') {
+      if (aspas && conteudo[i + 1] === '"') {
+        campo += '"';
+        i++;
+      } else {
+        aspas = !aspas;
+      }
+    } else if (caractere === delimitador && !aspas) {
+      linha.push(campo);
+      campo = "";
+    } else if (caractere === "\n" && !aspas) {
+      linha.push(campo);
+      if (linha.some((valor) => valor.trim())) linhas.push(linha);
+      linha = [];
+      campo = "";
+    } else {
+      campo += caractere;
+    }
+  }
+
+  linha.push(campo);
+  if (linha.some((valor) => valor.trim())) linhas.push(linha);
+  if (linhas.length === 0) return { cabecalho: [], linhas: [] };
+
+  return { cabecalho: linhas[0].map((valor) => valor.trim()), linhas: linhas.slice(1) };
+}
+
+function normalizarCabecalho(valor: string): string {
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function valorBooleano(valor: string | undefined): boolean {
+  const texto = valor?.trim().toLocaleLowerCase("pt-BR") ?? "";
+  return ["1", "true", "sim", "s", "yes", "x"].includes(texto);
+}
+
+function valorOpcional(valor: string | undefined): string | null {
+  const texto = valor?.trim() ?? "";
+  return texto || null;
+}
+
+function valorInteiro(valor: string | undefined): number | null {
+  const texto = valor?.trim();
+  if (!texto) return null;
+  const normalizado = texto.includes(",")
+    ? texto.replace(/\./g, "").replace(",", ".")
+    : texto;
+  const numero = Number(normalizado);
+  return Number.isInteger(numero) ? numero : Number.NaN;
+}
+
+function valorDecimal(valor: string | undefined): number | null {
+  const texto = valor?.trim();
+  if (!texto) return null;
+  const normalizado = texto.includes(",")
+    ? texto.replace(/\./g, "").replace(",", ".")
+    : texto;
+  const numero = Number(normalizado);
+  return Number.isFinite(numero) ? numero : Number.NaN;
+}
 
 export function validarAnimal(
   dados: Partial<AnimalInput> | undefined,
@@ -51,6 +145,7 @@ export function validarAnimal(
     ["raça", dados.raca, 255],
     ["castração", dados.castracao, 50],
     ["temperamento", dados.temperamento, 255],
+    ["sexo", dados.sexo, 20],
   ] as const) {
     if (valor === undefined) continue;
 
@@ -83,6 +178,30 @@ export function validarAnimal(
   }
 
   if (
+    dados.prioridadeApadrinhamento !== undefined &&
+    typeof dados.prioridadeApadrinhamento !== "boolean"
+  ) {
+    return "O campo de prioridade para apadrinhamento deve ser verdadeiro ou falso.";
+  }
+
+  if (dados.sexo !== undefined && dados.sexo !== null) {
+    if (typeof dados.sexo !== "string") {
+      return "O campo sexo é inválido.";
+    }
+    if (!SEXOS_VALIDOS.includes(dados.sexo as Sexo)) {
+      return `O sexo deve ser ${SEXOS_VALIDOS.map((s) => `"${s}"`).join(" ou ")}.`;
+    }
+  }
+
+  if (
+    dados.situacaoSaude !== undefined &&
+    dados.situacaoSaude !== null &&
+    (typeof dados.situacaoSaude !== "string" || dados.situacaoSaude.length > 500)
+  ) {
+    return "O campo de situação de saúde deve ser um texto de até 500 caracteres.";
+  }
+
+  if (
     dados.imagem !== undefined &&
     dados.imagem !== null &&
     (typeof dados.imagem !== "string" ||
@@ -111,11 +230,35 @@ export function validarAnimal(
 }
 
 export const animaisService = {
-  listarPublicos() {
-    return Animal.findAll({
+  async listarPublicos() {
+    const animais = await Animal.findAll({
       where: { status: "Disponível" },
       attributes: [...CAMPOS_PUBLICOS],
       order: [["criadoEm", "DESC"]],
+    });
+
+    return animais.map((animal) => {
+      const dados = animal.toJSON();
+
+      return {
+        id: dados.id,
+        especie: dados.especie,
+        status: dados.status,
+        nome: dados.nome,
+        idade: dados.idade,
+        porte: dados.porte,
+        raca: dados.raca,
+        peso: dados.peso,
+        castracao: dados.castracao,
+        vacinacaoEmDia: dados.vacinacaoEmDia,
+        imagem: dados.imagem,
+        temperamento: dados.temperamento,
+        sobre: dados.sobre,
+        criadoEm: dados.criadoEm,
+        sexo: dados.sexo?.trim() || null,
+        situacaoSaude: dados.situacaoSaude?.trim() || null,
+        prioridadeApadrinhamento: dados.prioridadeApadrinhamento ?? false,
+      };
     });
   },
 
@@ -149,18 +292,21 @@ export const animaisService = {
       temperamento: dados!.temperamento ?? null,
       sobre: dados!.sobre ?? null,
       dispararNewsletter: dados!.dispararNewsletter ?? false,
+      sexo: dados!.sexo ?? undefined,
+      situacaoSaude: dados!.situacaoSaude?.trim() || undefined,
+      prioridadeApadrinhamento: dados!.prioridadeApadrinhamento ?? false,
       criadoPor,
     });
 
     if (novoAnimal.dispararNewsletter) {
       const jaExiste = await ConteudoNewsletter.findOne({
-        where: { animal_id: novoAnimal.id, status: 'pendente' },
+        where: { animal_id: novoAnimal.id, status: "pendente" },
       });
 
       if (!jaExiste) {
         await ConteudoNewsletter.create({
           animal_id: novoAnimal.id,
-          status: 'pendente',
+          status: "pendente",
           adicionado_em: new Date(),
         });
         await verificarEDispararNewsletter();
@@ -168,6 +314,91 @@ export const animaisService = {
     }
 
     return novoAnimal;
+  },
+
+  async importarCSV(buffer: Buffer, criadoPor: number) {
+    const { cabecalho, linhas } = lerCSV(buffer.toString("utf8"));
+    if (cabecalho.length === 0 || linhas.length === 0) {
+      throw new AnimalServiceError(400, "O arquivo CSV está vazio ou não possui dados.");
+    }
+
+    const colunas = new Map<string, number>();
+    cabecalho.forEach((titulo, indice) => {
+      colunas.set(normalizarCabecalho(titulo), indice);
+    });
+
+    const obter = (linha: string[], ...nomes: string[]): string | undefined => {
+      for (const nome of nomes) {
+        const indice = colunas.get(normalizarCabecalho(nome));
+        if (indice !== undefined) return linha[indice]?.trim();
+      }
+      return undefined;
+    };
+
+    let importados = 0;
+    let ignorados = 0;
+    const erros: string[] = [];
+
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
+      const nome = obter(linha, "nome");
+      const especie = obter(linha, "especie", "espécie", "tipo");
+      if (!nome || !especie) {
+        ignorados++;
+        erros.push(`Linha ${i + 2}: nome e espécie são obrigatórios.`);
+        continue;
+      }
+
+      const idade = valorInteiro(obter(linha, "idade", "anos"));
+      const peso = valorDecimal(obter(linha, "peso"));
+      if (Number.isNaN(idade) || Number.isNaN(peso)) {
+        ignorados++;
+        erros.push(`Linha ${i + 2}: idade ou peso inválido.`);
+        continue;
+      }
+
+      const sexoInformado = valorOpcional(obter(linha, "sexo"));
+      let sexo: string | null = sexoInformado;
+      if (sexoInformado) {
+        const sexoNormalizado = sexoInformado.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+        sexo = sexoNormalizado === "m" || sexoNormalizado === "macho"
+          ? "Macho"
+          : sexoNormalizado === "f" || sexoNormalizado === "femea"
+            ? "Fêmea"
+            : sexoInformado;
+      }
+
+      const dados: AnimalInput = {
+        nome,
+        especie,
+        status: valorOpcional(obter(linha, "status")) ?? "Disponível",
+        idade,
+        porte: valorOpcional(obter(linha, "porte")),
+        raca: valorOpcional(obter(linha, "raca", "raça")),
+        peso,
+        castracao: valorOpcional(obter(linha, "castracao", "castração")),
+        vacinacaoEmDia: valorBooleano(obter(linha, "vacinacaoEmDia", "vacinacao_em_dia", "vacinação em dia", "vacinado")),
+        imagem: valorOpcional(obter(linha, "imagem", "foto")),
+        temperamento: valorOpcional(obter(linha, "temperamento")),
+        sobre: valorOpcional(obter(linha, "sobre", "descricao", "descrição")),
+        dispararNewsletter: valorBooleano(obter(linha, "dispararNewsletter", "disparar_newsletter")),
+        sexo,
+        situacaoSaude: valorOpcional(obter(linha, "situacaoSaude", "situacao_saude", "situação de saúde", "situacaoSaude")),
+        prioridadeApadrinhamento: valorBooleano(obter(linha, "prioridadeApadrinhamento", "prioridade_apadrinhamento", "prioridade para apadrinhamento")),
+      };
+
+      try {
+        await this.criar(dados, criadoPor);
+        importados++;
+      } catch (erro) {
+        ignorados++;
+        erros.push(
+          `Linha ${i + 2}: ${erro instanceof Error ? erro.message : "dados inválidos."}`
+        );
+      }
+    }
+
+    return { importados, ignorados, erros };
   },
 
   async atualizar(id: number, dados: Partial<AnimalInput> | undefined) {
@@ -194,6 +425,9 @@ export const animaisService = {
       "temperamento",
       "sobre",
       "dispararNewsletter",
+      "sexo",
+      "situacaoSaude",
+      "prioridadeApadrinhamento",
     ] as const) {
       if (dados && Object.hasOwn(dados, campo)) {
         const valor = dados[campo];
@@ -203,7 +437,9 @@ export const animaisService = {
       }
     }
 
-    await animal.update(atualizacao);
+    await animal.update(
+      atualizacao as unknown as Parameters<typeof animal.update>[0]
+    );
     await animal.reload();
 
     const estaMarcadoAgora = Boolean(animal.dispararNewsletter);
@@ -212,20 +448,20 @@ export const animaisService = {
       await ConteudoNewsletter.destroy({
         where: {
           animal_id: animal.id,
-          status: 'pendente',
+          status: "pendente",
         },
       });
     }
 
     if (estaMarcadoAgora && !estavaMarcadoAntes) {
       const jaExiste = await ConteudoNewsletter.findOne({
-        where: { animal_id: animal.id, status: 'pendente' },
+        where: { animal_id: animal.id, status: "pendente" },
       });
 
       if (!jaExiste) {
         await ConteudoNewsletter.create({
           animal_id: animal.id,
-          status: 'pendente',
+          status: "pendente",
           adicionado_em: new Date(),
         });
         await verificarEDispararNewsletter();

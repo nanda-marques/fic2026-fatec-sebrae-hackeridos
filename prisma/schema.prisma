@@ -47,6 +47,10 @@ model animais {
   administradores     administradores?      @relation(fields: [criado_por], references: [id], onUpdate: NoAction, map: "fk_animais_criado_por")
   conteudo_newsletter conteudo_newsletter[]
 
+  sexo                      String? @db.VarChar(20)
+  situacao_saude            String? @db.Text
+  prioridade_apadrinhamento Boolean @default(false)
+
   @@index([criado_por], map: "fk_animais_criado_por")
 }
 

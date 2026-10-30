@@ -29,6 +29,15 @@ export const animaisController = {
     res.json(await animaisService.buscar(id));
   },
 
+  async importarCSV(req: Request, res: Response) {
+    if (!req.usuario) throw new HttpError(401, "Não autenticado.");
+    const arquivo = (req as Request & { file?: Express.Multer.File }).file;
+    if (!arquivo) throw new HttpError(400, "Nenhum arquivo CSV foi enviado.");
+
+    const resultado = await animaisService.importarCSV(arquivo.buffer, req.usuario.id);
+    res.status(resultado.importados > 0 ? 201 : 400).json(resultado);
+  },
+
   async criar(req: Request, res: Response) {
     if (!req.usuario) throw new HttpError(401, "Não autenticado.");
     const animal = await animaisService.criar(

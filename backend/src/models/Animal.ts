@@ -27,6 +27,10 @@ export class AnimalModel extends Model<
   declare dispararNewsletter: CreationOptional<boolean>;
   declare criadoPor: number | null;
   declare criadoEm: CreationOptional<Date>;
+  // ✅ NOVOS — nullable (não opcional!)
+  declare sexo: string | null;
+  declare situacaoSaude: string | null;
+  declare prioridadeApadrinhamento: CreationOptional<boolean>;
 }
 
 AnimalModel.init(
@@ -60,6 +64,7 @@ AnimalModel.init(
     raca: {
       type: DataTypes.STRING(255),
       allowNull: true,
+      field: "raca",
     },
     peso: {
       type: DataTypes.DECIMAL(6, 2),
@@ -103,6 +108,22 @@ AnimalModel.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
       field: "criado_em",
+    },
+    sexo: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      field: "sexo",                              
+    },
+    situacaoSaude: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "situacao_saude",                    
+    },
+    prioridadeApadrinhamento: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "prioridade_apadrinhamento",        
     },
   },
   {
