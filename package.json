@@ -30,7 +30,10 @@
     "seed": "npm run seed --prefix backend"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.105.0"
+    "@tanstack/react-query": "^5.105.0",
+    "@types/swagger-ui-express": "^4.1.8",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.9.1"
   },
   "main": "index.js",
   "directories": {
