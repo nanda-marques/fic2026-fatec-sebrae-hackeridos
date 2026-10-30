@@ -65,8 +65,17 @@ function paraPet(animal: AnimalPublico): Pet {
     animal.idade === null
       ? undefined
       : `${animal.idade} ${animal.idade === 1 ? "ano" : "anos"}`;
+  const sexoNormalizado = (() => {
+    const sexo = animal.sexo
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+    if (sexo === "MACHO" || sexo === "M") return "M";
+    if (sexo === "FEMEA" || sexo === "F") return "F";
+    return undefined;
+  })();
 
-    return {
+  return {
     id: animal.id,
     nome: animal.nome,
     tipo,
@@ -83,6 +92,8 @@ function paraPet(animal: AnimalPublico): Pet {
       : [],
     descricao: animal.sobre ?? undefined,
     disponivelAdocao: animal.status === "Disponível",
+    sexo: sexoNormalizado,
+    situacaoSaude: animal.situacaoSaude ?? undefined,
     prioridadeApadrinhamento,
     detalhes: {
       fotos: [imagem],
@@ -92,12 +103,7 @@ function paraPet(animal: AnimalPublico): Pet {
       vacinacaoEmDia: animal.vacinacaoEmDia,
       temperamento: animal.temperamento ?? undefined,
       sobre: animal.sobre ?? undefined,
-      sexo: (() => {
-        const sexo = animal.sexo?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-        if (sexo === "MACHO" || sexo === "M") return "M";
-        if (sexo === "FEMEA" || sexo === "F") return "F";
-        return undefined;
-      })(),
+      sexo: sexoNormalizado,
       situacaoSaude: animal.situacaoSaude ?? undefined,
       prioridadeApadrinhamento,
     },
