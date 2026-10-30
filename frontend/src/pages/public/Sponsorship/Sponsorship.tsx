@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import AnimalCard from "../../../components/layout/AnimalCard";
@@ -60,9 +60,10 @@ function Check() {
   );
 }
 
+const ITENS_POR_PAGINA = 3;
+
 export default function Sponsorship() {
-  // Se a URL tem um #trecho (ex.: /apadrinhamento#planos), rola até ele.
-  // É o que faz o botão "Quero apadrinhar" do pop-up chegar nos planos.
+  // Rola até o #trecho da URL (ex.: /apadrinhamento#planos)
   const { hash } = useLocation();
   useEffect(() => {
     if (hash) {
@@ -72,11 +73,36 @@ export default function Sponsorship() {
 
   const { animais, carregando, erro } = useAnimaisDisponiveis();
 
+  // Filtra prioritários (topo do Pet ou dentro de detalhes)
   const petsPrioritarios = animais.filter(
     (pet: Pet) =>
       pet.prioridadeApadrinhamento === true ||
       pet.detalhes?.prioridadeApadrinhamento === true
   );
+
+  // Paginação
+  const [pagina, setPagina] = useState(1);
+
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(petsPrioritarios.length / ITENS_POR_PAGINA)
+  );
+
+  const inicio = (pagina - 1) * ITENS_POR_PAGINA;
+  const petsDaPagina = petsPrioritarios.slice(inicio, inicio + ITENS_POR_PAGINA);
+
+  // Se o filtro mudar (ex.: admin alterou status), volta pra página 1
+  useEffect(() => {
+    setPagina(1);
+  }, [petsPrioritarios.length]);
+
+  function irParaPagina(novaPagina: number) {
+    if (novaPagina < 1 || novaPagina > totalPaginas) return;
+    setPagina(novaPagina);
+    document
+      .getElementById("peludinhos")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <>
@@ -93,9 +119,7 @@ export default function Sponsorship() {
         </a>
       </PageHero>
 
-      {/* =====================================================
-          O QUE É O APADRINHAMENTO
-      ====================================================== */}
+      {/* O QUE É O APADRINHAMENTO */}
       <section className="bg-white px-5 py-10 lg:px-14 lg:py-14">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl font-extrabold text-zinc-800 md:text-3xl">
@@ -143,9 +167,7 @@ export default function Sponsorship() {
         </div>
       </section>
 
-      {/* =====================================================
-          PLANOS
-      ====================================================== */}
+      {/* PLANOS */}
       <section
         id="planos"
         className="scroll-mt-4 bg-[#f1f1f1] px-5 py-12 lg:px-14 lg:py-16"
@@ -187,7 +209,6 @@ export default function Sponsorship() {
               ))}
             </ul>
 
-            {/* Futuro fluxo de cadastro e pagamento */}
             <Link
               to="/como-ajudar"
               className="mt-6 block rounded-lg bg-destaque px-5 py-3 text-center text-sm font-bold text-zinc-900 transition-colors hover:bg-destaque-escura"
@@ -198,10 +219,11 @@ export default function Sponsorship() {
         </div>
       </section>
 
-      {/* =====================================================
-          PELUDINHOS QUE MAIS PRECISAM
-      ====================================================== */}
-      <section className="bg-white px-5 py-12 lg:px-14 lg:py-16">
+      {/* PELUDINHOS QUE MAIS PRECISAM */}
+      <section
+        id="peludinhos"
+        className="scroll-mt-4 bg-white px-5 py-12 lg:px-14 lg:py-16"
+      >
         <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl font-extrabold text-zinc-800 md:text-center md:text-3xl">
             Peludinhos que mais precisam
@@ -221,13 +243,59 @@ export default function Sponsorship() {
               Não foi possível carregar os animais: {erro}
             </p>
           ) : petsPrioritarios.length > 0 ? (
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {petsPrioritarios.map((pet: Pet) => (
-                <div key={pet.id ?? pet.nome} className="relative">
-                  <AnimalCard animal={pet} variant="outro" />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {petsDaPagina.map((pet: Pet) => (
+                  <div key={pet.id ?? pet.nome} className="relative">
+                    <AnimalCard animal={pet} variant="outro" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Paginação (só aparece se houver mais de 1 página) */}
+              {totalPaginas > 1 && (
+                <nav
+                  aria-label="Paginação de animais para apadrinhamento"
+                  className="mt-8 flex flex-wrap items-center justify-center gap-2"
+                >
+                  <button
+                    type="button"
+                    onClick={() => irParaPagina(pagina - 1)}
+                    disabled={pagina === 1}
+                    className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    ← Anterior
+                  </button>
+
+                  {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(
+                    (n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => irParaPagina(n)}
+                        aria-current={pagina === n ? "page" : undefined}
+                        className={`h-9 w-9 rounded-lg text-sm font-bold transition ${
+                          pagina === n
+                            ? "bg-marca text-white"
+                            : "border border-zinc-300 text-zinc-700 hover:bg-zinc-100"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => irParaPagina(pagina + 1)}
+                    disabled={pagina === totalPaginas}
+                    className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Próxima →
+                  </button>
+                </nav>
+              )}
+            </>
           ) : (
             <p className="mt-8 text-center text-sm text-zinc-500">
               No momento, não há animais prioritários cadastrados para
@@ -237,9 +305,7 @@ export default function Sponsorship() {
         </div>
       </section>
 
-      {/* =====================================================
-          VOZ DOS PADRINHOS
-      ====================================================== */}
+      {/* VOZ DOS PADRINHOS */}
       <section className="bg-[#f1f1f1] px-5 py-12 lg:px-14 lg:py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-center text-2xl font-extrabold text-zinc-800 md:text-3xl">
