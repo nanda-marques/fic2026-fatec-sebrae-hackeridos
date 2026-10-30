@@ -1,7 +1,6 @@
 {
   "name": "fic2026-fatec-sebrae-hackeridos-frontend",
-  "main": "server.js",
-  "private": true,
+  "main": "dist/server.js",
   "version": "0.0.0",
   "description": "Frontend React + Vite do projeto Focinho Amigo",
   "author": "Hackeridos",
