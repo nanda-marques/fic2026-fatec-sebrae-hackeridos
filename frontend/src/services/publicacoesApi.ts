@@ -39,6 +39,13 @@ export interface ResumoDashboard {
   eventosProximos: number;
   noticiasRecentes: number;
   publicacoesPorCategoria: Record<CategoriaConteudo, number>;
+  animais?: {
+    total: number;
+    disponiveis: number;
+    adotados: number;
+    vacinacao: { dia: number; naoDia: number };
+    castracao: { castrado: number; pendente: number; agendada: number; naoInformado: number };
+  };
 }
 
 export type PublicacaoPayload = Pick<

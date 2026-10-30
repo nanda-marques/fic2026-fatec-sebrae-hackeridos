@@ -1,8 +1,8 @@
 # Frontend
 
-Interface pública e área administrativa do Focinho Amigo, desenvolvidas com React, Vite e TypeScript. A aplicação reúne as páginas institucionais, a área de adoção e o painel administrativo, utilizado para gerenciar animais, publicações e administradores.
+Interface pública e área administrativa do Focinho Amigo, desenvolvidas com React, Vite e TypeScript. O projeto reúne as páginas institucionais, a área de adoção e o painel administrativo, onde são gerenciados animais, publicações e administradores.
 
-O frontend consome a API REST do backend para consultar e atualizar dados, realizar autenticação e enviar imagens.
+O frontend se comunica com a API REST do backend para consultar e atualizar informações, autenticar usuários e enviar imagens.
 
 ## Tecnologias utilizadas
 
@@ -19,13 +19,13 @@ O frontend consome a API REST do backend para consultar e atualizar dados, reali
   React • Vite • TypeScript • Tailwind CSS • React Router • React Icons • Supabase
 </p>
 
-- **React 19:** construção das páginas e componentes da interface.
+- **React 19:** desenvolvimento das páginas e dos componentes da interface.
 - **Vite:** servidor de desenvolvimento e ferramenta de build.
-- **TypeScript:** tipagem e organização do código.
-- **Tailwind CSS 4:** estilização das páginas e componentes.
+- **TypeScript:** tipagem dos dados e componentes.
+- **Tailwind CSS 4:** estilização da interface.
 - **React Router DOM:** gerenciamento das rotas.
 - **React Icons:** biblioteca de ícones.
-- **Supabase:** armazenamento de imagens, acessado por meio do backend.
+- **Supabase:** armazenamento de imagens, integrado por meio do backend.
 
 ## Estrutura do projeto
 
@@ -60,18 +60,18 @@ frontend/
 
 ### Principais diretórios
 
-- `components/`: componentes reutilizáveis, como menus, rodapé, cards e modais.
-- `pages/public/`: páginas institucionais, adoção, campanhas e notícias.
-- `pages/admin/`: páginas de login, cadastro, dashboard, animais, publicações e configurações.
-- `services/`: serviços responsáveis pela comunicação com o backend.
+- `components/`: componentes reutilizados em diferentes páginas, como menus, rodapé, cards e modais.
+- `pages/public/`: páginas institucionais, área de adoção, campanhas e notícias.
+- `pages/admin/`: páginas de login, cadastro, dashboard, gerenciamento de animais e publicações, além das configurações.
+- `services/`: comunicação com o backend.
 - `hooks/`: hooks utilizados no carregamento de animais e fotos de perfil.
 - `data/`: dados de referência utilizados pela interface.
 - `types/`: definições de tipos do TypeScript.
-- `assets/`: imagens, logotipos e outros recursos visuais.
+- `assets/`: imagens, logotipos e outros arquivos visuais.
 
 ## Rotas
 
-As rotas da aplicação são definidas em `src/App.tsx`, utilizando React Router DOM.
+As rotas são configuradas em `src/App.tsx` com React Router DOM.
 
 ### Páginas públicas
 
@@ -84,8 +84,8 @@ As rotas da aplicação são definidas em `src/App.tsx`, utilizando React Router
 | `/voluntariado` | Informações sobre voluntariado. |
 | `/como-ajudar` | Formas de apoiar a organização. |
 | `/contato` | Página de contato. |
-| `/campanhas-e-noticias` | Lista campanhas e notícias. |
-| `/campanhas-e-noticias/:id` | Exibe os detalhes de uma publicação. |
+| `/campanhas-e-noticias` | Lista de campanhas e notícias. |
+| `/campanhas-e-noticias/:id` | Detalhes de uma publicação. |
 
 ### Área administrativa
 
@@ -94,31 +94,31 @@ As rotas da aplicação são definidas em `src/App.tsx`, utilizando React Router
 | `/admin/login` | Login de administrador. |
 | `/admin/cadastro` | Cadastro de administrador. |
 | `/admin/recuperar-senha` | Solicitação de recuperação de senha. |
-| `/admin/resetar-senha` | Redefinição de senha por meio de um token. |
+| `/admin/resetar-senha` | Redefinição de senha com token. |
 
-O painel também possui páginas de dashboard, gerenciamento de animais e publicações, configurações e administração de usuários.
+O painel também conta com páginas de dashboard, gerenciamento de animais e publicações, configurações e administração de usuários.
 
-As páginas administrativas protegidas exigem autenticação. O acesso às operações é definido pelas permissões associadas ao cargo do administrador.
+As páginas protegidas exigem autenticação. As permissões associadas ao cargo do administrador determinam quais operações podem ser realizadas.
 
 ## Comunicação com o backend
 
-As requisições são organizadas em serviços localizados em `src/services/`.
+As chamadas à API ficam organizadas nos serviços de `src/services/`:
 
-- `authApi.ts`: autenticação, cadastro, sessão, permissões e recuperação de senha, por meio dos métodos `solicitarRecuperacao` e `redefinirSenha`.
+- `authApi.ts`: login, cadastro, sessão, permissões, recuperação de senha (`solicitarRecuperacao` e `redefinirSenha`) e importação CSV (`importarCSV`).
 - `animaisApi.ts`: consulta e gerenciamento de animais.
 - `publicacoesApi.ts`: consulta, criação, atualização e exclusão de publicações, além dos dados do dashboard.
 - `adminApi.ts`: gerenciamento de perfil, senha, histórico e solicitações de cadastro.
 
-A URL da API é definida pela variável de ambiente `VITE_API_URL`. Nas requisições que exigem autenticação, o token JWT é enviado no cabeçalho `Authorization`.
+O endereço da API é definido pela variável `VITE_API_URL`. Nas requisições protegidas, o token JWT é enviado no cabeçalho `Authorization`.
 
-O envio de imagens é feito pelo frontend para o backend, que realiza o armazenamento no Supabase Storage.
+O frontend envia as imagens ao backend, que realiza o armazenamento no Supabase Storage.
 
 ## Recuperação de senha
 
-A recuperação de senha possui duas etapas:
+O processo de recuperação de senha acontece em duas etapas:
 
 1. Na página `/admin/recuperar-senha`, o administrador informa seu e-mail. O frontend envia a solicitação ao backend pelo método `authApi.solicitarRecuperacao`.
-2. No link recebido por e-mail, o administrador acessa `/admin/resetar-senha` e informa a nova senha. O token recebido na URL é enviado ao backend pelo método `authApi.redefinirSenha`.
+2. Pelo link recebido por e-mail, o administrador acessa `/admin/resetar-senha` e informa a nova senha. O token presente na URL é enviado ao backend pelo método `authApi.redefinirSenha`.
 
 A validação do token, a atualização da senha e o envio do e-mail são realizados pelo backend.
 
@@ -130,7 +130,7 @@ Crie o arquivo `frontend/.env` com base no `.env.example`:
 VITE_API_URL=http://localhost:3000
 ```
 
-Caso o backend esteja sendo executado em outro endereço ou porta, atualize o valor de `VITE_API_URL`.
+Se o backend estiver rodando em outro endereço ou porta, atualize o valor de `VITE_API_URL`.
 
 ## Pré-requisitos
 
@@ -173,8 +173,8 @@ npm run preview
 
 - `npm run dev`: inicia o servidor de desenvolvimento.
 - `npm run build`: gera a versão de produção.
-- `npm run lint`: executa a verificação estática do código.
-- `npm run preview`: disponibiliza localmente a versão gerada pela build.
+- `npm run lint`: verifica o código com o linter.
+- `npm run preview`: permite visualizar localmente a versão gerada pela build.
 
 Na raiz do repositório, também estão disponíveis:
 
