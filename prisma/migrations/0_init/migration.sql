@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE `administradores` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `nome_completo` VARCHAR(255) NOT NULL,

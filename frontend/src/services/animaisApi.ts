@@ -19,6 +19,9 @@ export interface Animal {
   dispararNewsletter: boolean;
   criadoPor: number | null;
   criadoEm: string;
+  sexo: string | null;
+  situacaoSaude: string | null;
+  prioridadeApadrinhamento: boolean;
 }
 
 type AnimalPublico = Omit<Animal, "dispararNewsletter" | "criadoPor">;
@@ -38,6 +41,9 @@ export type NovoAnimal = Pick<
   | "temperamento"
   | "sobre"
   | "dispararNewsletter"
+  | "sexo"
+  | "situacaoSaude"
+  | "prioridadeApadrinhamento"
 >;
 
 function paraPet(animal: AnimalPublico): Pet {
@@ -81,6 +87,12 @@ function paraPet(animal: AnimalPublico): Pet {
       vacinacaoEmDia: animal.vacinacaoEmDia,
       temperamento: animal.temperamento ?? undefined,
       sobre: animal.sobre ?? undefined,
+      sexo:
+        animal.sexo?.toUpperCase() === "M" || animal.sexo?.toUpperCase() === "F"
+          ? (animal.sexo.toUpperCase() as "M" | "F")
+          : undefined,
+      situacaoSaude: animal.situacaoSaude ?? undefined,
+      prioridadeApadrinhamento: animal.prioridadeApadrinhamento,
     },
   };
 }

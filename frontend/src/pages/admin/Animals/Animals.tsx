@@ -21,9 +21,14 @@ interface Mensagem {
   texto: string;
 }
 
-type FormAnimal = Omit<NovoAnimal, "idade" | "peso"> & {
+type FormAnimal = Omit<
+  NovoAnimal,
+  "idade" | "peso" | "sexo" | "situacaoSaude"
+> & {
   idade: string;
   peso: string;
+  sexo: string;
+  situacaoSaude: string;
 };
 
 const FORM_INICIAL: FormAnimal = {
@@ -40,6 +45,9 @@ const FORM_INICIAL: FormAnimal = {
   temperamento: "",
   sobre: "",
   dispararNewsletter: false,
+  sexo: "",
+  situacaoSaude: "",
+  prioridadeApadrinhamento: false,
 };
 
 export default function Animais() {
@@ -121,6 +129,9 @@ export default function Animais() {
       temperamento: animal.temperamento ?? "",
       sobre: animal.sobre ?? "",
       dispararNewsletter: animal.dispararNewsletter ?? false,
+      sexo: animal.sexo ?? "",
+      situacaoSaude: animal.situacaoSaude ?? "",
+      prioridadeApadrinhamento: animal.prioridadeApadrinhamento ?? false,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -147,6 +158,9 @@ export default function Animais() {
         ...form,
         idade: form.idade.trim() ? Number(form.idade) : null,
         peso: form.peso.trim() ? Number(form.peso.replace(",", ".")) : null,
+        sexo: form.sexo.trim() ? form.sexo : null,
+        situacaoSaude: form.situacaoSaude.trim() ? form.situacaoSaude : null,
+        prioridadeApadrinhamento: form.prioridadeApadrinhamento ?? false,
       };
       if (editandoId !== null) {
         await atualizarAnimal.mutateAsync({ id: editandoId, dados });
@@ -357,6 +371,20 @@ export default function Animais() {
                   { value: "Felino", label: "Felino" },
                 ]}
               />
+
+              {/* ✅ Sexo, logo após Espécie (faz mais sentido visual) */}
+              <Select
+                label="Sexo"
+                name="sexo"
+                value={form.sexo ?? ""}
+                onChange={handleChange}
+                options={[
+                  { value: "", label: "Selecione…" },
+                  { value: "Macho", label: "Macho" },
+                  { value: "Fêmea", label: "Fêmea" },
+                ]}
+              />
+
               <Select
                 label="Castração"
                 name="castracao"
@@ -369,6 +397,7 @@ export default function Animais() {
                   { value: "Agendada", label: "Agendada" },
                 ]}
               />
+
               <label className="flex items-center gap-2 self-center text-sm font-semibold text-[#374151]">
                 <input
                   type="checkbox"
@@ -382,6 +411,22 @@ export default function Animais() {
                 />
                 Vacinação em dia
               </label>
+
+              {/* ✅ Prioridade para apadrinhamento, junto ao outro booleano */}
+              <label className="flex items-center gap-2 self-center text-sm font-semibold text-[#374151]">
+                <input
+                  type="checkbox"
+                  checked={form.prioridadeApadrinhamento}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      prioridadeApadrinhamento: e.target.checked,
+                    }))
+                  }
+                />
+                Prioridade para apadrinhamento
+              </label>
+
               <Select
                 label="Status"
                 name="status"
@@ -394,6 +439,7 @@ export default function Animais() {
                 ]}
                 required
               />
+
               <Campo
                 label="Idade"
                 name="idade"
@@ -403,6 +449,7 @@ export default function Animais() {
                 onChange={handleChange}
                 placeholder="Ex.: 2"
               />
+
               <Campo
                 label="Raça"
                 name="raca"
@@ -410,6 +457,7 @@ export default function Animais() {
                 onChange={handleChange}
                 placeholder="Ex.: SRD"
               />
+
               <Campo
                 label="Peso (kg)"
                 name="peso"
@@ -420,6 +468,7 @@ export default function Animais() {
                 onChange={handleChange}
                 placeholder="Ex.: 4,5"
               />
+
               <Select
                 label="Porte"
                 name="porte"
@@ -433,12 +482,22 @@ export default function Animais() {
                 ]}
                 required
               />
+
               <Campo
                 label="Temperamento"
                 name="temperamento"
                 value={form.temperamento ?? ""}
                 onChange={handleChange}
                 placeholder="Ex.: Dócil"
+              />
+
+              {/* ✅ Situação de saúde, no final do grid */}
+              <Campo
+                label="Situação de saúde"
+                name="situacaoSaude"
+                value={form.situacaoSaude ?? ""}
+                onChange={handleChange}
+                placeholder="Ex.: Saudável, em tratamento…"
               />
             </div>
 
@@ -524,11 +583,17 @@ export default function Animais() {
                   <th className="px-5 py-3.5">Imagem</th>
                   <th className="px-5 py-3.5">Nome</th>
                   <th className="px-5 py-3.5">Espécie</th>
+                  {/* ✅ Sexo */}
+                  <th className="px-5 py-3.5">Sexo</th>
                   <th className="px-5 py-3.5">Raça</th>
                   <th className="px-5 py-3.5">Idade</th>
                   <th className="px-5 py-3.5">Peso</th>
                   <th className="px-5 py-3.5">Castração</th>
                   <th className="px-5 py-3.5">Vacinação</th>
+                  {/* ✅ Saúde */}
+                  <th className="px-5 py-3.5">Saúde</th>
+                  {/* ✅ Apadrinhamento */}
+                  <th className="px-5 py-3.5">Apadr.</th>
                   <th className="px-5 py-3.5">Porte</th>
                   <th className="px-5 py-3.5">Status</th>
                   <th className="px-5 py-3.5">Data</th>
@@ -539,13 +604,15 @@ export default function Animais() {
               <tbody className="divide-y divide-slate-100">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={12} className="p-8 text-center text-slate-500">
+                    {/* ✅ 12 -> 15 */}
+                    <td colSpan={15} className="p-8 text-center text-slate-500">
                       Carregando animais...
                     </td>
                   </tr>
                 ) : animais.length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="p-8 text-center text-slate-500">
+                    {/* ✅ 12 -> 15 */}
+                    <td colSpan={15} className="p-8 text-center text-slate-500">
                       Nenhum animal cadastrado.
                     </td>
                   </tr>
@@ -570,6 +637,10 @@ export default function Animais() {
                       <td className="px-5 py-4 text-slate-600">
                         {animal.especie || "—"}
                       </td>
+                      {/* ✅ Sexo */}
+                      <td className="px-5 py-4 text-slate-600">
+                        {animal.sexo || "—"}
+                      </td>
                       <td className="px-5 py-4 text-slate-600">
                         {animal.raca || "—"}
                       </td>
@@ -586,6 +657,24 @@ export default function Animais() {
                       </td>
                       <td className="px-5 py-4 text-slate-600">
                         {animal.vacinacaoEmDia ? "Em dia" : "Pendente"}
+                      </td>
+                      {/* ✅ Saúde (com truncate para não estourar) */}
+                      <td
+                        className="max-w-[200px] truncate px-5 py-4 text-slate-600"
+                        title={animal.situacaoSaude ?? ""}
+                      >
+                        {animal.situacaoSaude || "—"}
+                      </td>
+                      {/* ✅ Apadrinhamento (badge visual) */}
+                      <td className="px-5 py-4">
+                        <span
+                          className={`inline-block rounded-md px-2 py-1 text-xs font-bold ${animal.prioridadeApadrinhamento
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-slate-100 text-slate-500"
+                            }`}
+                        >
+                          {animal.prioridadeApadrinhamento ? "Sim" : "Não"}
+                        </span>
                       </td>
                       <td className="px-5 py-4 text-slate-600">
                         {animal.porte || "—"}

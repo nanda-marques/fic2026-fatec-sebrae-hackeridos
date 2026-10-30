@@ -27,6 +27,10 @@ const CAMPOS_PUBLICOS = [
   "criadoEm",
 ] as const;
 
+/** Valores aceitos para `sexo`. Ajuste se o domínio mudar. */
+const SEXOS_VALIDOS = ["Macho", "Fêmea"] as const;
+type Sexo = (typeof SEXOS_VALIDOS)[number];
+
 export function validarAnimal(
   dados: Partial<AnimalInput> | undefined,
   parcial = false
@@ -51,6 +55,7 @@ export function validarAnimal(
     ["raça", dados.raca, 255],
     ["castração", dados.castracao, 50],
     ["temperamento", dados.temperamento, 255],
+    ["sexo", dados.sexo, 20],
   ] as const) {
     if (valor === undefined) continue;
 
@@ -80,6 +85,30 @@ export function validarAnimal(
 
   if (dados.vacinacaoEmDia !== undefined && typeof dados.vacinacaoEmDia !== "boolean") {
     return "O campo de vacinação em dia deve ser verdadeiro ou falso.";
+  }
+
+  if (
+    dados.prioridadeApadrinhamento !== undefined &&
+    typeof dados.prioridadeApadrinhamento !== "boolean"
+  ) {
+    return "O campo de prioridade para apadrinhamento deve ser verdadeiro ou falso.";
+  }
+
+  if (dados.sexo !== undefined && dados.sexo !== null) {
+    if (typeof dados.sexo !== "string") {
+      return "O campo sexo é inválido.";
+    }
+    if (!SEXOS_VALIDOS.includes(dados.sexo as Sexo)) {
+      return `O sexo deve ser ${SEXOS_VALIDOS.map((s) => `"${s}"`).join(" ou ")}.`;
+    }
+  }
+
+  if (
+    dados.situacaoSaude !== undefined &&
+    dados.situacaoSaude !== null &&
+    (typeof dados.situacaoSaude !== "string" || dados.situacaoSaude.length > 500)
+  ) {
+    return "O campo de situação de saúde deve ser um texto de até 500 caracteres.";
   }
 
   if (
@@ -149,18 +178,21 @@ export const animaisService = {
       temperamento: dados!.temperamento ?? null,
       sobre: dados!.sobre ?? null,
       dispararNewsletter: dados!.dispararNewsletter ?? false,
+      sexo: dados!.sexo ?? undefined,
+      situacaoSaude: dados!.situacaoSaude?.trim() || undefined,
+      prioridadeApadrinhamento: dados!.prioridadeApadrinhamento ?? false,
       criadoPor,
     });
 
     if (novoAnimal.dispararNewsletter) {
       const jaExiste = await ConteudoNewsletter.findOne({
-        where: { animal_id: novoAnimal.id, status: 'pendente' },
+        where: { animal_id: novoAnimal.id, status: "pendente" },
       });
 
       if (!jaExiste) {
         await ConteudoNewsletter.create({
           animal_id: novoAnimal.id,
-          status: 'pendente',
+          status: "pendente",
           adicionado_em: new Date(),
         });
         await verificarEDispararNewsletter();
@@ -194,6 +226,9 @@ export const animaisService = {
       "temperamento",
       "sobre",
       "dispararNewsletter",
+      "sexo",
+      "situacaoSaude",
+      "prioridadeApadrinhamento",
     ] as const) {
       if (dados && Object.hasOwn(dados, campo)) {
         const valor = dados[campo];
@@ -203,7 +238,9 @@ export const animaisService = {
       }
     }
 
-    await animal.update(atualizacao);
+    await animal.update(
+      atualizacao as unknown as Parameters<typeof animal.update>[0]
+    );
     await animal.reload();
 
     const estaMarcadoAgora = Boolean(animal.dispararNewsletter);
@@ -212,20 +249,20 @@ export const animaisService = {
       await ConteudoNewsletter.destroy({
         where: {
           animal_id: animal.id,
-          status: 'pendente',
+          status: "pendente",
         },
       });
     }
 
     if (estaMarcadoAgora && !estavaMarcadoAntes) {
       const jaExiste = await ConteudoNewsletter.findOne({
-        where: { animal_id: animal.id, status: 'pendente' },
+        where: { animal_id: animal.id, status: "pendente" },
       });
 
       if (!jaExiste) {
         await ConteudoNewsletter.create({
           animal_id: animal.id,
-          status: 'pendente',
+          status: "pendente",
           adicionado_em: new Date(),
         });
         await verificarEDispararNewsletter();

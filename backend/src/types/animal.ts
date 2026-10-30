@@ -1,20 +1,20 @@
 export interface Animal {
-  id: number;
-  nome: string;
+ nome: string;
   especie: string;
-  status: string;
-  idade: number | null;
-  porte: string | null;
-  raca: string | null;
-  peso: number | string | null;
-  castracao: string | null;
-  vacinacaoEmDia: boolean;
-  imagem: string | null;
-  temperamento: string | null;
-  sobre: string | null;
-  dispararNewsletter: boolean;
-  criadoPor: number | null;
-  criadoEm: Date;
+  status?: string;
+  idade?: number | null;
+  porte?: string | null;
+  raca?: string | null;
+  peso?: number | null;
+  castracao?: string | null;
+  vacinacaoEmDia?: boolean;
+  imagem?: string | null;
+  temperamento?: string | null;
+  sobre?: string | null;
+  dispararNewsletter?: boolean;
+  sexo?: string | null;
+  situacaoSaude?: string | null;
+  prioridadeApadrinhamento?: boolean;
 }
 
 export type AnimalInput = Pick<Animal, "nome" | "especie"> &
@@ -32,5 +32,8 @@ export type AnimalInput = Pick<Animal, "nome" | "especie"> &
       | "temperamento"
       | "sobre"
       | "dispararNewsletter"
+      | "sexo"
+      | "situacaoSaude"
+      | "prioridadeApadrinhamento"
     >
   >;
