@@ -132,6 +132,37 @@ VITE_API_URL=http://localhost:3000
 
 Se o backend estiver rodando em outro endereço ou porta, atualize o valor de `VITE_API_URL`.
 
+## Estrutura das Integrações da Newsletter
+
+A integração com o backend para a inscrição na newsletter ocorre por meio da função auxiliar `inscreverNewsletter`:
+
+```typescript
+export async function inscreverNewsletter(nome: string, email: string) {
+  const resposta = await fetch('http://localhost:3000/api/newsletter/subscribe', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ nome, email }),
+  });
+
+  if (!resposta.ok) {
+    const erroData = await resposta.json();
+    throw new Error(erroData.erro || 'Falha ao cadastrar na newsletter.');
+  }
+
+  return await resposta.json();
+}
+```
+
+### Componentes de Interface Envolvidos
+
+1. **Pop-up de Captura de E-mail (Home):**
+   - Apresenta os campos `Nome` e `E-mail`.
+   - Utiliza a função `inscreverNewsletter` para disparar a requisição ao servidor.
+2. **Link de Descadastro (Unsubscribe):**
+   - Cada e-mail recebido pelo usuário contém um link direcionando para o endpoint do backend `/api/newsletter/unsubscribe?email=...`, exibindo a tela visual de confirmação do cancelamento.
+
 ## Pré-requisitos
 
 - Node.js 24.22.1, conforme definido no `.nvmrc` da raiz do repositório.
