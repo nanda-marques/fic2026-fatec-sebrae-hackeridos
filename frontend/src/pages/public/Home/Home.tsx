@@ -100,7 +100,6 @@ export default function Home(): JSX.Element {
     erro: erroAnimais,
   } = useAnimaisDisponiveis();
 
-  // ↓↓↓ ADICIONAR ESTAS LINHAS ↓↓↓
   const {
     data: campanhasVisiveis = [],
     error: erroCampanhaApi,
