@@ -10,6 +10,13 @@ export function gerarHtmlNewsletter(
   animaisMap: Map<number, any>,
   conteudosMap: Map<number, any>
 ): string {
+  // Configuração das URLs via Variáveis de Ambiente com fallback para dev local
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const BACKEND_URL = process.env.API_URL || process.env.BACKEND_URL || 'http://localhost:3000';
+
+  // Link de descadastro sanitizado com encodeURIComponent
+  const linkCancelamento = `${BACKEND_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(inscrito.email)}`;
+
   let htmlContent = `
     <!DOCTYPE html>
     <html lang="pt-BR">
@@ -57,7 +64,7 @@ export function gerarHtmlNewsletter(
                 </td></tr>
                 <tr><td style="padding: 0 12px 12px 12px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td align="center" style="background-color: #0284c7; border-radius: 4px;">
-                        <a href="http://localhost:5173/adocao?animal=${animal.id}" style="font-size: 12px; color: #ffffff; text-decoration: none; padding: 7px 0; display: block; font-weight: bold;">Conhecer →</a>
+                        <a href="${FRONTEND_URL}/adocao?animal=${animal.id}" style="font-size: 12px; color: #ffffff; text-decoration: none; padding: 7px 0; display: block; font-weight: bold;">Conhecer →</a>
                     </td></tr></table>
                 </td></tr>
             </table>`;
@@ -76,7 +83,7 @@ export function gerarHtmlNewsletter(
                 </td></tr>
                 <tr><td style="padding: 0 12px 12px 12px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td align="center" style="background-color: #0284c7; border-radius: 4px;">
-                        <a href="http://localhost:5173/campanhas-e-noticias/${conteudo.id}" style="font-size: 12px; color: #ffffff; text-decoration: none; padding: 7px 0; display: block; font-weight: bold;">Ler Mais →</a>
+                        <a href="${FRONTEND_URL}/campanhas-e-noticias/${conteudo.id}" style="font-size: 12px; color: #ffffff; text-decoration: none; padding: 7px 0; display: block; font-weight: bold;">Ler Mais →</a>
                     </td></tr></table>
                 </td></tr>
             </table>`;
@@ -95,7 +102,7 @@ export function gerarHtmlNewsletter(
                             <p style="margin: 0 0 6px 0; font-weight: bold; color: #cbd5e1;">Associação Protetora de Animais Focinho Amigo</p>
                             <p style="margin: 0 0 10px 0;">Indaiatuba - SP</p>
                             <p style="margin: 0;">
-                                <a href="http://localhost:3000/api/newsletter/unsubscribe?email=${inscrito.email}" style="color: #94a3b8; text-decoration: underline;">
+                                <a href="${linkCancelamento}" style="color: #94a3b8; text-decoration: underline;">
                                     Descadastrar-se da Newsletter
                                 </a>
                             </p>
