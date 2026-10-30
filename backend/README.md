@@ -176,9 +176,11 @@ backend/
 - Gerenciamento de informações e imagens.
 
 ### Newsletter
-- Gerenciamento de inscritos.
-- Organização de conteúdos destinados à newsletter.
-- Integração com o serviço de envio de e-mails.
+- Gerenciamento de inscritos e cancelamentos (/api/newsletter/subscribe e /api/newsletter/unsubscribe).
+- Fila automatizada de conteúdos (ConteudoNewsletter) com disparo semanal ao atingir o limite configurado.
+- Envio transacional e em lote via Resend API.
+- Utilização das variáveis FRONTEND_URL e API_URL para construção de links dinâmicos no template HTML do e-mail.
+- Importante para Produção: No plano gratuito do Resend (modo onboarding), os disparos chegam apenas ao e-mail cadastrado pelo titular da conta (onboarding@resend.dev). Para habilitar envios para e-mails externos de todos os assinantes, a ONG precisa registrar um domínio próprio (ex: @focinhoamigo.com.br) e validar as chaves de DNS (SPF/DKIM).
 
 ### Uploads
 - Integração com o armazenamento do Supabase.
