@@ -39,7 +39,7 @@ const depoimentos: Depoimento[] = [
     relacao: "Madrinha do Pirata há 1 ano",
     texto:
       "“Apadrinhar o Pirata foi a forma que encontrei de dar amor e suporte a um peludo necessitado mesmo não tendo espaço em casa. Fico extremamente feliz ao ver o Pirata correndo e recebendo o carinho dos cuidadores com a minha ajuda mensal.”",
-    foto: "src/assets/images/pessoas/claudia-ribeiro.png",
+    foto: "/images/pessoas/claudia-ribeiro.png",
   },
 ];
 
@@ -109,7 +109,7 @@ export default function Sponsorship() {
       <PageHero
         titulo="Apadrinhe um Focinho"
         descricao="Transforme positivamente o tratamento e o dia de um animal sem poder trazê-lo para casa."
-        imagem="src/assets/images/hero/heroSponsorship.png"
+        imagem="/images/hero/heroSponsorship.png"
       >
         <a
           href="#planos"

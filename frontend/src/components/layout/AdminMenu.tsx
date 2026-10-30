@@ -9,7 +9,7 @@ import {
   LuUsers,
 } from "react-icons/lu";
 
-import logo from "../../assets/logo_pequena.svg";
+const logo = "/images/logo_pequena.svg";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface LinkItem {

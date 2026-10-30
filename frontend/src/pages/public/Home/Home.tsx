@@ -46,14 +46,14 @@ const depoimentos: Depoimento[] = [
     pet: "Adotou a Amora",
     texto:
       "“A Amora mudou nossas vidas. Todo o processo de adoção da Focinho Amigo foi feito com muita transparência e respeito pelo bem-estar animal.”",
-    foto: "src/assets/images/pessoas/mariana-silva.png",
+    foto: "/images/pessoas/mariana-silva.png",
   },
   {
     nome: "Rodrigo Costa",
     pet: "Adotou o Pipoca",
     texto:
       "“O Pipoca era super medroso quando chegou, mas com as instruções da ONG e muito amor, hoje ele corre feliz e confia em todo mundo.”",
-    foto: "src/assets/images/pessoas/rodrigo-costa.png",
+    foto: "/images/pessoas/rodrigo-costa.png",
   },
 ];
 
@@ -133,7 +133,7 @@ export default function Home(): JSX.Element {
             </>
           }
           descricao="A Focinho Amigo resgata, cuida e encontra famílias definitivas para animais abandonados. Junte-se a nós nesta missão de salvar vidas."
-          imagem="src/assets/images/hero/heroHome.png"
+          imagem="/images/hero/heroHome.png"
         >
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -254,7 +254,7 @@ export default function Home(): JSX.Element {
       <section className="bg-white px-5 py-16 lg:px-14">
         <div className="mx-auto grid max-w-7xl items-center gap-10 md:grid-cols-2">
           <img
-            src="src/assets/images/equipe.png"
+            src="/images/equipe.png"
             alt="Equipe do Focinho Amigo com animais resgatados"
             className="h-[320px] w-full rounded-2xl object-cover"
           />

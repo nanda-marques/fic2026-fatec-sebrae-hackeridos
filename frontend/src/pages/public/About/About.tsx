@@ -96,10 +96,10 @@ interface Equipe {
 }
 
 const equipe: Equipe[] = [
-  { nome: "Dra. Beatriz Lima", cargo: "Veterinária Chefe", imagem: "src/assets/images/pessoas/dra-beatriz-lima.png" },
-  { nome: "Carlos Eduardo", cargo: "Coordenador de Resgates", imagem: "src/assets/images/pessoas/carlos-eduardo.png" },
-  { nome: "Gabriela Santos", cargo: "Comunicação & Eventos", imagem: "src/assets/images/pessoas/gabriela-santos.png" },
-  { nome: "Luciana Rocha", cargo: "Cuidadora Especialista", imagem: "src/assets/images/pessoas/luciana-rocha.png" },
+  { nome: "Dra. Beatriz Lima", cargo: "Veterinária Chefe", imagem: "/images/pessoas/dra-beatriz-lima.png" },
+  { nome: "Carlos Eduardo", cargo: "Coordenador de Resgates", imagem: "/images/pessoas/carlos-eduardo.png" },
+  { nome: "Gabriela Santos", cargo: "Comunicação & Eventos", imagem: "/images/pessoas/gabriela-santos.png" },
+  { nome: "Luciana Rocha", cargo: "Cuidadora Especialista", imagem: "/images/pessoas/luciana-rocha.png" },
 ];
 
 /** Página "Sobre Nós" com história, pilares, linha do tempo e equipe. */
@@ -109,7 +109,7 @@ export default function About(): React.JSX.Element {
     <PageHero
   titulo="Nossa História"
   descricao="Nossa visão é criar um mundo sem abandono e maus-tratos. Temos o objetivo de resgatar, reabilitar e encaminhar para adoção animais retirados das ruas e de situações de maus-tratos."
-  imagem="src/assets/images/hero/heroAbout.png"
+  imagem="/images/hero/heroAbout.png"
     />
 
       {/* =====================================================

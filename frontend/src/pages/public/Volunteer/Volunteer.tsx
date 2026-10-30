@@ -43,7 +43,7 @@ const depoimentos: Depoimento[] = [
     relacao: "Voluntária desde 2021",
     texto:
       "“Comecei como voluntária nas feiras de adoção e hoje auxilio também no resgate. É indescritível a alegria de ver um animal que chegou assustado e machucado sair do abrigo abanando o rabo com seus novos donos.”",
-    foto: "src/assets/images/pessoas/beatriz-souza.png",
+    foto: "/images/pessoas/beatriz-souza.png",
   },
 ];
 
@@ -53,7 +53,7 @@ export default function Volunteer() {
       <PageHero
         titulo="Seja um Voluntário"
         descricao="Mude a realidade de centenas de patinhas. Doe seu tempo, carinho e dedicação para guiar animais abandonados rumo a um novo recomeço cheio de amor."
-        imagem="src/assets/images/hero/heroVolunteer.png"
+        imagem="/images/hero/heroVolunteer.png"
       />
 
       {/* =====================================================
@@ -145,7 +145,7 @@ export default function Volunteer() {
           </div>
 
           <img
-            src="src/assets/images/right-col.png"
+            src="/images/right-col.png"
             alt="Voluntária abraçando um cachorro"
             className="h-64 w-full rounded-3xl object-cover md:h-[270px]"
           />

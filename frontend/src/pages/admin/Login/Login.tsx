@@ -7,7 +7,7 @@ import { FaPaw } from "react-icons/fa";
 import { authApi } from "../../../services/authApi";
 import { useAuth } from "../../../contexts/AuthContext";
 
-import logo from "../../../assets/logo_pequena.svg";
+const logo = "/images/logo_pequena.svg";
 
 export default function Login(): JSX.Element {
   const { signIn } = useAuth();

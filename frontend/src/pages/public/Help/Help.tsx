@@ -51,7 +51,7 @@ export default function Help() {
       <PageHero
   titulo="Toda Ajuda Transforma Vidas"
   descricao="Seja doando mantimentos, apadrinhando uma patinha necessitada ou adotando de forma responsável. Encontre a alternativa que mais combina com você."
-  imagem="src/assets/images/hero/heroHelp.png"
+  imagem="/images/hero/heroHelp.png"
 />
 
       {/* =====================================================
@@ -127,7 +127,7 @@ export default function Help() {
             <div className="flex flex-col items-center text-center">
               <div className="rounded-2xl border-2 border-marca p-3">
                 <img
-                  src="src/assets/images/Qrcode.png"
+                  src="/images/Qrcode.png"
                   alt="QR Code para doação via PIX"
                   className="h-40 w-40 object-contain md:h-44 md:w-44"
                 />

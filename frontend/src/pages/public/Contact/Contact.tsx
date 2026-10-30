@@ -85,7 +85,7 @@ export default function Contact() {
     <PageHero
   titulo="Fale Conosco"
   descricao="Tem dúvidas sobre o processo de adoção, doações ou quer agendar uma visita? Nossa equipe está de braços abertos para te ouvir."
-  imagem="src/assets/images/hero/heroContact.png"
+  imagem="/images/hero/heroContact.png"
     />
 
       {/* =====================================================
