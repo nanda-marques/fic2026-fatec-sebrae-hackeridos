@@ -1,3 +1,5 @@
+import { openapiSpec } from "./swagger/openapi.js";
+import swaggerUi from "swagger-ui-express";
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -12,7 +14,6 @@ import uploadRoutes from "./routes/upload.routes.js";
 import publicacoesRoutes from "./routes/publicacoes.routes.js";
 import animaisRoutes from "./routes/animais.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
-import importarCsvRoutes from "./routes/importarCsv.routes.js";
 import recuperacaoRoutes from "./routes/recuperacao.routes.js";
 
 import { tratarErros } from "./middlewares/error.middleware.js";
@@ -44,13 +45,14 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpec));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/publicacoes", publicacoesRoutes);
 app.use("/api/animais", animaisRoutes);
 app.use("/api/newsletter", newsletterRoutes);
-app.use("/api/animais", importarCsvRoutes);
 app.use("/api/recuperacao", recuperacaoRoutes);
 
 app.use(tratarErros);
