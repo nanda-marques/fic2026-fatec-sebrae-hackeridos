@@ -124,11 +124,13 @@ A validação do token, a atualização da senha e o envio do e-mail são realiz
 
 ## Estrutura das Integrações da Newsletter
 
-A integração com o backend para a inscrição na newsletter ocorre por meio da função auxiliar `inscreverNewsletter`:
+A integração com o backend para a inscrição na newsletter utiliza a variável de ambiente `VITE_API_URL` para realizar as chamadas de forma dinâmica ao servidor:
 
 ```typescript
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export async function inscreverNewsletter(nome: string, email: string) {
-  const resposta = await fetch('http://localhost:3000/api/newsletter/subscribe', {
+  const resposta = await fetch(`${API_URL}/api/newsletter/subscribe`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
