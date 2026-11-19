@@ -9,8 +9,6 @@
 **3º lugar — Fatec Innovation Challenge 2026**  
 Equipe **Hackeridos** · Fatec Sebrae
 
-[Visão geral](#visão-geral) · [Funcionalidades](#funcionalidades) · [Demonstração](#demonstração) · [Instalação](#instalação-e-execução) · [API](#documentação-da-api) · [Equipe](#equipe)
-
 </div>
 
 ---
@@ -326,13 +324,76 @@ O trabalho envolveu prompts estruturados, definição de requisitos, integraçã
 
 **Hackeridos — Fatec Sebrae**
 
-<table>
-<tr>
-<td align="center"><a href="https://github.com/nanda-marques"><img src="https://github.com/nanda-marques.png" width="100" alt="Fernanda"><br><strong>Fernanda</strong></a></td>
-<td align="center"><a href="https://github.com/MatheusBonfim265"><img src="https://github.com/MatheusBonfim265.png" width="100" alt="Matheus"><br><strong>Matheus</strong></a></td>
-<td align="center"><a href="https://github.com/Cosmic-Bubble"><img src="https://github.com/Cosmic-Bubble.png" width="100" alt="Mayra"><br><strong>Mayra</strong></a></td>
-<td align="center"><a href="https://github.com/Manuellasantos"><img src="https://github.com/Manuellasantos.png" width="100" alt="Manuella"><br><strong>Manuella</strong></a></td>
-</tr>
+
+<h2 align="center">Conheça nossa equipe</h2>
+
+<p align="center">
+  Pessoas responsáveis pelo desenvolvimento do projeto.
+</p>
+
+<table align="center">
+  <tr>
+    <td align="center" width="160">
+      <a href="https://github.com/nanda-marques">
+        <img src="https://github.com/nanda-marques.png" width="100" alt="Fernanda">
+      </a>
+      <br>
+      <strong>Fernanda</strong>
+      <br><br>
+      <a href="https://github.com/nanda-marques">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" width="25" height="25" alt="GitHub">
+      </a>
+      &nbsp;
+      <a href="https://www.linkedin.com/in/nanda-marques/">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-original.svg" width="25" height="25" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/MatheusBonfim265">
+        <img src="https://github.com/MatheusBonfim265.png" width="100" alt="Matheus">
+      </a>
+      <br>
+      <strong>Matheus</strong>
+      <br><br>
+      <a href="https://github.com/MatheusBonfim265">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" width="25" height="25" alt="GitHub">
+      </a>
+      &nbsp;
+      <a href="https://www.linkedin.com/in/matheus-bonfim-22b7862b7/">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-original.svg" width="25" height="25" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/Cosmic-Bubble">
+        <img src="https://github.com/Cosmic-Bubble.png" width="100" alt="Mayra">
+      </a>
+      <br>
+      <strong>Mayra</strong>
+      <br><br>
+      <a href="https://github.com/Cosmic-Bubble">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" width="25" height="25" alt="GitHub">
+      </a>
+      &nbsp;
+      <a href="https://www.linkedin.com/in/mayra-lima-passos/">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-original.svg" width="25" height="25" alt="LinkedIn">
+      </a>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/Manuellasantos">
+        <img src="https://github.com/Manuellasantos.png" width="100" alt="Manuella">
+      </a>
+      <br>
+      <strong>Manuella</strong>
+      <br><br>
+      <a href="https://github.com/Manuellasantos">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" width="25" height="25" alt="GitHub">
+      </a>
+      &nbsp;
+      <a href="https://www.linkedin.com/in/manu-cruz-8439332b6/">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-original.svg" width="25" height="25" alt="LinkedIn">
+      </a>
+    </td>
+  </tr>
 </table>
 
 </div>
