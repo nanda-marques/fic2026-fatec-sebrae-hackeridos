@@ -1,277 +1,274 @@
-<h1 align="center">Focinho Amigo</h1> <p align="center">   <img src="frontend/public/Redme/home.png" alt="Página inicial do sistema Focinho Amigo" width="850"> </p> <p align="center">   <strong>Tecnologia a serviço da proteção animal.</strong>   <br>   Uma plataforma web para fortalecer a gestão da ONG, aproximar a comunidade e facilitar a adoção. </p> <p align="center">   <strong>3º LUGAR — FATEC INNOVATION CHALLENGE 2026</strong>   <br>   Entre equipes de 18 outras Fatecs participantes. </p>
+<div align="center">
+
+<table><tr><td valign="middle"><img src="frontend/public/images/logo.svg" alt="Logo do Focinho Amigo" width="105"></td><td valign="middle"><h1>Focinho Amigo</h1><strong>Tecnologia a serviço da proteção animal</strong></td></tr></table>
+
+**Plataforma web para apoiar a gestão de uma organização de proteção animal, ampliar sua presença digital e facilitar a adoção responsável.**
+
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) 
+
+**3º lugar — Fatec Innovation Challenge 2026**  
+Equipe **Hackeridos** · Fatec Sebrae
+
+[Visão geral](#visão-geral) · [Funcionalidades](#funcionalidades) · [Demonstração](#demonstração) · [Instalação](#instalação-e-execução) · [API](#documentação-da-api) · [Equipe](#equipe)
+
+</div>
 
 ---
 
-## Índice
+## Sumário
 
-- Sobre o projeto
-- Nossa conquista
-- O problema e a nossa solução
-- Funcionalidades
-- Impacto esperado
-- Desenvolvimento com inteligência artificial
-- Conheça o sistema
-- Tecnologias
-- Estrutura do projeto
-- Como executar
-- Banco de dados
-- Documentação da API (Swagger)
-- Testes e build
-- Newsletter
-- Segurança
-- Documentação técnica
-- Equipe Hackeridos
+- [Visão geral](#visão-geral)
+- [Contexto e solução](#contexto-e-solução)
+- [Funcionalidades](#funcionalidades)
+- [Impacto esperado](#impacto-esperado)
+- [Reconhecimento](#reconhecimento)
+- [Demonstração](#demonstração)
+- [Tecnologias e arquitetura](#tecnologias-e-arquitetura)
+- [Instalação e execução](#instalação-e-execução)
+- [Banco de dados](#banco-de-dados)
+- [Documentação da API](#documentação-da-api)
+- [Qualidade e testes](#qualidade-e-testes)
+- [Integrações e segurança](#integrações-e-segurança)
+- [Desenvolvimento com IA](#desenvolvimento-com-ia)
+- [Documentação técnica](#documentação-técnica)
+- [Equipe](#equipe)
 
----
+## Visão geral
 
-## Sobre o projeto
+O **Focinho Amigo** é uma plataforma web desenvolvida para a **OSCIP de Proteção Animal Focinho Amigo**, em resposta a um desafio do **Fatec Innovation Challenge 2026**.
 
-O <b>Focinho Amigo</b> é uma plataforma web criada para a OSCIP de Proteção Animal Focinho Amigo, como resposta ao desafio do Fatec Innovation Challenge 2026.
+Mais do que um site institucional, a solução reúne informações, oportunidades de participação e ferramentas administrativas em um único ambiente. O projeto foi concebido a partir das necessidades da organização, com foco na usabilidade, na comunicação com a comunidade e na simplificação de processos internos.
 
-Ele vai além de um site institucional: é uma ferramenta de apoio à gestão e à comunicação da ONG. Ela:
+| Projeto | Informação |
+| :--- | :--- |
+| Organização atendida | OSCIP de Proteção Animal Focinho Amigo |
+| Equipe | Hackeridos — Fatec Sebrae |
+| Evento | Fatec Innovation Challenge 2026 |
+| Reconhecimento | 3º lugar |
+| Tipo de solução | Plataforma web com frontend, API e banco de dados |
 
-- centraliza as informações da organização;
-- facilita a divulgação dos animais disponíveis para adoção;
-- aproxima a ONG de pessoas que querem ajudar a causa animal.
+## Contexto e solução
 
-O projeto nasceu de necessidades reais da organização e foi pensado para o uso no dia a dia. A ONG vai utilizar o sistema em sua rotina, o que dá à conquista um significado ainda maior.
+### O desafio
 
----
+A organização precisa conciliar a divulgação de animais disponíveis para adoção, o atendimento a interessados, a comunicação com voluntários e apoiadores, a promoção de campanhas e a atualização de informações. A concentração de demandas no WhatsApp e a existência de tarefas manuais dificultam a organização do trabalho.
 
-## Nossa conquista
+### Nossa proposta
 
- <p align="center">   <img src="frontend/public/Redme/trofeu.jpg" alt="Conquista do terceiro lugar no Fatec Innovation Challenge 2026" width="500"> </p>
+Centralizar a presença digital e disponibilizar recursos de gestão para que a equipe possa dedicar mais tempo às atividades diretamente relacionadas à proteção animal.
 
-Ficamos em 3º lugar no Fatec Innovation Challenge 2026, iniciativa de inovação promovida pela Venturus e pela Fundação Iochpe. Competimos com equipes de outras 18 Fatecs e instituições parceiras.
-
-Durante o desafio, nós:
-
-1. entendemos as necessidades de uma organização do terceiro setor;
-2. transformamos essas necessidades em requisitos;
-3. planejamos a arquitetura tecnológica;
-4. desenvolvemos uma aplicação voltada à realidade da ONG.
-
-Mais do que uma colocação, conquistamos a chance de ver nosso projeto sair do ambiente acadêmico e ser usado na prática.
-
----
-
-## O problema e a nossa solução
-
-### O problema
-
-A Focinho Amigo precisa conciliar muitas atividades para manter seu trabalho:
-
-- divulgar animais disponíveis para adoção;
-- se comunicar com interessados, voluntários e apoiadores;
-- divulgar campanhas, eventos e arrecadações;
-- organizar informações institucionais;
-- atualizar conteúdos e registros;
-- atender demandas que chegam por diferentes canais.
-
-Hoje, a forte dependência do WhatsApp sobrecarrega a equipe e dificulta a organização das informações. Além disso, processos manuais de transcrição e atualização consomem um tempo que poderia ser dedicado ao cuidado dos animais.
-
-### A solução
-
-Uma plataforma que centraliza a presença digital da ONG e oferece ferramentas para facilitar a gestão. O objetivo é tornar a informação mais acessível para a comunidade e simplificar o trabalho de quem mantém a organização funcionando.
-
----
+| Necessidade | Resposta da plataforma |
+| :--- | :--- |
+| Informações dispersas | Conteúdo institucional e canais de participação reunidos em um único site |
+| Divulgação de animais | Vitrine de animais disponíveis para adoção |
+| Comunicação com apoiadores | Campanhas, eventos, voluntariado e newsletter |
+| Atualização de conteúdo | Painel administrativo com acesso autenticado |
 
 ## Funcionalidades
 
- <table>   <tr>     <th align="left">Área</th>     <th align="left">O que faz</th>   </tr>   <tr>     <td><b>Página institucional</b></td>     <td>Apresenta a ONG, sua história e seu trabalho</td>   </tr>   <tr>     <td><b>Adoção</b></td>     <td>Divulga os animais disponíveis para encontrar um novo lar</td>   </tr>   <tr>     <td><b>Apadrinhamento</b></td>     <td>Explica como contribuir com os animais</td>   </tr>   <tr>     <td><b>Voluntariado</b></td>     <td>Divulga oportunidades de participação</td>   </tr>   <tr>     <td><b>Campanhas e eventos</b></td>     <td>Divulga iniciativas e ações da organização</td>   </tr>   <tr>     <td><b>Formas de ajudar</b></td>     <td>Reúne todas as possibilidades de contribuição</td>   </tr>   <tr>     <td><b>Newsletter</b></td>     <td>Aproxima quem quer acompanhar as atividades da ONG</td>   </tr>   <tr>     <td><b>Painel administrativo</b></td>     <td>Gerencia animais e publicações</td>   </tr>   <tr>     <td><b>Autenticação</b></td>     <td>Controla o acesso à área administrativa</td>   </tr> </table>
-
----
+| Módulo | Descrição |
+| :--- | :--- |
+| **Institucional** | Apresentação da ONG, sua história e atuação |
+| **Adoção** | Divulgação dos animais disponíveis para adoção |
+| **Apadrinhamento** | Orientações sobre apoio aos animais |
+| **Voluntariado** | Divulgação de formas de participação |
+| **Campanhas e eventos** | Publicação de iniciativas da organização |
+| **Formas de ajudar** | Centralização das possibilidades de contribuição |
+| **Newsletter** | Comunicação por e-mail com pessoas interessadas |
+| **Administração** | Gerenciamento de animais e publicações |
+| **Autenticação** | Controle de acesso à área administrativa |
 
 ## Impacto esperado
 
-O projeto foi pensado para gerar melhorias concretas na rotina da ONG. Estes são os quatro resultados que buscamos:
+A plataforma foi planejada para melhorar o fluxo de comunicação, ampliar a visibilidade dos animais e reduzir tarefas repetitivas.
 
- <table>   <tr>     <td width="50%">       <b>Redução de até 70% na sobrecarga do WhatsApp</b>       <br><br>       O site faz a triagem inicial e tira dúvidas, liberando a equipe para casos urgentes e para as etapas finais da adoção.     </td>     <td width="50%">&nbsp;</td>   </tr>   <tr>     <td width="50%">&nbsp;</td>     <td width="50%">       <b>Maior taxa de adoção</b>       <br><br>       Com a vitrine online disponível 24 horas por dia, encurtamos o tempo de permanência dos animais na ONG.     </td>   </tr>   <tr>     <td width="50%">       <b>Base comunitária própria</b>       <br><br>       A captação ativa por e-mail cria um canal direto com apoiadores, sem depender das redes sociais para divulgar feiras e arrecadações.     </td>     <td width="50%">&nbsp;</td>   </tr>   <tr>     <td width="50%">&nbsp;</td>     <td width="50%">       <b>Eliminação de 100% do retrabalho</b>       <br><br>       A sincronização de planilhas elimina totalmente a transcrição manual de fichas.     </td>   </tr> </table>
+| Objetivo | Resultado esperado |
+| :--- | :--- |
+| **Reduzir a sobrecarga do WhatsApp** | Meta projetada de redução de até **70%**, por meio da disponibilização de informações e triagem inicial |
+| **Ampliar as oportunidades de adoção** | Vitrine online acessível continuamente, favorecendo a descoberta dos animais |
+| **Fortalecer a comunidade** | Canal próprio de newsletter para divulgar campanhas, eventos e arrecadações |
+| **Reduzir retrabalho** | Meta projetada de eliminação de **100% da transcrição manual** de fichas por meio da sincronização de planilhas |
 
-> [!IMPORTANT] Os percentuais acima são metas e resultados projetados, não indicadores já comprovados. A validação depende do acompanhamento do uso do sistema no dia a dia da ONG.
+> **Importante:** os percentuais são **metas projetadas**, não resultados medidos. A confirmação depende de acompanhamento operacional e indicadores após a adoção do sistema pela ONG.
 
----
+## Reconhecimento
 
-## Desenvolvimento com inteligência artificial
+<div align="center">
+  <img src="frontend/public/readme/trofeu.jpg" alt="Reconhecimento da equipe Hackeridos no Fatec Innovation Challenge 2026" width="520">
+  <p><strong>3º lugar no Fatec Innovation Challenge 2026</strong></p>
+</div>
 
-Um dos diferenciais do projeto foi o uso de IA como apoio à construção do frontend.
+A equipe Hackeridos conquistou o terceiro lugar no desafio de inovação promovido pela **Venturus** e pela **Fundação Iochpe**, em uma edição com equipes de outras 18 Fatecs e instituições parceiras.
 
-- Como usamos: prompts estruturados e direcionados, em vez de comandos genéricos, para orientar a criação de componentes, layouts e experiências de navegação.
-- Por quê: manter a consistência visual e atender aos requisitos reais da ONG.
-- Papel da equipe: definir as necessidades, direcionar as soluções, integrar os componentes, validar e evoluir a aplicação.
-
-A IA foi uma ferramenta de produtividade e apoio técnico. As decisões e a responsabilidade pelo resultado foram da equipe. A experiência mostrou como o uso consciente de novas ferramentas pode ampliar a capacidade de desenvolvimento e acelerar a construção de soluções digitais.
-
----
-
-## Conheça o sistema
-
-### Página inicial
-
- <p align="center">   <img src="frontend/public/Redme/home.png" alt="Página inicial do Focinho Amigo" width="850"> </p>
-
-### Página inicial (continuação)
-
- <p align="center">   <img src="frontend/public/Redme/home2.png" alt="Segunda visualização da página inicial" width="850"> </p>
-
-### Painel administrativo
-
- <p align="center">   <img src="frontend/public/Redme/Admin.png" alt="Painel administrativo do Focinho Amigo" width="850"> </p>
-
-### Acesse o projeto
-
-- Site institucional — Focinho Amigo
-- Painel administrativo
-
-A API (backend) é executada separadamente, em ambiente próprio.
+O desenvolvimento envolveu levantamento de necessidades, definição de requisitos, planejamento da arquitetura, implementação e validação de uma solução orientada à realidade da organização.
 
 ---
 
-## Tecnologias
+### Destaque no portal da Fatec Sebrae
 
- <table>   <tr>     <th align="left">Camada</th>     <th align="left">Tecnologias</th>   </tr>   <tr>     <td><b>Frontend</b></td>     <td>React, Vite, TypeScript, React Router, React Icons</td>   </tr>   <tr>     <td><b>Backend</b></td>     <td>Node.js, Express, TypeScript, Sequelize, Prisma, JWT, Resend</td>   </tr>   <tr>     <td><b>Banco de dados</b></td>     <td>MySQL</td>   </tr>   <tr>     <td><b>Testes</b></td>     <td>Vitest, Supertest</td>   </tr>   <tr>     <td><b>Infraestrutura</b></td>     <td>Vercel (frontend), Render (backend), Aiven (banco de dados)</td>   </tr> </table>
+A conquista da equipe Hackeridos foi destaque no portal oficial da Fatec Sebrae.
 
-> [!NOTE] O Sequelize é o ORM usado pela aplicação no dia a dia. O Prisma cuida das migrations e do gerenciamento da estrutura do banco.
+[Leia a matéria completa](https://fatecsebrae.cps.sp.gov.br/equipe-hackeridos-conquista-o-3o-lugar-no-fatec-innovation-challenge-2026/)
 
----
+## Demonstração
 
-## Estrutura do projeto
+As imagens a seguir apresentam as principais interfaces desenvolvidas para a plataforma.
 
-```text
-focinho-amigo/
-├── frontend/              # Aplicação React (site público + área administrativa)
-│   ├── src/
-│   ├── public/
-│   │   └── Redme/         # Imagens usadas neste README
-│   ├── .env.example
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── backend/               # API REST, autenticação, regras de negócio e integrações
-│   ├── src/
-│   ├── .env.example
-│   └── package.json
-│
-├── prisma/                # Migrations e estrutura do banco
-│
-├── docs/                  # Documentação técnica
-│   ├── 01_Requisitos/
-│   ├── 02_Arquitetura/
-│   ├── 03_Prototipos/
-│   ├── 04_Gerencia_de_Mudancas/
-│   └── originais/         # Documentos originais usados como referência
-│
-├── .env.example
-├── .nvmrc                 # Versão do Node.js do projeto
-├── package.json
-└── README.md
+<table>
+  <tr>
+    <th align="center" width="50%">Página inicial</th>
+    <th align="center" width="50%">Conteúdo institucional</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="frontend/public/readme/home.png" alt="Página inicial do Focinho Amigo" width="100%"></td>
+    <td align="center"><img src="frontend/public/readme/home2.png" alt="Continuação da página inicial" width="100%"></td>
+  </tr>
+  <tr>
+    <th align="center" width="50%">Painel administrativo</th>
+    <th align="center" width="50%">Dashboard administrativo</th>
+  </tr>
+  <tr>
+    <td align="center" ><img src="frontend/public/readme/admin-login.png" alt="Interface do painel administrativo" width="100%"></td>
+    <td align="center"><img src="frontend/public/readme/admin-dashboard.png" alt="Interface do dashboard administrativo" width="100%"></td>
+  </tr>
+</table>
+
+### Protótipo no Figma
+
+O protótipo de interface está disponível para consulta no **[Figma — Focinho Amigo | Website](https://www.figma.com/design/aGcBilq5WAKQM6nO0ikLXo/Focinho-Amigo---Website?node-id=0-1&p=f&t=9HuztDOlk8nqhORZ-0)**.
+
+
+## Tecnologias e arquitetura
+
+| Camada | Tecnologias |
+| :--- | :--- |
+| **Frontend** | React, Vite, TypeScript, React Router, React Icons |
+| **Backend** | Node.js, Express, TypeScript, Sequelize, Prisma, JWT, Resend |
+| **Persistência** | MySQL |
+| **Testes** | Vitest, Supertest |
+| **Hospedagem** | Vercel (frontend), Render (backend), Aiven (MySQL) |
+
+### Visão da arquitetura
+
+```mermaid
+flowchart TD
+    U[Visitante ou administrador] --> F[Frontend: React, Vite e TypeScript]
+    F -->|Requisições HTTP| API[API REST: Node.js e Express]
+    API --> AUTH[Autenticação JWT]
+    API --> ORM[Sequelize]
+    ORM --> DB[(MySQL na Aiven)]
+    API --> EMAIL[Resend: envio de e-mails]
+    PRISMA[Prisma: schema e migrations] -.->|Gerencia estrutura| DB
+
+    classDef client fill:#eaf4ff,stroke:#3876a8,color:#183b56
+    classDef server fill:#eaf7f0,stroke:#418967,color:#204d39
+    classDef data fill:#fff3e5,stroke:#b57d3e,color:#67421a
+    class U,F client
+    class API,AUTH,ORM,EMAIL server
+    class DB,PRISMA data
 ```
 
----
+O **Sequelize** é utilizado pela aplicação para acesso ao banco de dados; o **Prisma** é empregado nas migrations e no gerenciamento da estrutura do banco.
 
-## Como executar
+## Instalação e execução
 
-### Antes de começar
+### Pré-requisitos
 
-Você precisa ter instalado:
-
-- Node.js 24.22.1 (a versão exata está no arquivo `.nvmrc`)
-- npm 11 ou superior
+- Node.js **24.22.1** (versão definida em `.nvmrc`)
+- npm **11** ou superior
 - Git
-- Um banco MySQL acessível
+- Instância MySQL acessível
 
-### Passo a passo
-
-#### 1. Clone o repositório
+### 1. Clonar o repositório
 
 ```bash
 git clone https://github.com/nanda-marques/fic2026-fatec-sebrae-hackeridos.git
 cd fic2026-fatec-sebrae-hackeridos
 ```
 
-#### 2. Instale as dependências
-
-Na raiz do projeto:
+### 2. Instalar dependências
 
 ```bash
 npm install
 ```
 
-O projeto usa npm workspaces, então esse único comando instala as dependências do frontend e do backend.
+O repositório utiliza **npm workspaces** para gerenciar frontend e backend.
 
-#### 3. Crie os arquivos de ambiente
+### 3. Configurar variáveis de ambiente
 
-Copie cada arquivo `.env.example` para `.env`:
+Crie os arquivos abaixo com base nos exemplos disponíveis:
 
- <table>   <tr>     <th align="left">Copie</th>     <th align="left">Para</th>   </tr>   <tr>     <td><code>backend/.env.example</code></td>     <td><code>backend/.env</code></td>   </tr>   <tr>     <td><code>frontend/.env.example</code></td>     <td><code>frontend/.env</code></td>   </tr> </table>
+| Arquivo de referência | Arquivo local |
+| :--- | :--- |
+| `backend/.env.example` | `backend/.env` |
+| `frontend/.env.example` | `frontend/.env` |
 
-#### 4. Configure as variáveis
-
-No frontend, aponte para a API local:
+No frontend, configure a URL da API local:
 
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-No backend, preencha as variáveis de banco de dados, autenticação e serviços externos, seguindo o arquivo `backend/.env.example`.
+No backend, preencha as variáveis de conexão MySQL, autenticação e integrações externas, seguindo **os nomes definidos em `backend/.env.example`**.
 
-#### 5. Rode o projeto
+### 4. Iniciar os serviços
 
-Use dois terminais.
+Em terminais separados, a partir da raiz:
 
-Terminal 1, para o backend:
+**Terminal 1 — Backend**
 
 ```bash
 npm run dev:backend
 ```
 
-Terminal 2, para o frontend:
+**Terminal 2 — Frontend**
 
 ```bash
 npm run dev:frontend
 ```
 
-#### 6. Abra no navegador
+### 5. Acessar localmente
 
- <table>   <tr>     <th align="left">Serviço</th>     <th align="left">Endereço</th>   </tr>   <tr>     <td>Frontend</td>     <td>http\://localhost:5173</td>   </tr>   <tr>     <td>Backend</td>     <td>http\://localhost:3000</td>   </tr> </table>
-
----
+| Serviço | Endereço |
+| :--- | :--- |
+| Frontend | `http://localhost:5173` |
+| Backend | `http://localhost:3000` |
+| Swagger | `http://localhost:3000/api-docs` |
 
 ## Banco de dados
 
-O projeto usa MySQL. A conexão é configurada em `backend/.env`.
+O banco de dados é **MySQL**, com conexão configurada por variáveis de ambiente do backend. Os scripts do Prisma são executados a partir da raiz do repositório.
 
-O Prisma fica na raiz do projeto e oferece os seguintes scripts:
+| Comando | Finalidade |
+| :--- | :--- |
+| `npm run db:generate` | Gerar o Prisma Client |
+| `npm run db:migrate` | Criar e executar uma nova migration |
+| `npm run db:deploy` | Aplicar migrations existentes |
+| `npm run db:status` | Consultar o estado das migrations |
+| `npm run db:studio` | Abrir a interface visual Prisma Studio |
+| `npm run db:pull` | Atualizar o schema a partir do banco |
 
- <table>   <tr>     <th align="left">Comando</th>     <th align="left">Para que serve</th>   </tr>   <tr>     <td><code>npm run db:generate</code></td>     <td>Gera o Prisma Client</td>   </tr>   <tr>     <td><code>npm run db:migrate</code></td>     <td>Cria e executa uma nova migration</td>   </tr>   <tr>     <td><code>npm run db:deploy</code></td>     <td>Aplica as migrations existentes</td>   </tr>   <tr>     <td><code>npm run db:status</code></td>     <td>Mostra o status das migrations</td>   </tr>   <tr>     <td><code>npm run db:studio</code></td>     <td>Abre o Prisma Studio (interface visual do banco)</td>   </tr>   <tr>     <td><code>npm run db:pull</code></td>     <td>Atualiza o schema a partir do banco</td>   </tr> </table>
+> Em um banco novo, verifique a inicialização dos registros obrigatórios, incluindo os cargos da área administrativa. Em produção, prefira o fluxo de aplicação de migrations existentes (`db:deploy`), conforme a configuração do projeto.
 
-> [!NOTE] Em um banco novo, é preciso garantir a inicialização dos dados obrigatórios, incluindo os cargos usados pela área administrativa.
+## Documentação da API
 
----
-
-## Documentação da API (Swagger)
-
-Com o backend rodando, acesse:
+A API dispõe de documentação interativa com **Swagger**:
 
 ```text
 http://localhost:3000/api-docs
 ```
 
-Em produção, use a mesma rota `/api-docs` com a URL do backend publicado.
+Em produção, utilize `/api-docs` no domínio do backend publicado. A documentação permite consultar os endpoints disponíveis e seus contratos.
 
----
-
-## Testes e build
+## Qualidade e testes
 
 ### Testes automatizados
-
-O backend é testado com Vitest e Supertest:
 
 ```bash
 npm test
 ```
 
-A suíte cobre serviços e rotas como autenticação, publicações, newsletter e recuperação de senha. Os fluxos mínimos de validação são login e listagem de animais.
+A suíte do backend utiliza **Vitest** e **Supertest** e contempla serviços e rotas relacionados a autenticação, publicações, newsletter e recuperação de senha. Entre os fluxos mínimos de validação estão o login e a listagem de animais.
 
 ### Build de produção
 
@@ -279,58 +276,75 @@ A suíte cobre serviços e rotas como autenticação, publicações, newsletter 
 npm run build
 ```
 
-Também é possível gerar o build de cada parte separadamente:
+Builds individuais:
 
 ```bash
 npm run build:frontend
 npm run build:backend
 ```
 
-### Lint do frontend
+### Análise estática do frontend
 
 ```bash
 npm run lint:frontend
 ```
 
----
+## Integrações e segurança
 
-## Newsletter
+### Newsletter
 
-O sistema envia e-mails pelo serviço Resend.
+O envio de e-mails utiliza **Resend**. As URLs associadas ao fluxo devem ser definidas por variáveis de ambiente, com valores apropriados para desenvolvimento e produção.
 
-As URLs usadas pela newsletter são definidas por variáveis de ambiente, sem endereços `localhost` fixos no código:
+### Boas práticas de configuração
 
-- Ambiente local: aponte para os serviços rodando na sua máquina.
-- Produção: use as URLs do ambiente publicado.
+- Nunca versionar arquivos `.env` com credenciais reais.
+- Utilizar `.env.example` somente como referência de configuração.
+- Armazenar segredos de produção nas variáveis de ambiente dos provedores de hospedagem.
+- Não publicar senhas, tokens, chaves ou credenciais administrativas no README.
+- Compartilhar credenciais de avaliação apenas por canais privados e autorizados.
 
----
+## Desenvolvimento com IA
 
-## Segurança
+A equipe utilizou **inteligência artificial como ferramenta de apoio ao desenvolvimento do frontend**, especialmente na elaboração de componentes, layouts e experiências de navegação.
 
-- Não versione arquivos `.env`.
-- Não coloque senhas ou tokens reais no README.
-- Não compartilhe credenciais de produção no repositório.
-- Use os arquivos `.env.example` apenas como referência das variáveis necessárias.
-- As credenciais de avaliação são fornecidas separadamente à banca.
-
----
+O trabalho envolveu prompts estruturados, definição de requisitos, integração, revisão e validação das soluções geradas. As decisões de produto, a implementação final e a responsabilidade técnica permaneceram com a equipe.
 
 ## Documentação técnica
 
- <table>   <tr>     <th align="left">Documento</th>     <th align="left">Caminho</th>   </tr>   <tr>     <td>Requisitos</td>     <td><code>docs/01_Requisitos/Documento_Requisitos_v2.pdf</code></td>   </tr>   <tr>     <td>Arquitetura</td>     <td><code>docs/02_Arquitetura/Diagrama_Arquitetura_v2.md</code> e <code>.png</code></td>   </tr>   <tr>     <td>Protótipos de interface</td>     <td><code>docs/03_Prototipos/Prototipos_Interface_v2.pdf</code></td>   </tr>   <tr>     <td>Histórico de alterações</td>     <td><code>docs/04_Gerencia_de_Mudancas/Changelog.pdf</code></td>   </tr>   <tr>     <td>Documentos originais</td>     <td><code>docs/originais/</code></td>   </tr> </table>
+| Material | Localização |
+| :--- | :--- |
+| Documento de requisitos | [`docs/01_Requisitos/Documento_Requisitos_v2.pdf`](docs/01_Requisitos/Documento_Requisitos_v2.pdf) |
+| Diagrama de arquitetura | [`docs/02_Arquitetura/Diagrama_Arquitetura_v2.md`](docs/02_Arquitetura/Diagrama_Arquitetura_v2.md) |
+| Protótipo interativo (Figma) | [Focinho Amigo — Website](https://www.figma.com/design/aGcBilq5WAKQM6nO0ikLXo/Focinho-Amigo---Website?node-id=0-1&p=f&t=9HuztDOlk8nqhORZ-0) |
+| Protótipos de interface (PDF) | [`docs/03_Prototipos/Prototipos_Interface_v2.pdf`](docs/03_Prototipos/Prototipos_Interface_v2.pdf) |
+| Histórico de alterações | [`docs/04_Gerencia_de_Mudancas/Changelog.pdf`](docs/04_Gerencia_de_Mudancas/Changelog.pdf) |
+| Documentos originais | [`docs/originais/`](docs/originais/) |
+
+## Equipe
+
+<div align="center">
+
+**Hackeridos — Fatec Sebrae**
+
+<table>
+<tr>
+<td align="center"><a href="https://github.com/nanda-marques"><img src="https://github.com/nanda-marques.png" width="100" alt="Fernanda"><br><strong>Fernanda</strong></a></td>
+<td align="center"><a href="https://github.com/MatheusBonfim265"><img src="https://github.com/MatheusBonfim265.png" width="100" alt="Matheus"><br><strong>Matheus</strong></a></td>
+<td align="center"><a href="https://github.com/Cosmic-Bubble"><img src="https://github.com/Cosmic-Bubble.png" width="100" alt="Mayra"><br><strong>Mayra</strong></a></td>
+<td align="center"><a href="https://github.com/Manuellasantos"><img src="https://github.com/Manuellasantos.png" width="100" alt="Manuella"><br><strong>Manuella</strong></a></td>
+</tr>
+</table>
+
+</div>
+
+O projeto foi construído coletivamente, reunindo planejamento, desenvolvimento, validação e entrega. Nosso propósito é aplicar tecnologia a problemas reais e contribuir para a atuação de organizações com impacto social.
 
 ---
 
-## Equipe Hackeridos
+<div align="center">
 
-Somos a equipe Hackeridos. Unimos conhecimentos, habilidades e perspectivas diferentes para transformar um desafio real em uma aplicação funcional. Cada integrante contribuiu em todas as etapas: planejamento, desenvolvimento, validação e entrega.
+**Focinho Amigo** — tecnologia, educação e proteção animal.
 
- <p align="center">   <a href="https\://github.com/nanda-marques">     <img src="https\://github.com/nanda-marques.png" width="110px" alt="Fernanda">   </a>   &nbsp;&nbsp;&nbsp;   <a href="https\://github.com/MatheusBonfim265">     <img src="https\://github.com/MatheusBonfim265.png" width="110px" alt="Matheus">   </a>   &nbsp;&nbsp;&nbsp;   <a href="https\://github.com/Cosmic-Bubble">     <img src="https\://github.com/Cosmic-Bubble.png" width="110px" alt="Mayra">   </a>   &nbsp;&nbsp;&nbsp;   <a href="https\://github.com/Manuellasantos">     <img src="https\://github.com/Manuellasantos.png" width="110px" alt="Manuella">   </a> </p> <p align="center">   <a href="https\://github.com/nanda-marques"><strong>Fernanda</strong></a> |   <a href="https\://github.com/MatheusBonfim265"><strong>Matheus</strong></a> |   <a href="https\://github.com/Cosmic-Bubble"><strong>Mayra</strong></a> |   <a href="https\://github.com/Manuellasantos"><strong>Manuella</strong></a> </p>
+<sub>Desenvolvido pela equipe Hackeridos · Fatec Sebrae · Fatec Innovation Challenge 2026</sub>
 
-### Nosso propósito
-
-Acreditamos que tecnologia faz mais sentido quando resolve problemas reais e gera impacto positivo na sociedade. O Focinho Amigo une tecnologia, educação e responsabilidade social para apresentar a ONG ao mundo, ajudar na sua organização e facilitar o encontro entre animais e pessoas dispostas a oferecer um lar.
-
-> Cada animal merece uma oportunidade, cada ONG merece ferramentas para crescer e cada projeto pode gerar uma transformação real.
-
- <p align="center">   <sub>Desenvolvido pela equipe Hackeridos — Fatec Sebrae | Fatec Innovation Challenge 2026</sub> </p>
+</div>
